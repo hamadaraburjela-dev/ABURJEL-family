@@ -77,6 +77,11 @@
     .header .d-flex {
         flex-direction: column;
         gap: 0.5rem;
+        width: 100%;
+    }
+    .header .d-flex .btn {
+        width: 100%;
+        text-align: center;
     }
     .aid-card {
         overflow-x: auto;
