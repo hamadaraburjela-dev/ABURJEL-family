@@ -18,45 +18,37 @@
 </head>
 <body>
     <a id="skip-link" href="#main-content">تخطي إلى المحتوى</a>
-    <main class="vh-100 d-flex align-items-center justify-content-center bg-light">
-        <div class="card shadow-sm rounded-4" style="max-width:980px; width:94%;" id="main-content" role="main" aria-label="الصفحة الرئيسية">
-            <div class="row g-0">
-                <div class="col-12 col-md-5 d-flex align-items-center justify-content-center p-4 bg-white">
-                    <div class="text-center w-100">
-                        <img src="logo.webp" alt="شعار عائلة أبو رجيلة" class="img-fluid mx-auto d-block mb-3 logo" width="110" height="110">
-                        <h2 class="h5 mb-1">نظام بيانات عائلة أبو رجيلة</h2>
-                        <p class="text-muted small mb-2">بوابة إلكترونية موحدة لإدارة الأفراد، المساعدات، والتقارير — آمنة ومتجاوبة مع الأجهزة المحمولة.</p>
-                        <p class="text-muted small">نسهّل تسجيل الحالات وتنسيق الدعم مع تقارير واضحة وقابلة للتصدير.</p>
-                    </div>
+    <main class="min-vh-100 d-flex align-items-start justify-content-center bg-light py-4">
+        <div class="card shadow-sm rounded-4 w-100 mobile-landing" style="max-width:420px;" id="main-content" role="main" aria-label="الصفحة الرئيسية">
+            <div class="card-body text-center px-4 py-4">
+                <img src="logo.webp" alt="شعار عائلة أبو رجيلة" class="logo mb-2" loading="lazy" width="120" height="120">
+                <h2 class="h5 mb-1">نظام بيانات عائلة أبو رجيلة</h2>
+                <p class="text-muted small mb-2">بوابة إلكترونية لإدارة الأفراد والمساعدات والتقارير، مصممة للهواتف المحمولة.</p>
+                <p class="text-muted small mb-3">نسهّل تسجيل الحالات، توزيع الدعم، وإصدار تقارير موجزة وقابلة للمشاركة.</p>
+
+                <div class="d-grid gap-3 mb-2">
+                    <button class="btn btn-success btn-lg rounded-3 d-flex flex-column align-items-center" data-bs-toggle="modal" data-bs-target="#userLoginModal" aria-label="دخول الأفراد">
+                        <i class="bi bi-people-fill fs-2 mb-1"></i>
+                        <div class="fw-bold">دخول الأفراد</div>
+                        <small class="text-white-50">عرض الملف الشخصي وسجل المساعدات</small>
+                    </button>
+
+                    <button class="btn btn-primary btn-lg rounded-3 d-flex flex-column align-items-center" data-bs-toggle="modal" data-bs-target="#adminLoginModal" aria-label="دخول المدير">
+                        <i class="bi bi-shield-lock-fill fs-2 mb-1"></i>
+                        <div class="fw-bold">دخول المدير</div>
+                        <small class="text-white-50">لوحة إدارة الأعضاء والمساعدات</small>
+                    </button>
+
+                    <a class="btn btn-warning btn-lg rounded-3 d-flex flex-column align-items-center" href="wounded-form.html" aria-label="تسجيل الجرحى">
+                        <i class="bi bi-bandaid-fill fs-2 mb-1"></i>
+                        <div class="fw-bold">تسجيل الجرحى</div>
+                        <small class="text-white-50">تسجيل الحالات الطارئة وتنسيق الدعم الفوري</small>
+                    </a>
                 </div>
 
-                <div class="col-12 col-md-7 p-4 d-flex align-items-center justify-content-center">
-                    <div class="w-100" style="max-width:520px;">
-                        <div class="d-grid gap-3">
-                            <button class="btn btn-outline-success btn-lg rounded-3 d-flex flex-column align-items-center text-center w-100" data-bs-toggle="modal" data-bs-target="#userLoginModal" aria-label="دخول الأفراد">
-                                <i class="bi bi-people-fill fs-2 mb-2 text-success"></i>
-                                <div class="fw-bold">دخول الأفراد</div>
-                                <small class="text-muted">عرض الملفات الشخصية، سجل الاستفادة، وطلب المساعدات</small>
-                            </button>
-
-                            <button class="btn btn-outline-primary btn-lg rounded-3 d-flex flex-column align-items-center text-center w-100" data-bs-toggle="modal" data-bs-target="#adminLoginModal" aria-label="دخول المدير">
-                                <i class="bi bi-shield-lock-fill fs-2 mb-2 text-primary"></i>
-                                <div class="fw-bold">دخول المدير</div>
-                                <small class="text-muted">لوحة تحكم لإدارة الأعضاء، المساعدات، والتقارير</small>
-                            </button>
-
-                            <a class="btn btn-outline-warning btn-lg rounded-3 d-flex flex-column align-items-center text-center w-100" href="wounded-form.html" aria-label="تسجيل الجرحى">
-                                <i class="bi bi-bandaid-fill fs-2 mb-2 text-warning"></i>
-                                <div class="fw-bold">تسجيل الجرحى</div>
-                                <small class="text-muted">تسجيل الحالات الطارئة وتنسيق الدعم الفوري</small>
-                            </a>
-
-                            <div class="d-flex flex-column align-items-center gap-2 mt-2">
-                                <small class="text-muted">جميع الحقوق محفوظة © 2025 — جمعية عائلة أبو رجيلة</small>
-                                <a href="https://wa.me/972569210941" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-success small" aria-label="تواصل عبر الواتساب"><i class="bi bi-whatsapp"></i> تواصل عبر الواتساب</a>
-                            </div>
-                        </div>
-                    </div>
+                <div class="mt-2 small text-muted">
+                    <div>جميع الحقوق محفوظة © 2025 — جمعية عائلة أبو رجيلة</div>
+                    <div class="mt-1"><a href="https://wa.me/972569210941" target="_blank" rel="noopener noreferrer" class="text-success text-decoration-none"><i class="bi bi-whatsapp"></i> تواصل عبر الواتساب</a></div>
                 </div>
             </div>
         </div>

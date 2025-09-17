@@ -1087,3 +1087,38 @@ html { -webkit-text-size-adjust: 100%; font-size: 16px; }
 .index-footer a:hover {
     text-decoration: underline;
 }
+
+/* Landing fixes: ensure logo shows on mobile and content is centered/professional */
+#main-content .row { align-items: center; }
+#main-content .text-center { text-align: center; }
+#main-content .card-body, #main-content > .row > .col-12 { padding: 18px; }
+
+.logo {
+    display: block;
+    margin: 8px auto 12px auto;
+    max-width: 120px;
+    width: 28vw;
+    height: auto;
+    padding: 8px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+#main-content h2, #main-content p { text-align: center; }
+#main-content h2.h5 { color: #0b6b2c; font-weight: 700; margin-bottom: 6px; }
+#main-content p.text-muted { color: #6c757d; margin: 0 0 8px; }
+
+#main-content .d-grid .btn {
+    padding: 18px 16px;
+    text-align: center;
+    align-items: center;
+}
+#main-content .d-grid .btn i { font-size: 28px; }
+
+@media (max-width: 480px) {
+    .logo { max-width: 90px; width: 34vw; padding: 6px; }
+    #main-content { width: 96%; }
+    #main-content h2.h5 { font-size: 18px; }
+    #main-content .d-grid .btn { padding: 14px 12px; }
+}
