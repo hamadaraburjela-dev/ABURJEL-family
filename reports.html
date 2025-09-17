@@ -37,11 +37,11 @@
                         </div>
                         <div class="col-md-4">
                             <label for="startDate" class="form-label">تاريخ البدء</label>
-                            <input type="date" class="form-control" id="startDate">
+                            <input type="date" class="form-control" id="startDate" lang="en" style="direction:ltr;text-align:left" placeholder="مثال: 2025-09-17" title="يرجى اختيار التاريخ بصيغة سنة-شهر-يوم (YYYY-MM-DD)">
                         </div>
                         <div class="col-md-4">
                             <label for="endDate" class="form-label">تاريخ الانتهاء</label>
-                            <input type="date" class="form-control" id="endDate">
+                            <input type="date" class="form-control" id="endDate" lang="en" style="direction:ltr;text-align:left" placeholder="مثال: 2025-09-17" title="يرجى اختيار التاريخ بصيغة سنة-شهر-يوم (YYYY-MM-DD)">
                         </div>
                     </div>
                     <button type="submit" class="btn btn-primary mt-3">
@@ -87,5 +87,22 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="script.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dateInputs = [document.getElementById('startDate'), document.getElementById('endDate')];
+    dateInputs.forEach(input => {
+        if (input) {
+            input.setAttribute('lang', 'en');
+            input.style.direction = 'ltr';
+            input.style.textAlign = 'left';
+            input.addEventListener('focus', function() {
+                this.setAttribute('lang', 'en');
+                this.style.direction = 'ltr';
+                this.style.textAlign = 'left';
+            });
+        }
+    });
+});
+</script>
 </body>
 </html>

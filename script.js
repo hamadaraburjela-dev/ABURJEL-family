@@ -6,7 +6,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const App = {
-        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbxf6YE71BKRWr4BGNuALJeWk3-nuKZa8nH5DxmT-rLDysk9rsKxkdG_B4K_KEcSBr7uVg/exec',
+        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbwg0vd0VwS82COx2FpgcPGUBRGFNg7UvJuwskz_RmQeiwRbCuWKsdHDsO1qQbj1SBiglQ/exec',
         aidCategories: {
             "مساعدات مالية": ["نقد مباشر للعائلات المحتاجة", "دفع فواتير (كهرباء، ماء، إيجار)", "قروض حسنة أو صناديق دوارة"],
             "مساعدات غذائية": ["طرود غذائية أساسية", "وجبات جاهزة / مطبوخة", "توزيع مياه للشرب"],
@@ -503,9 +503,12 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         async handleReportGeneration(e, token) {
             e.preventDefault();
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
+            let startDate = document.getElementById('startDate').value;
+            let endDate = document.getElementById('endDate').value;
             if (!startDate || !endDate) { this.showToast('الرجاء تحديد تاريخ البدء والانتهاء.', false); return; }
+            // تأكد أن التاريخ بصيغة YYYY-MM-DD
+            startDate = new Date(startDate).toISOString().slice(0, 10);
+            endDate = new Date(endDate).toISOString().slice(0, 10);
             const result = await this.apiCall({ action: 'generateReport', token, reportType: 'aidByDateRange', filters: { startDate, endDate } });
             if (result?.data) this.renderReportResults(result.data);
         },
