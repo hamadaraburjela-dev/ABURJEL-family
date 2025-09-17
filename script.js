@@ -560,4 +560,24 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     App.init();
+
+    // حفظ معلومات التواصل بعد التعديل
+    var saveBtn = document.getElementById('saveContactBtn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', function() {
+            var phone = document.getElementById('editPhone').value;
+            var location = document.getElementById('editLocation').value;
+            document.getElementById('contactPhone').textContent = phone;
+            document.getElementById('contactLocation').textContent = location;
+            var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('editContactModal'));
+            modal.hide();
+            Toastify({
+                text: "تم تحديث معلومات التواصل بنجاح!",
+                duration: 2500,
+                gravity: "top",
+                position: "center",
+                backgroundColor: "#28a745",
+            }).showToast();
+        });
+    }
 });
