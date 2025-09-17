@@ -127,6 +127,7 @@
         </div>
         <div class="d-flex align-items-center gap-2">
             <button id="refreshUserDataBtn" class="btn btn-outline-primary"><i class="bi bi-arrow-repeat"></i> تحديث البيانات</button>
+            <button id="editUserDataBtn" class="btn btn-outline-warning"><i class="bi bi-pencil-square"></i> تعديل البيانات</button>
             <a href="index.html" onclick="localStorage.clear();" class="btn btn-outline-danger"><i class="bi bi-box-arrow-right"></i> تسجيل الخروج</a>
         </div>
     </header>
@@ -140,6 +141,37 @@
             </div>
         </div>
         <div class="card-body-professional" id="userInfo">
+                <!-- مودال تعديل بيانات المستخدم -->
+                <div class="modal fade" id="editUserDataModal" tabindex="-1" aria-labelledby="editUserDataModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editUserDataModalLabel">تعديل بيانات المستخدم</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="editUserDataForm">
+                                    <div class="mb-3">
+                                        <label for="editPhoneModal" class="form-label">رقم الجوال</label>
+                                        <input type="text" class="form-control" id="editPhoneModal">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="editBirthModal" class="form-label">تاريخ الميلاد</label>
+                                        <input type="date" class="form-control" id="editBirthModal">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="editLocationModal" class="form-label">مكان الإقامة</label>
+                                        <input type="text" class="form-control" id="editLocationModal">
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                <button type="button" class="btn btn-primary" id="saveUserDataBtn">حفظ التعديلات</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                         <!-- معلومات التواصل -->
                         <div class="mt-4">
                             <h5 class="mb-0" style="color:green;font-weight:bold">معلومات التواصل</h5>

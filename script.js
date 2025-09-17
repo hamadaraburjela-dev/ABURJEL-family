@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (futureAidResult) this.renderFutureAid(futureAidResult.data);
         },
         
-        renderUserInfo(data) {
+    renderUserInfo(data) {
             document.getElementById('userName').textContent = data['الاسم الكامل'] || 'عضو العائلة';
             document.getElementById('userTitle').textContent = `رقم الهوية: ${data['رقم الهوية'] || '---'}`;
             const container = document.getElementById('userInfo');
@@ -241,6 +241,33 @@ document.addEventListener('DOMContentLoaded', () => {
                                 html += `</div>`;
                         }
                         container.innerHTML = html;
+                        // إعادة تفعيل زر تعديل البيانات بعد تحديث البيانات
+                        setTimeout(() => {
+                            document.getElementById('editUserDataBtn')?.addEventListener('click', function() {
+                                document.getElementById('editPhoneModal').value = document.getElementById('contactPhone')?.textContent || '';
+                                let birthValue = '-';
+                                const birthEl = Array.from(document.querySelectorAll('.info-label')).find(e => e.textContent.includes('تاريخ الميلاد'));
+                                if (birthEl) {
+                                    birthValue = birthEl.nextElementSibling?.textContent || '';
+                                }
+                                document.getElementById('editBirthModal').value = birthValue !== '-' ? birthValue : '';
+                                document.getElementById('editLocationModal').value = document.getElementById('contactLocation')?.textContent || '';
+                                const modal = new bootstrap.Modal(document.getElementById('editUserDataModal'));
+                                modal.show();
+                            });
+                            document.getElementById('saveUserDataBtn')?.addEventListener('click', function() {
+                                document.getElementById('contactPhone').textContent = document.getElementById('editPhoneModal').value;
+                                document.getElementById('contactLocation').textContent = document.getElementById('editLocationModal').value;
+                                let birthValue = document.getElementById('editBirthModal').value;
+                                const birthEl = Array.from(document.querySelectorAll('.info-label')).find(e => e.textContent.includes('تاريخ الميلاد'));
+                                if (birthEl && birthEl.nextElementSibling) {
+                                    birthEl.nextElementSibling.textContent = birthValue;
+                                }
+                                const modal = bootstrap.Modal.getInstance(document.getElementById('editUserDataModal'));
+                                modal.hide();
+                                App.showToast('تم تعديل البيانات بنجاح!', true);
+                            });
+                        }, 100);
         },
 
         renderFutureAid(futureAid) {
@@ -570,6 +597,40 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             App.showToast('تعذر العثور على معرف المستخدم.', false);
         }
+    });
+
+    // زر تعديل بيانات المستخدم
+    document.getElementById('editUserDataBtn')?.addEventListener('click', function() {
+        // جلب القيم الحالية من الصفحة
+        document.getElementById('editPhoneModal').value = document.getElementById('contactPhone')?.textContent || '';
+        // تاريخ الميلاد
+        let birthValue = '-';
+        const birthEl = Array.from(document.querySelectorAll('.info-label')).find(e => e.textContent.includes('تاريخ الميلاد'));
+        if (birthEl) {
+            birthValue = birthEl.nextElementSibling?.textContent || '';
+        }
+        document.getElementById('editBirthModal').value = birthValue !== '-' ? birthValue : '';
+        document.getElementById('editLocationModal').value = document.getElementById('contactLocation')?.textContent || '';
+        // فتح المودال
+        const modal = new bootstrap.Modal(document.getElementById('editUserDataModal'));
+        modal.show();
+    });
+
+    // حفظ التعديلات من المودال
+    document.getElementById('saveUserDataBtn')?.addEventListener('click', function() {
+        // تحديث القيم في الصفحة مباشرة
+        document.getElementById('contactPhone').textContent = document.getElementById('editPhoneModal').value;
+        document.getElementById('contactLocation').textContent = document.getElementById('editLocationModal').value;
+        // تاريخ الميلاد
+        let birthValue = document.getElementById('editBirthModal').value;
+        const birthEl = Array.from(document.querySelectorAll('.info-label')).find(e => e.textContent.includes('تاريخ الميلاد'));
+        if (birthEl && birthEl.nextElementSibling) {
+            birthEl.nextElementSibling.textContent = birthValue;
+        }
+        // إغلاق المودال
+        const modal = bootstrap.Modal.getInstance(document.getElementById('editUserDataModal'));
+        modal.hide();
+        App.showToast('تم تعديل البيانات بنجاح!', true);
     });
 
   
