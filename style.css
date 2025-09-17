@@ -74,6 +74,22 @@
         padding: 0.5rem 1rem;
         border-radius: 1.2rem;
     }
+    .header .d-flex {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .aid-card {
+        overflow-x: auto;
+    }
+    .aid-card .table {
+        min-width: 600px; /* Ensure table doesn't shrink too much */
+    }
+    .profile-card-professional .card-body-professional .row {
+        flex-direction: column;
+    }
+    .profile-card-professional .card-body-professional .col-md-6 {
+        width: 100%;
+    }
 }
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
 
