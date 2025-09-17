@@ -125,7 +125,8 @@
             <img src="logo.webp" alt="شعار" class="header-logo me-3">
             <h1 class="header-title">لوحة تحكم المستخدم</h1>
         </div>
-        <div>
+        <div class="d-flex align-items-center gap-2">
+            <button id="refreshUserDataBtn" class="btn btn-outline-primary"><i class="bi bi-arrow-repeat"></i> تحديث البيانات</button>
             <a href="index.html" onclick="localStorage.clear();" class="btn btn-outline-danger"><i class="bi bi-box-arrow-right"></i> تسجيل الخروج</a>
         </div>
     </header>
@@ -141,28 +142,23 @@
         <div class="card-body-professional" id="userInfo">
                         <!-- معلومات التواصل -->
                         <div class="mt-4">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <h5 class="mb-0" style="color:green;font-weight:bold">معلومات التواصل</h5>
-                                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editContactModal">
-                                                <i class="bi bi-pencil-square"></i> تعديل
-                                        </button>
+                            <h5 class="mb-0" style="color:green;font-weight:bold">معلومات التواصل</h5>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <div class="border rounded p-2 d-flex align-items-center gap-2">
+                                        <i class="bi bi-telephone" style="font-size:1.2rem;color:#6c757d"></i>
+                                        <span class="fw-bold">رقم الجوال:</span>
+                                        <span id="contactPhone">592210941</span>
+                                    </div>
                                 </div>
-                                <div class="row g-2">
-                                        <div class="col-md-6">
-                                                <div class="border rounded p-2 d-flex align-items-center gap-2">
-                                                        <i class="bi bi-telephone" style="font-size:1.2rem;color:#6c757d"></i>
-                                                        <span class="fw-bold">رقم الجوال:</span>
-                                                        <span id="contactPhone">592210941</span>
-                                                </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                                <div class="border rounded p-2 d-flex align-items-center gap-2">
-                                                        <i class="bi bi-geo-alt" style="font-size:1.2rem;color:#6c757d"></i>
-                                                        <span class="fw-bold">مكان الإقامة:</span>
-                                                        <span id="contactLocation">ناجح</span>
-                                                </div>
-                                        </div>
+                                <div class="col-md-6">
+                                    <div class="border rounded p-2 d-flex align-items-center gap-2">
+                                        <i class="bi bi-geo-alt" style="font-size:1.2rem;color:#6c757d"></i>
+                                        <span class="fw-bold">مكان الإقامة:</span>
+                                        <span id="contactLocation">ناجح</span>
+                                    </div>
                                 </div>
+                            </div>
                         </div>
                         <!-- نهاية معلومات التواصل -->
                         <div class="text-center p-5">

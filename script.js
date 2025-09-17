@@ -239,40 +239,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                         html += `<div class="col-lg-6"><div class="info-item-pro"><i class="bi ${field.icon}"></i><span class="info-label">${field.label}:</span><span class="info-value" id="${field.key === 'رقم الجوال' ? 'contactPhone' : field.key === 'مكان الإقامة' ? 'contactLocation' : ''}">${value}</span></div></div>`;
                                 });
                                 html += `</div>`;
-                                // إضافة زر التعديل والمودال فقط في قسم معلومات التواصل
-                                if (sectionTitle === 'معلومات التواصل') {
-                                        html += `<div class="d-flex justify-content-start align-items-center mb-2 mt-2">
-                                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editContactModal">
-                                                        <i class="bi bi-pencil-square"></i> تعديل
-                                                </button>
-                                        </div>
-                                        <div class="modal fade" id="editContactModal" tabindex="-1" aria-labelledby="editContactModalLabel" aria-hidden="true">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="editContactModalLabel">تعديل معلومات التواصل</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <form id="editContactForm">
-                                                            <div class="mb-3">
-                                                                <label for="editPhone" class="form-label">رقم الجوال</label>
-                                                                <input type="text" class="form-control" id="editPhone" value="${data['رقم الجوال'] || ''}">
-                                                            </div>
-                                                            <div class="mb-3">
-                                                                <label for="editLocation" class="form-label">مكان الإقامة</label>
-                                                                <input type="text" class="form-control" id="editLocation" value="${data['مكان الإقامة'] || ''}">
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                                                        <button type="button" class="btn btn-primary" id="saveContactBtn">حفظ التعديلات</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>`;
-                                }
                         }
                         container.innerHTML = html;
         },
@@ -595,23 +561,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     App.init();
 
-    // حفظ معلومات التواصل بعد التعديل
-    var saveBtn = document.getElementById('saveContactBtn');
-    if (saveBtn) {
-        saveBtn.addEventListener('click', function() {
-            var phone = document.getElementById('editPhone').value;
-            var location = document.getElementById('editLocation').value;
-            document.getElementById('contactPhone').textContent = phone;
-            document.getElementById('contactLocation').textContent = location;
-            var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('editContactModal'));
-            modal.hide();
-            Toastify({
-                text: "تم تحديث معلومات التواصل بنجاح!",
-                duration: 2500,
-                gravity: "top",
-                position: "center",
-                backgroundColor: "#28a745",
-            }).showToast();
-        });
-    }
+    // زر تحديث بيانات المستخدم
+    document.getElementById('refreshUserDataBtn')?.addEventListener('click', function() {
+        const userId = localStorage.getItem('loggedInUserId');
+        if (userId) {
+            App.loadUserData(userId);
+            App.showToast('تم تحديث البيانات بنجاح!', true);
+        } else {
+            App.showToast('تعذر العثور على معرف المستخدم.', false);
+        }
+    });
+
+  
 });
