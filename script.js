@@ -116,8 +116,28 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         initIndexPage() {
-            // ربط نماذج الدخول (تبقى كما هي)
-            document.getElementById('loginForm')?.addEventListener('submit', (e) => this.handleUserLogin(e));
+            // ربط نماذج الدخول مع تحقق من صحة البيانات
+            document.getElementById('loginForm')?.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const form = e.target;
+                const userId = form.querySelector('#userId').value.trim();
+                const spouseId = form.querySelector('#spouseId').value.trim();
+                const errorDiv = document.getElementById('errorMessage');
+                // تحقق من رقم الهوية (يجب أن يكون رقمًا ويتكون من 6 أرقام على الأقل)
+                if (!userId || !/^[0-9]{6,}$/.test(userId)) {
+                    errorDiv.textContent = 'يرجى إدخال رقم هوية صحيح (6 أرقام على الأقل).';
+                    errorDiv.classList.remove('d-none');
+                    return;
+                }
+                // تحقق من رقم هوية الزوجة
+                if (!spouseId || !/^[0-9]{6,}$/.test(spouseId)) {
+                    errorDiv.textContent = 'يرجى إدخال رقم هوية الزوجة بشكل صحيح.';
+                    errorDiv.classList.remove('d-none');
+                    return;
+                }
+                errorDiv.classList.add('d-none');
+                this.handleUserLogin(e);
+            });
             document.getElementById('adminLoginForm')?.addEventListener('submit', (e) => this.handleAdminLogin(e));
             document.getElementById('setPasswordForm')?.addEventListener('submit', (e) => this.handleModalSetPassword(e));
             document.getElementById('userPasswordForm')?.addEventListener('submit', (e) => this.handleModalLogin(e));
@@ -291,4 +311,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             document.getElementById('memberSearchInput')?.addEventListener('input', () => { 
                 clearTimeout(this.searchTimeout); 
-                this.searchTimeout = setTimeout(() => this.handleMemberSearch(token
+                this.searchTimeout = setTimeout(() => this.handleMemberSearch(token), 400);
+            });
+        }
+    };
+    window.App = App;
+    App.init();
+});
