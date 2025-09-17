@@ -40,13 +40,20 @@
                                         <label for="distributionType" class="form-label fw-bold">نوع التوزيع</label>
                                         <select class="form-select" id="distributionType">
                                             <option value="equal">توزيع متساوي</option>
-                                            <option value="proportional">توزيع نسبي حسب عدد الأفراد</option>
+                                            <option value="proportional">توزيع نسبي حسب عدد العائلات</option>
                                         </select>
                                     </div>
                                 </div>
 
                                 <div class="mb-4">
                                     <h6 class="text-secondary mb-3">بيانات الفروع</h6>
+                                    <div class="alert alert-info">
+                                        <small>
+                                            <strong>كيفية عمل التوزيع النسبي:</strong><br>
+                                            • إذا تركت حقل "عامل التوزيع" فارغاً، سيتم التوزيع حسب عدد العائلات في كل فرع<br>
+                                            • يمكنك إدخال قيم مخصصة في "عامل التوزيع" لتعديل التوزيع (مثل أولوية أعلى لفرع معين)
+                                        </small>
+                                    </div>
                                     <div id="branchesContainer">
                                         <!-- سيتم إضافة الفروع هنا ديناميكياً -->
                                     </div>
@@ -103,10 +110,10 @@
     <script>
         // بيانات الفروع (يمكن جلبها من قاعدة البيانات)
         const branches = [
-            { name: 'فرع آل أحمد', members: 45 },
-            { name: 'فرع آل حامد', members: 32 },
-            { name: 'فرع آل حمدان', members: 28 },
-            { name: 'فرع آل حماد', members: 35 }
+            { name: 'فرع آل أحمد', families: 12 },
+            { name: 'فرع آل حامد', families: 8 },
+            { name: 'فرع آل حمدان', families: 7 },
+            { name: 'فرع آل حماد', families: 9 }
         ];
 
         // إنشاء نموذج الفروع
@@ -118,10 +125,11 @@
                 branchDiv.innerHTML = `
                     <div class="col-md-4">
                         <label class="form-label fw-bold">${branch.name}</label>
-                        <small class="text-muted d-block">عدد الأفراد: ${branch.members}</small>
+                        <small class="text-muted d-block">عدد العائلات: ${branch.families}</small>
                     </div>
                     <div class="col-md-4">
-                        <input type="number" class="form-control branch-weight" placeholder="الوزن (اختياري)" data-index="${index}">
+                        <input type="number" class="form-control branch-weight" placeholder="عامل التوزيع (اختياري)" data-index="${index}">
+                        <small class="text-muted">اتركه فارغاً لاستخدام عدد العائلات</small>
                     </div>
                     <div class="col-md-4">
                         <div class="input-group">
@@ -156,13 +164,13 @@
                 let hasCustomWeights = false;
 
                 weights.forEach((weight, index) => {
-                    const value = parseFloat(weight.value) || branches[index].members;
+                    const value = parseFloat(weight.value) || branches[index].families;
                     totalWeight += value;
                     if (weight.value) hasCustomWeights = true;
                 });
 
                 branches.forEach((branch, index) => {
-                    const weight = parseFloat(weights[index].value) || branch.members;
+                    const weight = parseFloat(weights[index].value) || branch.families;
                     const share = Math.round((weight / totalWeight) * totalAid);
                     results.push({
                         name: branch.name,
