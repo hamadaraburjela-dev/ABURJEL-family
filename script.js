@@ -6,7 +6,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const App = {
-        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbwg0vd0VwS82COx2FpgcPGUBRGFNg7UvJuwskz_RmQeiwRbCuWKsdHDsO1qQbj1SBiglQ/exec',
+        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbwXn-lB9C6p45yWVrxSwdl5yWcASSiCVHI25noAVXA64FdDHxBI4Z-bnWzegQ_CQZ4OJg/exec',
         aidCategories: {
             "مساعدات مالية": ["نقد مباشر للعائلات المحتاجة", "دفع فواتير (كهرباء، ماء، إيجار)", "قروض حسنة أو صناديق دوارة"],
             "مساعدات غذائية": ["طرود غذائية أساسية", "وجبات جاهزة / مطبوخة", "توزيع مياه للشرب"],
@@ -85,43 +85,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!result.success) throw new Error(result.message || 'حدث خطأ غير معروف في الخادم.');
                 if (showSuccessToast && result.message) this.showToast(result.message, true);
                 return result;
-            } catch (error) {
-                console.error('API Call Failed:', error);
-                // ترجمة رسائل الخطأ الشائعة للعربية
-                let msg = error.message;
-                if (msg === 'Failed to fetch') msg = 'تعذر الاتصال بالخادم.';
-                else if (msg === 'NetworkError when attempting to fetch resource.') msg = 'خطأ في الشبكة أثناء محاولة الاتصال.';
-                else if (msg === 'حدث خطأ غير معروف في الخادم.' || msg.includes('خطأ')) msg = msg;
-                else msg = 'حدث خطأ غير متوقع: ' + msg;
-                this.showToast(msg, false);
-                return null;
-            } finally {
-                if (isButtonTriggered) this.toggleButtonSpinner(false, activeSubmitButton);
-            }
+            } catch (error) { console.error('API Call Failed:', error); this.showToast(error.message, false); return null; } finally { if (isButtonTriggered) this.toggleButtonSpinner(false, activeSubmitButton); }
         },
         
-        showToast(message, isSuccess = true) {
-            // عرض الرسائل بشكل احترافي وبالعربي
-            Toastify({
-                text: message,
-                duration: 5000,
-                gravity: "top",
-                position: "center",
-                style: {
-                    background: isSuccess ? "linear-gradient(90deg,#28a745 60%,#218838 100%)" : "linear-gradient(90deg,#dc3545 60%,#c82333 100%)",
-                    color: "#fff",
-                    fontFamily: "Cairo, Tahoma, Arial, sans-serif",
-                    fontSize: "1.1rem",
-                    borderRadius: "8px",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                    direction: "rtl",
-                    textAlign: "center",
-                    padding: "12px 24px"
-                },
-                close: true,
-                stopOnFocus: true
-            }).showToast();
-        },
+        showToast(message, isSuccess = true) { Toastify({ text: message, duration: 4000, gravity: "top", position: "center", style: { background: isSuccess ? "#28a745" : "#dc3545", boxShadow: "none" } }).showToast(); },
         toggleButtonSpinner(show, button) { const btn = button || document.querySelector('button[type="submit"]'); if (!btn) return; btn.disabled = show; btn.querySelector('.spinner-border')?.classList.toggle('d-none', !show); const buttonText = btn.querySelector('.button-text'); if(buttonText) buttonText.style.opacity = show ? 0.5 : 1; },
         formatDateToEnglish(dateString) { if (!dateString) return '-'; try { const date = new Date(dateString); if (isNaN(date.getTime())) return 'Invalid Date'; return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; } catch (error) { return dateString; } },
         
@@ -246,32 +213,34 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         
         renderUserInfo(data) {
-            // تحديث الاسم ورقم الهوية في الهيدر
             document.getElementById('userName').textContent = data['الاسم الكامل'] || 'عضو العائلة';
             document.getElementById('userTitle').textContent = `رقم الهوية: ${data['رقم الهوية'] || '---'}`;
-
-            // بناء باقي البيانات الشخصية والعائلية ديناميكيًا
             const container = document.getElementById('userInfo');
-            let html = '<div class="row g-3">';
-            // البيانات الشخصية
-            html += '<div class="col-md-6"><div class="bg-light rounded p-2 mb-2 d-flex align-items-center gap-2"><i class="bi bi-person-fill text-secondary"></i><span class="fw-bold">الحالة الاجتماعية:</span><span id="userStatus">'+(data['الحالة الاجتماعية']||'---')+'</span></div></div>';
-            html += '<div class="col-md-6"><div class="bg-light rounded p-2 mb-2 d-flex align-items-center gap-2"><i class="bi bi-calendar-event text-secondary"></i><span class="fw-bold">تاريخ الميلاد:</span><span id="userBirth">'+(data['تاريخ الميلاد']?this.formatDateToEnglish(data['تاريخ الميلاد']):'---')+'</span></div></div>';
-            // بيانات العائلة
-            html += '<div class="col-md-6"><div class="bg-light rounded p-2 mb-2 d-flex align-items-center gap-2"><i class="bi bi-person-heart text-secondary"></i><span class="fw-bold">اسم الزوجة:</span><span id="userSpouse">'+(data['اسم الزوجة رباعي']||'---')+'</span></div></div>';
-            html += '<div class="col-md-6"><div class="bg-light rounded p-2 mb-2 d-flex align-items-center gap-2"><i class="bi bi-person-badge-fill text-secondary"></i><span class="fw-bold">رقم هوية الزوجة:</span><span id="userSpouseId">'+(data['رقم هوية الزوجة']||'---')+'</span></div></div>';
-            html += '<div class="col-md-6"><div class="bg-light rounded p-2 mb-2 d-flex align-items-center gap-2"><i class="bi bi-people-fill text-secondary"></i><span class="fw-bold">عدد الأولاد:</span><span id="userChildren">'+(data['عدد الأولاد']||'---')+'</span></div></div>';
-            html += '</div>';
-            // إبقاء قسم معلومات التواصل ثابتًا
-            const contactSection = document.querySelector('#userInfo .mt-4');
+            const sections = {
+                "البيانات الشخصية": [
+                    { key: 'الاسم الكامل', label: 'الاسم الكامل', icon: 'bi-person-fill' }, { key: 'رقم الهوية', label: 'رقم الهوية', icon: 'bi-person-badge' },
+                    { key: 'الحالة الاجتماعية', label: 'الحالة الاجتماعية', icon: 'bi-heart-fill' }, { key: 'تاريخ الميلاد', label: 'تاريخ الميلاد', icon: 'bi-calendar-event' },
+                ],
+                "بيانات العائلة": [
+                    { key: 'اسم الزوجة رباعي', label: 'اسم الزوجة', icon: 'bi-person-heart' }, { key: 'رقم هوية الزوجة', label: 'رقم هوية الزوجة', icon: 'bi-person-badge-fill' },
+                    { key: 'عدد الأولاد', label: 'عدد الأولاد', icon: 'bi-people-fill' },
+                ],
+                "معلومات التواصل": [
+                    { key: 'رقم الجوال', label: 'رقم الجوال', icon: 'bi-telephone-fill' }, { key: 'مكان الإقامة', label: 'مكان الإقامة', icon: 'bi-geo-alt-fill' },
+                ]
+            };
+            let html = '';
+            for (const sectionTitle in sections) {
+                html += `<h6 class="info-section-title">${sectionTitle}</h6>`;
+                html += `<div class="row">`;
+                sections[sectionTitle].forEach(field => {
+                    let value = data[field.key] || '-';
+                    if (field.key === 'تاريخ الميلاد' && value !== '-') { value = this.formatDateToEnglish(value); }
+                    html += `<div class="col-lg-6"><div class="info-item-pro"><i class="bi ${field.icon}"></i><span class="info-label">${field.label}:</span><span class="info-value">${value}</span></div></div>`;
+                });
+                html += `</div>`;
+            }
             container.innerHTML = html;
-            if (contactSection) container.appendChild(contactSection);
-            // تحديث بيانات التواصل فقط
-            if (document.getElementById('userPhone')) {
-                document.getElementById('userPhone').textContent = data['رقم الجوال'] || '---';
-            }
-            if (document.getElementById('userLocation')) {
-                document.getElementById('userLocation').textContent = data['مكان الإقامة'] || '---';
-            }
         },
 
         renderFutureAid(futureAid) {
@@ -501,12 +470,9 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         async handleReportGeneration(e, token) {
             e.preventDefault();
-            let startDate = document.getElementById('startDate').value;
-            let endDate = document.getElementById('endDate').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
             if (!startDate || !endDate) { this.showToast('الرجاء تحديد تاريخ البدء والانتهاء.', false); return; }
-            // تأكد أن التاريخ بصيغة YYYY-MM-DD
-            startDate = new Date(startDate).toISOString().slice(0, 10);
-            endDate = new Date(endDate).toISOString().slice(0, 10);
             const result = await this.apiCall({ action: 'generateReport', token, reportType: 'aidByDateRange', filters: { startDate, endDate } });
             if (result?.data) this.renderReportResults(result.data);
         },
