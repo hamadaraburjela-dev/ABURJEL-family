@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - نظام بيانات العائلة</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="auth-container">
+        <img src="logo.png" alt="شعار عائلة أبو رجيلة" class="logo">
+        <h2>نظام إدارة بيانات العائلة</h2>
+        <p>الرجاء إدخال بياناتك للتحقق من هويتك</p>
+        <form id="loginForm">
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="userId" placeholder="رقم هويتك" required>
+                <label for="userId">رقم الهوية الخاص بك</label>
+            </div>
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="spouseId" placeholder="رقم هوية الزوجة" required>
+                <label for="spouseId">رقم هوية الزوجة</label>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">تحقق ودخول</button>
+            <div id="errorMessage" class="alert alert-danger mt-3 d-none"></div>
+        </form>
+        <a href="admin_login.html" class="admin-link">تسجيل الدخول كمدير</a>
+    </div>
+    <script>
+        const WEB_APP_URL = 'ضع رابط الخادم الجديد هنا';
+        // ... (JavaScript code from the last correct version) ...
+    </script>
+</body>
+</html>

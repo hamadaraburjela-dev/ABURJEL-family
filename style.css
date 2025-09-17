@@ -1,0 +1,485 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+
+:root {
+    --primary-green: #008000;
+    --dark-grey: #212529;
+    --light-grey: #f4f7f6;
+    --border-grey: #dee2e6;
+    --card-hover-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    --bs-success-rgb: 0, 128, 0; /* For bootstrap components */
+}
+
+body {
+    font-family: 'Cairo', sans-serif;
+    background-color: var(--light-grey);
+    color: var(--dark-grey);
+    direction: rtl;
+    overflow-x: hidden;
+}
+
+/* --- Index Page --- */
+.main-container {
+    max-width: 900px;
+    margin: 3rem auto;
+    padding: 2rem;
+}
+
+.logo {
+    max-width: 130px;
+    margin-bottom: 1.5rem;
+}
+
+.header-section h1 {
+    font-weight: 700;
+}
+
+.selection-cards {
+    margin-top: 2rem;
+}
+
+.selection-card {
+    border: 1px solid var(--border-grey);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 2rem 1rem;
+    background-color: #fff;
+}
+
+.selection-card:hover,
+.selection-card.active {
+    transform: translateY(-5px);
+    box-shadow: var(--card-hover-shadow);
+    border-color: var(--primary-green);
+}
+
+.card-icon {
+    font-size: 3rem;
+    color: var(--primary-green);
+    margin-bottom: 1rem;
+}
+
+.card-title {
+    font-weight: 700;
+}
+
+.auth-form {
+    background: #fff;
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    max-width: 450px;
+    margin: 2rem auto 0;
+}
+
+/* --- Shared Styles --- */
+.btn-primary {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+    font-weight: 700;
+    padding: 0.75rem 1rem;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.btn-primary:hover {
+    background-color: #006400;
+    border-color: #006400;
+}
+
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.stat-card {
+    text-align: center;
+}
+
+/* --- Dashboard & Admin Pages --- */
+.header {
+    background: #fff;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--border-grey);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+}
+
+.header-logo {
+    height: 50px;
+}
+
+.header-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+/* --- Footer --- */
+.footer {
+    text-align: center;
+    padding: 2rem 1rem;
+    background-color: #f8f9fa;
+    color: #6c757d;
+    margin-top: 4rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.footer .status-indicator {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #343a40;
+}
+
+.footer .copyright-text {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.footer .whatsapp-link {
+    text-decoration: none;
+    color: var(--primary-green);
+    font-weight: 600;
+    transition: color 0.2s ease-in-out;
+    font-size: 0.9rem;
+}
+
+.footer .whatsapp-link:hover {
+    color: #006400; /* Darker green on hover */
+}
+
+.footer .whatsapp-link i {
+    vertical-align: -1px;
+    margin-left: 5px;
+}
+
+/* Spinner inside button */
+.btn .spinner-border {
+    margin-left: 5px;
+}
+
+.spinner-animation {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* --- Professional Print Styles --- */
+.report-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #333;
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+}
+.report-header img { max-width: 100px; }
+.report-header h1 { font-size: 24px; margin: 0; font-weight: 700; }
+.report-header p { font-size: 16px; margin: 0; color: #555; }
+
+.report-section-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-top: 2rem;
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #ccc;
+    color: var(--primary-green);
+}
+
+.report-info-grid { margin-bottom: 20px; }
+.info-box { background-color: #f9f9f9; padding: 10px; border-radius: 5px; margin-bottom: 10px; border: 1px solid #eee; }
+.info-box strong { display: block; color: #333; margin-bottom: 3px; }
+.info-box span { font-weight: 500; }
+
+.report-footer {
+    margin-top: 30px;
+    padding-top: 15px;
+    border-top: 1px solid #ccc;
+    text-align: center;
+    font-size: 12px;
+    color: #777;
+}
+.report-footer p { margin: 0; }
+
+/* The crucial @media print block */
+@media print {
+    body.modal-open {
+        visibility: hidden;
+    }
+
+    .modal-backdrop {
+        display: none !important;
+    }
+
+    #printReportModal {
+        visibility: visible !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        display: block !important;
+        z-index: 9999 !important;
+    }
+
+    #printReportModal .modal-dialog {
+        max-width: 100% !important;
+        margin: 0 !important;
+    }
+    
+    #printReportModal .modal-content {
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    #printReportModal .modal-header,
+    #printReportModal .modal-footer {
+        display: none !important;
+    }
+    
+    #printReportModal .modal-body {
+        padding: 1cm !important; /* Add some margin for printing */
+    }
+
+    .table {
+        font-size: 12px; /* Smaller font for print */
+    }
+    
+    .table-bordered { border-color: #999 !important; }
+    .table-bordered th, .table-bordered td { border-color: #999 !important; padding: 6px !important; }
+    .table thead th { 
+        background-color: #eee !important; 
+        color: black !important; 
+        -webkit-print-color-adjust: exact; 
+        print-color-adjust: exact; 
+    }
+
+    /* Ensure no elements are hidden inside the printable area */
+    #printReportContent * {
+        visibility: visible !important;
+    }
+}
+/* في ملف style.css */
+.status-indicator .status-dot {
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 8px;
+    background-color: #ffc107; /* برتقالي (جاري التحقق) */
+    animation: pulse 2s infinite;
+}
+
+.status-indicator.online .status-dot {
+    background-color: #28a745; /* أخضر (متصل) */
+    animation: none;
+}
+
+.status-indicator.offline .status-dot {
+    background-color: #dc3545; /* أحمر (غير متصل) */
+    animation: none;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(0, 128, 0, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(0, 128, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 128, 0, 0); }
+}
+/* --- Admin Dashboard Stats Styling --- */
+.card-header.bg-primary {
+    background-color: var(--primary-green) !important;
+    border-bottom: none;
+}
+
+.card-header .badge {
+    background-color: #fff !important;
+    color: var(--primary-green) !important;
+}
+
+.stat-item {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    min-height: 150px; /* لتوحيد ارتفاع البطاقات */
+    justify-content: center; /* لمحاذاة المحتوى عمودياً في المنتصف */
+}
+
+.stat-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.stat-item .stat-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat-item h4 {
+    font-size: 1.8rem;
+    color: #343a40; /* لون نص الأرقام */
+}
+
+.stat-item p.text-muted {
+    font-size: 0.9rem;
+}
+
+/* تنسيق الفواصل */
+.card-body hr {
+    border-top: 2px dashed #e9ecef;
+    opacity: 0.7;
+}
+
+/* الأيقونات والألوان الخاصة */
+.stat-item .bi-house-door-fill { color: #007bff !important; } /* أزرق */
+.stat-item .bi-people-fill { color: #28a745 !important; } /* أخضر */
+.stat-item .bi-cash-stack { color: #ffc107 !important; } /* أصفر */
+.stat-item .bi-heart-fill { color: #dc3545 !important; } /* أحمر - للشهداء */
+.stat-item .bi-bandaid-fill { color: #17a2b8 !important; } /* أزرق سماوي - للجرحى */
+.stat-item .bi-person-x-fill { color: #6c757d !important; } /* رمادي - للمطلقات */
+.stat-item .bi-person-circle { color: #343a40 !important; } /* داكن - للفروع */
+/* --- Professional Dashboard Profile Card --- */
+.profile-card-professional {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.07);
+    overflow: hidden; /* لإخفاء أي زوائد من العناصر الداخلية */
+}
+
+.card-header-professional {
+    background: linear-gradient(135deg, var(--primary-green), #006400);
+    color: white;
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    border-bottom: none;
+}
+
+.card-header-professional .profile-icon {
+    font-size: 4rem;
+    margin-left: 1.5rem;
+    opacity: 0.8;
+}
+
+.card-header-professional h4 {
+    font-weight: 700;
+    font-size: 1.8rem;
+}
+
+.card-header-professional .text-muted {
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-size: 1rem;
+}
+
+.card-body-professional {
+    padding: 2rem;
+}
+
+.info-section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary-green);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.info-item-pro {
+    display: flex;
+    align-items: center;
+    background-color: #f8f9fa;
+    padding: 0.8rem 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid #e9ecef;
+}
+
+.info-item-pro i {
+    font-size: 1.2rem;
+    color: #6c757d;
+    margin-left: 1rem;
+    width: 20px; /* لتوحيد عرض الأيقونات */
+}
+
+.info-item-pro .info-label {
+    color: #6c757d;
+    font-weight: 600;
+}
+
+.info-item-pro .info-value {
+    margin-right: auto;
+    font-weight: 600;
+    color: #343a40;
+}
+/* --- Professional Dashboard Aid Cards --- */
+.aid-card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.07);
+    overflow: hidden;
+}
+
+.aid-card .card-header {
+    color: white;
+    padding: 1rem 1.5rem;
+    border-bottom: none;
+}
+
+.aid-card .aid-header-future {
+    background: linear-gradient(135deg, #17a2b8, #138496); /* تدرج سماوي */
+}
+
+.aid-card .aid-header-completed {
+    background: linear-gradient(135deg, #6c757d, #5a6268); /* تدرج رمادي */
+}
+
+.aid-card .table {
+    border-top: none; /* إزالة الخط العلوي للجدول */
+}
+
+.aid-card .table thead th {
+    background-color: #f8f9fa;
+    border-bottom-width: 1px;
+    font-weight: 600;
+}
+
+.aid-card .table td {
+    padding: 1rem 1.5rem;
+}
+
+.aid-card .table-hover tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+.aid-card .no-data-row td {
+    text-align: center;
+    padding: 2rem;
+    color: #6c757d;
+}
+/* --- Events Modal Styling --- */
+#eventsModal .modal-header {
+    padding: 1.5rem 2rem;
+}
+
+#eventsModal .modal-body {
+    padding: 1.5rem 2rem 2rem;
+}
+
+#eventsModal .nav-tabs .nav-link {
+    font-weight: 600;
+    color: #6c757d;
+}
+
+#eventsModal .nav-tabs .nav-link.active {
+    color: var(--primary-green);
+    border-color: var(--primary-green);
+    border-bottom-width: 3px;
+}
