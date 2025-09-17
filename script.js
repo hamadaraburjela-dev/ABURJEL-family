@@ -6,7 +6,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const App = {
-        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbwXn-lB9C6p45yWVrxSwdl5yWcASSiCVHI25noAVXA64FdDHxBI4Z-bnWzegQ_CQZ4OJg/exec',
+        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbxf6YE71BKRWr4BGNuALJeWk3-nuKZa8nH5DxmT-rLDysk9rsKxkdG_B4K_KEcSBr7uVg/exec',
         aidCategories: {
             "مساعدات مالية": ["نقد مباشر للعائلات المحتاجة", "دفع فواتير (كهرباء، ماء، إيجار)", "قروض حسنة أو صناديق دوارة"],
             "مساعدات غذائية": ["طرود غذائية أساسية", "وجبات جاهزة / مطبوخة", "توزيع مياه للشرب"],
@@ -85,10 +85,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!result.success) throw new Error(result.message || 'حدث خطأ غير معروف في الخادم.');
                 if (showSuccessToast && result.message) this.showToast(result.message, true);
                 return result;
-            } catch (error) { console.error('API Call Failed:', error); this.showToast(error.message, false); return null; } finally { if (isButtonTriggered) this.toggleButtonSpinner(false, activeSubmitButton); }
+            } catch (error) {
+                console.error('API Call Failed:', error);
+                // ترجمة رسائل الخطأ الشائعة للعربية
+                let msg = error.message;
+                if (msg === 'Failed to fetch') msg = 'تعذر الاتصال بالخادم.';
+                else if (msg === 'NetworkError when attempting to fetch resource.') msg = 'خطأ في الشبكة أثناء محاولة الاتصال.';
+                else if (msg === 'حدث خطأ غير معروف في الخادم.' || msg.includes('خطأ')) msg = msg;
+                else msg = 'حدث خطأ غير متوقع: ' + msg;
+                this.showToast(msg, false);
+                return null;
+            } finally {
+                if (isButtonTriggered) this.toggleButtonSpinner(false, activeSubmitButton);
+            }
         },
         
-        showToast(message, isSuccess = true) { Toastify({ text: message, duration: 4000, gravity: "top", position: "center", style: { background: isSuccess ? "#28a745" : "#dc3545", boxShadow: "none" } }).showToast(); },
+        showToast(message, isSuccess = true) {
+            // عرض الرسائل بشكل احترافي وبالعربي
+            Toastify({
+                text: message,
+                duration: 5000,
+                gravity: "top",
+                position: "center",
+                style: {
+                    background: isSuccess ? "linear-gradient(90deg,#28a745 60%,#218838 100%)" : "linear-gradient(90deg,#dc3545 60%,#c82333 100%)",
+                    color: "#fff",
+                    fontFamily: "Cairo, Tahoma, Arial, sans-serif",
+                    fontSize: "1.1rem",
+                    borderRadius: "8px",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                    direction: "rtl",
+                    textAlign: "center",
+                    padding: "12px 24px"
+                },
+                close: true,
+                stopOnFocus: true
+            }).showToast();
+        },
         toggleButtonSpinner(show, button) { const btn = button || document.querySelector('button[type="submit"]'); if (!btn) return; btn.disabled = show; btn.querySelector('.spinner-border')?.classList.toggle('d-none', !show); const buttonText = btn.querySelector('.button-text'); if(buttonText) buttonText.style.opacity = show ? 0.5 : 1; },
         formatDateToEnglish(dateString) { if (!dateString) return '-'; try { const date = new Date(dateString); if (isNaN(date.getTime())) return 'Invalid Date'; return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; } catch (error) { return dateString; } },
         

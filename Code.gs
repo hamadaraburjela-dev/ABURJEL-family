@@ -7,7 +7,7 @@
 /* ================================
    --- GLOBAL CONFIGURATION ---
 ================================== */
-const SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID') || '1XTa4VoZ1XEavhi8Zb-bibsgNFNRo3wy3SSqlnjGF4iI';
+const SPREADSHEET_ID = '1EMjJGgjuYDODZZoQ2OqEkHd5JXodqoqSFGu4ROJTwmI';
 const APP_VERSION = '4.3.1';
 
 const INDIVIDUALS_SHEET = 'الأفراد';
@@ -75,17 +75,13 @@ function sheetToJSON(sheetName) {
 }
 
 function authenticateToken(token, requiredRole = null) {
-  if (!token) throw new Error('رمز الجلسة مفقود. الرجاء تسجيل الدخول.');
+  if (!token) throw new Error('Token is missing.');
   const cache = CacheService.getScriptCache();
   const storedData = cache.get(token);
-  if (!storedData) throw new Error('انتهت صلاحية الجلسة أو غير صالحة. الرجاء تسجيل الدخول مرة أخرى.');
+  if (!storedData) throw new Error('جلسة غير صالحة أو منتهية الصلاحية. الرجاء تسجيل الدخول مرة أخرى.');
   const admin = JSON.parse(storedData);
-  // تحقق من انتهاء صلاحية التوكن (مثال: 30 دقيقة)
-  if (admin.expiry && new Date(admin.expiry) < new Date()) {
-    throw new Error('انتهت صلاحية الجلسة. الرجاء تسجيل الدخول من جديد.');
-  }
   if (requiredRole && admin.role !== 'superadmin' && admin.role !== requiredRole) {
-    throw new Error('ليس لديك الصلاحية الكافية لهذا الإجراء.');
+    throw new Error('ليس لديك الصلاحية الكافية للقيام بهذا الإجراء.');
   }
   return admin;
 }
@@ -424,4 +420,10 @@ function handleAddWoundedCase(postData) {
   } catch (error) {
     throw new Error(`حدث خطأ: ${error.message}`);
   }
+}
+
+function handleGetAdmins(token) {
+  authenticateToken(token, 'SuperAdmin');
+  const admins = sheetToJSON(ADMINS_SHEET);
+  return { success: true, data: admins };
 }
