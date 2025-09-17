@@ -241,39 +241,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                 html += `</div>`;
                         }
                         container.innerHTML = html;
-                        // إعادة تفعيل زر تعديل البيانات بعد تحديث البيانات
-                        setTimeout(() => {
-                            const editBtn = document.getElementById('editUserDataBtn');
-                            if (editBtn) {
-                                editBtn.onclick = function() {
-                                    document.getElementById('editPhoneModal').value = document.getElementById('contactPhone')?.textContent || '';
-                                    let birthValue = '-';
-                                    const birthEl = Array.from(document.querySelectorAll('.info-label')).find(e => e.textContent.includes('تاريخ الميلاد'));
-                                    if (birthEl) {
-                                        birthValue = birthEl.nextElementSibling?.textContent || '';
-                                    }
-                                    document.getElementById('editBirthModal').value = birthValue !== '-' ? birthValue : '';
-                                    document.getElementById('editLocationModal').value = document.getElementById('contactLocation')?.textContent || '';
-                                    const modal = new bootstrap.Modal(document.getElementById('editUserDataModal'));
-                                    modal.show();
-                                };
-                            }
-                            const saveBtn = document.getElementById('saveUserDataBtn');
-                            if (saveBtn) {
-                                saveBtn.onclick = function() {
-                                    document.getElementById('contactPhone').textContent = document.getElementById('editPhoneModal').value;
-                                    document.getElementById('contactLocation').textContent = document.getElementById('editLocationModal').value;
-                                    let birthValue = document.getElementById('editBirthModal').value;
-                                    const birthEl = Array.from(document.querySelectorAll('.info-label')).find(e => e.textContent.includes('تاريخ الميلاد'));
-                                    if (birthEl && birthEl.nextElementSibling) {
-                                        birthEl.nextElementSibling.textContent = birthValue;
-                                    }
-                                    const modal = bootstrap.Modal.getInstance(document.getElementById('editUserDataModal'));
-                                    modal.hide();
-                                    App.showToast('تم تعديل البيانات بنجاح!', true);
-                                };
-                            }
-                        }, 100);
         },
 
         renderFutureAid(futureAid) {
