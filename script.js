@@ -246,8 +246,25 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         
         renderUserInfo(data) {
+            // تحديث الاسم ورقم الهوية في الهيدر
             document.getElementById('userName').textContent = data['الاسم الكامل'] || 'عضو العائلة';
             document.getElementById('userTitle').textContent = `رقم الهوية: ${data['رقم الهوية'] || '---'}`;
+
+            // بناء باقي البيانات الشخصية والعائلية ديناميكيًا
+            const container = document.getElementById('userInfo');
+            let html = '<div class="row g-3">';
+            // البيانات الشخصية
+            html += '<div class="col-md-6"><div class="bg-light rounded p-2 mb-2 d-flex align-items-center gap-2"><i class="bi bi-person-fill text-secondary"></i><span class="fw-bold">الحالة الاجتماعية:</span><span id="userStatus">'+(data['الحالة الاجتماعية']||'---')+'</span></div></div>';
+            html += '<div class="col-md-6"><div class="bg-light rounded p-2 mb-2 d-flex align-items-center gap-2"><i class="bi bi-calendar-event text-secondary"></i><span class="fw-bold">تاريخ الميلاد:</span><span id="userBirth">'+(data['تاريخ الميلاد']?this.formatDateToEnglish(data['تاريخ الميلاد']):'---')+'</span></div></div>';
+            // بيانات العائلة
+            html += '<div class="col-md-6"><div class="bg-light rounded p-2 mb-2 d-flex align-items-center gap-2"><i class="bi bi-person-heart text-secondary"></i><span class="fw-bold">اسم الزوجة:</span><span id="userSpouse">'+(data['اسم الزوجة رباعي']||'---')+'</span></div></div>';
+            html += '<div class="col-md-6"><div class="bg-light rounded p-2 mb-2 d-flex align-items-center gap-2"><i class="bi bi-person-badge-fill text-secondary"></i><span class="fw-bold">رقم هوية الزوجة:</span><span id="userSpouseId">'+(data['رقم هوية الزوجة']||'---')+'</span></div></div>';
+            html += '<div class="col-md-6"><div class="bg-light rounded p-2 mb-2 d-flex align-items-center gap-2"><i class="bi bi-people-fill text-secondary"></i><span class="fw-bold">عدد الأولاد:</span><span id="userChildren">'+(data['عدد الأولاد']||'---')+'</span></div></div>';
+            html += '</div>';
+            // إبقاء قسم معلومات التواصل ثابتًا
+            const contactSection = document.querySelector('#userInfo .mt-4');
+            container.innerHTML = html;
+            if (contactSection) container.appendChild(contactSection);
             // تحديث بيانات التواصل فقط
             if (document.getElementById('userPhone')) {
                 document.getElementById('userPhone').textContent = data['رقم الجوال'] || '---';
