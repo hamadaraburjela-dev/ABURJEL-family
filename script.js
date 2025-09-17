@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         },
 
-        initDashboardPage() { const userId = localStorage.getItem('loggedInUserId'); if (!userId) { window.location.href = 'index.html'; return; } this.loadUserData(userId); },
+        async initDashboardPage() { const userId = localStorage.getItem('loggedInUserId'); if (!userId) { window.location.href = 'index.html'; return; } await this.loadUserData(userId); },
         async handleUserLogin(e) { e.preventDefault(); const form = e.target; const userId = form.querySelector('#userId').value; const spouseId = form.querySelector('#spouseId').value; this.userLoginModal.hide(); const result = await this.apiCall({ action: 'checkPasswordStatus', id: userId, spouse_id: spouseId }); if (!result) return; if (result.message === 'password_required') { document.getElementById('modalUserId').value = userId; this.setPasswordModal.show(); } else if (result.message === 'password_exists') { document.getElementById('loginModalUserId').value = userId; document.getElementById('loginModalSpouseId').value = spouseId; this.loginPasswordModal.show(); } },
         async handleModalSetPassword(e) { e.preventDefault(); const userId = document.getElementById('modalUserId').value; const newPassword = document.getElementById('modalNewPassword').value; const confirmPassword = document.getElementById('modalConfirmPassword').value; if (newPassword !== confirmPassword) { this.showToast('كلمة المرور وتأكيدها غير متطابقين.', false); return; } if (newPassword.length < 6) { this.showToast('كلمة المرور يجب أن لا تقل عن 6 أحرف.', false); return; } const result = await this.apiCall({ action: 'setMemberPassword', userId: userId, password: newPassword }, true); if (result) { this.setPasswordModal.hide(); localStorage.setItem('loggedInUserId', userId); localStorage.setItem('loggedInUserName', result.userName); window.location.href = 'dashboard.html'; } },
         async handleModalLogin(e) { e.preventDefault(); const userId = document.getElementById('loginModalUserId').value; const spouseId = document.getElementById('loginModalSpouseId').value; const password = document.getElementById('loginModalPassword').value; this.loginPasswordModal.hide(); const result = await this.apiCall({ action: 'userLoginWithPassword', id: userId, spouse_id: spouseId, password: password }); if (result) { this.showToast(`أهلاً بك، ${result.user_name}`, true); localStorage.setItem('loggedInUserId', result.user_id); localStorage.setItem('loggedInUserName', result.user_name); setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000); } },
@@ -559,6 +559,7 @@ document.addEventListener('DOMContentLoaded', () => {
         async handleStatusChange(event, token) { const button = event.target.closest('.toggle-status-btn'); const username = button.dataset.username; const newStatus = button.dataset.status === 'Active' ? 'Inactive' : 'Active'; const confirmed = await this.showConfirmationModal(`هل أنت متأكد من تغيير حالة المدير ${username} إلى ${newStatus === 'Active' ? 'نشط' : 'غير نشط'}؟`); if (confirmed) { const result = await this.apiCall({ action: 'updateAdminStatus', token, username, newStatus }, true); if (result) this.loadAdmins(token); } },
     };
 
+    window.App = App;
     App.init();
 
     // زر تحديث بيانات المستخدم
@@ -587,23 +588,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // فتح المودال
         const modal = new bootstrap.Modal(document.getElementById('editUserDataModal'));
         modal.show();
-    });
-
-    // حفظ التعديلات من المودال
-    document.getElementById('saveUserDataBtn')?.addEventListener('click', function() {
-        // تحديث القيم في الصفحة مباشرة
-        document.getElementById('contactPhone').textContent = document.getElementById('editPhoneModal').value;
-        document.getElementById('contactLocation').textContent = document.getElementById('editLocationModal').value;
-        // تاريخ الميلاد
-        let birthValue = document.getElementById('editBirthModal').value;
-        const birthEl = Array.from(document.querySelectorAll('.info-label')).find(e => e.textContent.includes('تاريخ الميلاد'));
-        if (birthEl && birthEl.nextElementSibling) {
-            birthEl.nextElementSibling.textContent = birthValue;
-        }
-        // إغلاق المودال
-        const modal = bootstrap.Modal.getInstance(document.getElementById('editUserDataModal'));
-        modal.hide();
-        App.showToast('تم تعديل البيانات بنجاح!', true);
     });
 
   
