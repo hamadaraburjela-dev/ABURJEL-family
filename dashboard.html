@@ -8,6 +8,62 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <link rel="stylesheet" href="style.css">
+    <style>
+        body { background: #f7f6f3; }
+        .profile-card-professional {
+            border: none;
+            box-shadow: 0 2px 16px rgba(160, 120, 60, 0.08);
+            background: linear-gradient(90deg,#fff 80%,#f5e6c8 100%);
+            border-radius: 18px;
+        }
+        .card-header-professional {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            background: #c19a6b;
+            color: #fff;
+            border-radius: 18px 18px 0 0;
+            padding: 1.5rem 1.5rem 1rem 1.5rem;
+        }
+        .profile-icon {
+            font-size: 3rem;
+            color: #fff;
+            background: #a67c52;
+            border-radius: 50%;
+            padding: 0.5rem;
+        }
+        .card-body-professional {
+            background: #fff;
+            border-radius: 0 0 18px 18px;
+            padding: 2rem;
+        }
+        .aid-card {
+            border: none;
+            box-shadow: 0 2px 12px rgba(160, 120, 60, 0.07);
+            border-radius: 16px;
+            margin-bottom: 2rem;
+        }
+        .aid-header-future {
+            background: linear-gradient(90deg,#e2c799 60%,#fff 100%);
+            color: #7c5c2b;
+            border-radius: 16px 16px 0 0;
+            padding: 1rem 1.5rem;
+        }
+        .aid-header-completed {
+            background: linear-gradient(90deg,#bfa06a 60%,#fff 100%);
+            color: #4e3a1e;
+            border-radius: 16px 16px 0 0;
+            padding: 1rem 1.5rem;
+        }
+        .table thead { background: #f5e6c8; }
+        .table th, .table td { vertical-align: middle; }
+        .table-hover tbody tr:hover { background: #f9f3e6; }
+        .footer { background: #fffbe6; border-top: 1px solid #e2c799; }
+        .status-indicator .status-dot { background: #c19a6b; }
+        .btn-outline-danger { border-radius: 8px; }
+        .header-logo { border-radius: 50%; box-shadow: 0 2px 8px rgba(160,120,60,0.08); }
+        .header-title { color: #a67c52; font-weight: bold; }
+    </style>
 </head>
 <body>
     <header class="header">
@@ -25,15 +81,67 @@
             <i class="bi bi-person-circle profile-icon"></i>
             <div>
                 <h4 class="mb-0" id="userName">جاري التحميل...</h4>
-                <p class="text-muted mb-0" id="userTitle">رقم الهوية: ---</p>
+                <p class="text-light mb-0" id="userTitle">رقم الهوية: ---</p>
             </div>
         </div>
         <div class="card-body-professional" id="userInfo">
-            <div class="text-center p-5">
-                <div class="spinner-border text-success" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-            </div>
+                        <!-- ...existing user info fields... -->
+                        <div class="row g-3">
+                            <!-- ...بيانات شخصية وعائلية... -->
+                            <div class="col-12 mt-4">
+                                <h5 class="text-success mb-3">معلومات التواصل</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center justify-content-between bg-light rounded p-2 mb-2">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <i class="bi bi-telephone text-secondary"></i>
+                                                <span class="fw-bold">رقم الجوال:</span>
+                                            </div>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span id="userPhone">---</span>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary edit-btn" data-field="phone"><i class="bi bi-pencil"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center justify-content-between bg-light rounded p-2 mb-2">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <i class="bi bi-geo-alt text-secondary"></i>
+                                                <span class="fw-bold">مكان الإقامة:</span>
+                                            </div>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span id="userLocation">---</span>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary edit-btn" data-field="location"><i class="bi bi-pencil"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- مودال التعديل -->
+                        <div class="modal fade" id="editFieldModal" tabindex="-1" aria-labelledby="editFieldModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="editFieldModalLabel">تعديل البيانات</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                                    </div>
+                                    <form id="editFieldForm">
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label id="editFieldLabel" class="form-label"></label>
+                                                <input type="text" class="form-control" id="editFieldInput" required>
+                                                <small class="text-muted d-block mt-2">يرجى إدخال البيانات بشكل صحيح وسيتم تحديثها مباشرة.</small>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                            <button type="submit" class="btn btn-warning"><i class="bi bi-save me-1"></i>حفظ</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
         </div>
     </div>
 <div class="card aid-card mb-4">

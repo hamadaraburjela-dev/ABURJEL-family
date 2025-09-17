@@ -248,32 +248,13 @@ document.addEventListener('DOMContentLoaded', () => {
         renderUserInfo(data) {
             document.getElementById('userName').textContent = data['الاسم الكامل'] || 'عضو العائلة';
             document.getElementById('userTitle').textContent = `رقم الهوية: ${data['رقم الهوية'] || '---'}`;
-            const container = document.getElementById('userInfo');
-            const sections = {
-                "البيانات الشخصية": [
-                    { key: 'الاسم الكامل', label: 'الاسم الكامل', icon: 'bi-person-fill' }, { key: 'رقم الهوية', label: 'رقم الهوية', icon: 'bi-person-badge' },
-                    { key: 'الحالة الاجتماعية', label: 'الحالة الاجتماعية', icon: 'bi-heart-fill' }, { key: 'تاريخ الميلاد', label: 'تاريخ الميلاد', icon: 'bi-calendar-event' },
-                ],
-                "بيانات العائلة": [
-                    { key: 'اسم الزوجة رباعي', label: 'اسم الزوجة', icon: 'bi-person-heart' }, { key: 'رقم هوية الزوجة', label: 'رقم هوية الزوجة', icon: 'bi-person-badge-fill' },
-                    { key: 'عدد الأولاد', label: 'عدد الأولاد', icon: 'bi-people-fill' },
-                ],
-                "معلومات التواصل": [
-                    { key: 'رقم الجوال', label: 'رقم الجوال', icon: 'bi-telephone-fill' }, { key: 'مكان الإقامة', label: 'مكان الإقامة', icon: 'bi-geo-alt-fill' },
-                ]
-            };
-            let html = '';
-            for (const sectionTitle in sections) {
-                html += `<h6 class="info-section-title">${sectionTitle}</h6>`;
-                html += `<div class="row">`;
-                sections[sectionTitle].forEach(field => {
-                    let value = data[field.key] || '-';
-                    if (field.key === 'تاريخ الميلاد' && value !== '-') { value = this.formatDateToEnglish(value); }
-                    html += `<div class="col-lg-6"><div class="info-item-pro"><i class="bi ${field.icon}"></i><span class="info-label">${field.label}:</span><span class="info-value">${value}</span></div></div>`;
-                });
-                html += `</div>`;
+            // تحديث بيانات التواصل فقط
+            if (document.getElementById('userPhone')) {
+                document.getElementById('userPhone').textContent = data['رقم الجوال'] || '---';
             }
-            container.innerHTML = html;
+            if (document.getElementById('userLocation')) {
+                document.getElementById('userLocation').textContent = data['مكان الإقامة'] || '---';
+            }
         },
 
         renderFutureAid(futureAid) {

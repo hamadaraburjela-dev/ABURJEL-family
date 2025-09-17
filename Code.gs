@@ -135,15 +135,6 @@ function handleGetAllAidRecords(token) {
     const indIdCol = individualsHeaders.indexOf('رقم الهوية');
     const indNameCol = individualsHeaders.indexOf('الاسم الكامل');
     const namesMap = individualsData.reduce((map, row) => {
-/**
- * دالة لتنسيق التاريخ بصيغة إنجليزية YYYY-MM-DD
- */
-function formatDateEnglish(date) {
-  if (!date) return '';
-  const d = new Date(date);
-  if (isNaN(d.getTime())) return '';
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
         if(row[indIdCol]) {
           map[row[indIdCol]] = row[indNameCol];
         }
@@ -151,7 +142,7 @@ function formatDateEnglish(date) {
     }, {});
 
     const aidHeaders = aidData.shift();
-  aidSheet.appendRow([newRecordId, payload.aidMemberId, payload.aidType, formatDateEnglish(payload.aidDate), payload.aidSource, payload.aidNotes || '', formatDateEnglish(new Date()), admin.username, payload.aidStatus]);
+    const beneficiaryIdCol = aidHeaders.indexOf('معرف المستفيد');
     
     const enrichedRecords = aidData.map(row => {
         const recordObj = {};
@@ -164,7 +155,7 @@ function formatDateEnglish(date) {
         const dateA = a['تاريخ التسجيل'] ? new Date(a['تاريخ التسجيل']) : 0;
         const dateB = b['تاريخ التسجيل'] ? new Date(b['تاريخ التسجيل']) : 0;
         return dateB - dateA;
-  adminSheet.appendRow([payload.username, payload.password, payload.role, formatDateEnglish(new Date()), 'Active']);
+    });
 
     return { success: true, data: enrichedRecords };
 }
@@ -172,7 +163,7 @@ function formatDateEnglish(date) {
 
 // --- OTHER UNCHANGED FUNCTIONS ---
 function handleCheckPasswordStatus(id, spouseId) {
-  requestsSheet.appendRow([formatDateEnglish(new Date()), userId, 'جديد']);
+  if (!id || !spouseId) {
     throw new Error('يجب إدخال رقم الهوية ورقم هوية الزوجة.');
   }
   const members = sheetToJSON(INDIVIDUALS_SHEET);
