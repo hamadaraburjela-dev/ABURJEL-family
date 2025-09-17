@@ -32,7 +32,7 @@ function doPost(e) {
       case 'setMemberPassword': response = handleSetMemberPassword(payload.userId, payload.password); break;
       case 'adminLogin': response = handleAdminLogin(payload.username, payload.password); break;
       case 'getUserData': response = handleGetUserData(payload.userId); break;
-      case 'getUserAidHistory': response = handleGetUserAidHistory(payload.userId); break;
+      case 'getUserAidHistory': response = handleGetUserHistory(payload.userId); break;
       case 'getUserFutureAid': response = handleGetUserFutureAid(payload.userId, payload.token); break;
       case 'getAdminStats': response = handleGetStats(payload.token); break;
       case 'getAllMembers': response = handleGetAllMembers(payload.token, payload.searchTerm, payload.page, payload.pageSize); break;
@@ -49,6 +49,7 @@ function doPost(e) {
       case 'clearMemberPassword': response = handleClearMemberPassword(payload); break;
       case 'updateAidStatus': response = handleUpdateAidStatus(payload); break;
       case 'bulkProcessAid': response = handleBulkProcessAid(payload); break;
+      case 'getBranches': response = handleGetBranches(payload.token); break;
     }
     return createJsonResponse(response);
   } catch (error) {
@@ -342,6 +343,29 @@ function handleGetStats(token) {
       branchHammad: hammadBranchCount
     } 
   };
+}
+
+function handleGetBranches(token) {
+  authenticateToken(token);
+  const individuals = sheetToJSON(INDIVIDUALS_SHEET);
+  const childrenCountCol = 'عدد الأولاد';
+  
+  const branches = [
+    { name: 'فرع آل أحمد', branchKey: 'ال احمد' },
+    { name: 'فرع آل حامد', branchKey: 'ال حامد' },
+    { name: 'فرع آل حمدان', branchKey: 'ال حمدان' },
+    { name: 'فرع آل حماد', branchKey: 'ال حماد' }
+  ];
+  
+  branches.forEach(branch => {
+    const branchIndividuals = individuals.filter(p => p['الفرع'] === branch.branchKey);
+    const families = branchIndividuals.length;
+    const individualsCount = families + branchIndividuals.reduce((sum, p) => sum + (Number(p[childrenCountCol]) || 0), 0);
+    branch.families = families;
+    branch.members = individualsCount;
+  });
+  
+  return { success: true, branches: branches };
 }
 
 function handleAddAid(payload) {
