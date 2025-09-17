@@ -148,22 +148,43 @@
 
 body {
     font-family: 'Cairo', sans-serif;
-    background-color: var(--light-grey);
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     color: var(--dark-grey);
     direction: rtl;
     overflow-x: hidden;
+    min-height: 100vh;
 }
 
-/* --- Index Page --- */
-.main-container {
-    max-width: 900px;
-    margin: 3rem auto;
-    padding: 2rem;
+/* --- Main Content --- */
+.main-content {
+    padding: 2rem 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-.logo {
-    max-width: 130px;
-    margin-bottom: 1.5rem;
+/* Responsive for Mobile */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 1rem 0.5rem;
+    }
+    .header {
+        padding: 0.5rem 1rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .header-title {
+        font-size: 1.1rem;
+    }
+    .stat-item {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    .selection-card {
+        padding: 1.5rem 1rem;
+    }
+    .footer {
+        padding: 1.5rem 0.5rem;
+    }
 }
 
 .header-section h1 {
@@ -176,11 +197,12 @@ body {
 
 .selection-card {
     border: 1px solid var(--border-grey);
-    border-radius: 12px;
+    border-radius: 15px;
     cursor: pointer;
     transition: all 0.3s ease;
     padding: 2rem 1rem;
-    background-color: #fff;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .selection-card:hover,
@@ -194,6 +216,11 @@ body {
     font-size: 3rem;
     color: var(--primary-green);
     margin-bottom: 1rem;
+    transition: color 0.3s ease;
+}
+
+.selection-card:hover .card-icon {
+    color: #006400;
 }
 
 .card-title {
@@ -225,8 +252,8 @@ body {
 
 .card {
     border: none;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border-radius: 15px;
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
 }
 
@@ -235,17 +262,19 @@ body {
 }
 
 /* --- Dashboard & Admin Pages --- */
+/* --- Header --- */
 .header {
-    background: #fff;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
     padding: 1rem 2rem;
     border-bottom: 1px solid var(--border-grey);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
     position: sticky;
     top: 0;
     z-index: 1020;
+    flex-wrap: wrap;
 }
 
 .header-logo {
@@ -262,10 +291,10 @@ body {
 .footer {
     text-align: center;
     padding: 2rem 1rem;
-    background-color: #f8f9fa;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     color: #6c757d;
     margin-top: 4rem;
-    border-top: 1px solid #e9ecef;
+    border-top: 1px solid #dee2e6;
 }
 
 .footer .status-indicator {
@@ -435,7 +464,7 @@ body {
 }
 /* --- Admin Dashboard Stats Styling --- */
 .card-header.bg-primary {
-    background-color: var(--primary-green) !important;
+    background: linear-gradient(135deg, var(--primary-green) 0%, #006400 100%) !important;
     border-bottom: none;
 }
 
@@ -445,9 +474,12 @@ body {
 }
 
 .stat-item {
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
     min-height: 150px; /* لتوحيد ارتفاع البطاقات */
     justify-content: center; /* لمحاذاة المحتوى عمودياً في المنتصف */
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 1px solid #e9ecef;
+    border-radius: 15px;
 }
 
 .stat-item:hover {

@@ -78,10 +78,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const activeSubmitButton = (document.activeElement?.tagName === 'BUTTON' && document.activeElement.type === 'submit') ? document.activeElement : document.querySelector('button[type="submit"]:not(:disabled)');
             const isButtonTriggered = activeSubmitButton !== null;
             if (isButtonTriggered) this.toggleButtonSpinner(true, activeSubmitButton);
+            console.log('Making API call with payload:', payload);
             try {
                 const response = await fetch(this.WEB_APP_URL, { method: 'POST', mode: 'cors', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+                console.log('Fetch response status:', response.status);
                 if (!response.ok) throw new Error(`خطأ في الشبكة: ${response.statusText}`);
                 const result = await response.json();
+                console.log('Parsed result:', result);
                 if (!result.success) throw new Error(result.message || 'حدث خطأ غير معروف في الخادم.');
                 if (showSuccessToast && result.message) this.showToast(result.message, true);
                 return result;
@@ -200,20 +203,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const form = e.target;
             const userId = form.querySelector('#userId').value;
             const spouseId = form.querySelector('#spouseId').value;
+            console.log('Starting login for userId:', userId, 'spouseId:', spouseId);
             // Keep the login modal open while we check password status so the user sees the spinner/disabled button.
             const result = await this.apiCall({ action: 'checkPasswordStatus', id: userId, spouse_id: spouseId });
-            if (!result) return;
+            console.log('API result:', result);
+            if (!result) {
+                console.log('No result from API');
+                return;
+            }
             if (result.message === 'password_required') {
                 // Move to set password flow
+                console.log('Password required, showing set password modal');
                 this.userLoginModal.hide();
                 document.getElementById('modalUserId').value = userId;
                 this.setPasswordModal.show();
             } else if (result.message === 'password_exists') {
                 // Ask for existing password
+                console.log('Password exists, showing login password modal');
                 this.userLoginModal.hide();
                 document.getElementById('loginModalUserId').value = userId;
                 document.getElementById('loginModalSpouseId').value = spouseId;
                 this.loginPasswordModal.show();
+            } else {
+                console.log('Unexpected result message:', result.message);
             }
         },
         async handleModalSetPassword(e) { e.preventDefault(); const userId = document.getElementById('modalUserId').value; const newPassword = document.getElementById('modalNewPassword').value; const confirmPassword = document.getElementById('modalConfirmPassword').value; if (newPassword !== confirmPassword) { this.showToast('كلمة المرور وتأكيدها غير متطابقين.', false); return; } if (newPassword.length < 6) { this.showToast('كلمة المرور يجب أن لا تقل عن 6 أحرف.', false); return; } const result = await this.apiCall({ action: 'setMemberPassword', userId: userId, password: newPassword }, true); if (result) { this.setPasswordModal.hide(); localStorage.setItem('loggedInUserId', userId); localStorage.setItem('loggedInUserName', result.userName); window.location.href = 'dashboard.html'; } },
