@@ -139,11 +139,64 @@
             </div>
         </div>
         <div class="card-body-professional" id="userInfo">
-            <div class="text-center p-5">
-                <div class="spinner-border text-success" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-            </div>
+                        <!-- معلومات التواصل -->
+                        <div class="mt-4">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h5 class="mb-0" style="color:green;font-weight:bold">معلومات التواصل</h5>
+                                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editContactModal">
+                                                <i class="bi bi-pencil-square"></i> تعديل
+                                        </button>
+                                </div>
+                                <div class="row g-2">
+                                        <div class="col-md-6">
+                                                <div class="border rounded p-2 d-flex align-items-center gap-2">
+                                                        <i class="bi bi-telephone" style="font-size:1.2rem;color:#6c757d"></i>
+                                                        <span class="fw-bold">رقم الجوال:</span>
+                                                        <span id="contactPhone">592210941</span>
+                                                </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                                <div class="border rounded p-2 d-flex align-items-center gap-2">
+                                                        <i class="bi bi-geo-alt" style="font-size:1.2rem;color:#6c757d"></i>
+                                                        <span class="fw-bold">مكان الإقامة:</span>
+                                                        <span id="contactLocation">ناجح</span>
+                                                </div>
+                                        </div>
+                                </div>
+                        </div>
+                        <!-- نهاية معلومات التواصل -->
+                        <div class="text-center p-5">
+                                <div class="spinner-border text-success" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                </div>
+                        </div>
+                        <!-- Modal لتعديل معلومات التواصل -->
+                        <div class="modal fade" id="editContactModal" tabindex="-1" aria-labelledby="editContactModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="editContactModalLabel">تعديل معلومات التواصل</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form id="editContactForm">
+                                            <div class="mb-3">
+                                                <label for="editPhone" class="form-label">رقم الجوال</label>
+                                                <input type="text" class="form-control" id="editPhone" value="592210941">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="editLocation" class="form-label">مكان الإقامة</label>
+                                                <input type="text" class="form-control" id="editLocation" value="ناجح">
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                        <button type="button" class="btn btn-primary" id="saveContactBtn">حفظ التعديلات</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
         </div>
     </div>
     <div class="aid-card mb-4">
