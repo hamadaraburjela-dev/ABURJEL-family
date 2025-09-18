@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التوزيع العادل للمساعدات</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <header class="header">
+            <div class="d-flex align-items-center">
+                <img src="logo.webp" alt="شعار" class="header-logo">
+                <h1 class="header-title d-none d-sm-inline-block align-middle ms-3">التوزيع العادل للمساعدات</h1>
+            </div>
+            <div class="d-flex align-items-center">
+                <a href="admin.html" class="btn btn-outline-primary me-2">العودة للوحة التحكم</a>
+                <a href="index.html" onclick="sessionStorage.clear(); localStorage.clear();" class="btn btn-outline-danger">تسجيل الخروج</a>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="bi bi-arrow-left-right me-2"></i>نظام التوزيع العادل</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="distributionForm">
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <label for="totalAid" class="form-label fw-bold">إجمالي عدد المساعدات المتاحة</label>
+                                        <input type="number" class="form-control" id="totalAid" placeholder="مثال: 150" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="distributionType" class="form-label fw-bold">نوع التوزيع</label>
+                                        <select class="form-select" id="distributionType">
+                                            <option value="equal">توزيع متساوي</option>
+                                            <option value="proportional">توزيع نسبي حسب عدد العائلات</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <h6 class="text-secondary mb-3">بيانات الفروع</h6>
+                                    <div class="alert alert-info">
+                                        <small>
+                                            <strong>كيفية عمل التوزيع النسبي:</strong><br>
+                                            • <strong>بدون تخصيص:</strong> اترك الحقل فارغاً، سيتم التوزيع حسب عدد العائلات<br>
+                                            • <strong>مع تخصيص:</strong> أدخل أرقام أكبر لزيادة حصة الفرع، أو أصغر لتقليلها<br>
+                                            <strong>مثال:</strong> إذا كان عدد العائلات 10، وأدخلت 15، ستزيد حصة الفرع بنسبة 50%
+                                        </small>
+                                    </div>
+                                    <div id="branchesContainer">
+                                        <!-- سيتم إضافة الفروع هنا ديناميكياً -->
+                                    </div>
+                                </div>
+
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="bi bi-calculator me-2"></i>حساب التوزيع
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm" id="resultsCard" style="display: none;">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>نتائج التوزيع</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-primary mb-3">تفاصيل التوزيع</h6>
+                                    <div id="distributionResults"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-primary mb-3">الرسم البياني</h6>
+                                    <canvas id="distributionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div id="server-status" class="status-indicator mb-2">
+                <span class="status-dot"></span>
+                <span class="status-text">جاري التحقق من حالة الخادم...</span>
+            </div>
+            <p class="copyright-text mb-2">
+                جميع الحقوق محفوظة &copy; 2025 | م. حماده أبو رجيلة
+            </p>
+            <a href="https://wa.me/972569210941" target="_blank" class="whatsapp-link">
+                <i class="bi bi-whatsapp"></i> تواصل عبر الواتساب
+            </a>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="script.js"></script>
+    <script>
+        // بيانات الفروع (يمكن جلبها من قاعدة البيانات)
+        const branches = [
+            { name: 'فرع آل أحمد', families: 12 },
+            { name: 'فرع آل حامد', families: 8 },
+            { name: 'فرع آل حمدان', families: 7 },
+            { name: 'فرع آل حماد', families: 9 }
+        ];
+
+        // إنشاء نموذج الفروع
+        function createBranchesForm() {
+            const container = document.getElementById('branchesContainer');
+            branches.forEach((branch, index) => {
+                const branchDiv = document.createElement('div');
+                branchDiv.className = 'row mb-3 align-items-center';
+                branchDiv.innerHTML = `
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">${branch.name}</label>
+                        <small class="text-muted d-block">عدد العائلات: ${branch.families}</small>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="number" class="form-control branch-weight" placeholder="عامل التوزيع (اختياري)" data-index="${index}">
+                        <small class="text-muted">اتركه فارغاً لاستخدام عدد العائلات</small>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <input type="number" class="form-control branch-result" readonly data-index="${index}">
+                            <span class="input-group-text">مساعدة</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(branchDiv);
+            });
+        }
+
+        // حساب التوزيع
+        function calculateDistribution(totalAid, type) {
+            const results = [];
+            let totalWeight = 0;
+
+            if (type === 'equal') {
+                const equalShare = Math.floor(totalAid / branches.length);
+                const remainder = totalAid % branches.length;
+
+                branches.forEach((branch, index) => {
+                    const share = equalShare + (index < remainder ? 1 : 0);
+                    results.push({
+                        name: branch.name,
+                        share: share,
+                        percentage: ((share / totalAid) * 100).toFixed(1)
+                    });
+                });
+            } else if (type === 'proportional') {
+                const weights = document.querySelectorAll('.branch-weight');
+                let hasCustomWeights = false;
+
+                weights.forEach((weight, index) => {
+                    const value = parseFloat(weight.value) || branches[index].families;
+                    totalWeight += value;
+                    if (weight.value) hasCustomWeights = true;
+                });
+
+                branches.forEach((branch, index) => {
+                    const weight = parseFloat(weights[index].value) || branch.families;
+                    const share = Math.round((weight / totalWeight) * totalAid);
+                    results.push({
+                        name: branch.name,
+                        share: share,
+                        percentage: ((share / totalAid) * 100).toFixed(1)
+                    });
+                });
+            }
+
+            return results;
+        }
+
+        // عرض النتائج
+        function displayResults(results) {
+            const resultsDiv = document.getElementById('distributionResults');
+            const resultInputs = document.querySelectorAll('.branch-result');
+
+            resultsDiv.innerHTML = '';
+            results.forEach((result, index) => {
+                resultsDiv.innerHTML += `
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                        <span class="fw-bold">${result.name}</span>
+                        <span class="badge bg-primary">${result.share} مساعدة (${result.percentage}%)</span>
+                    </div>
+                `;
+                if (resultInputs[index]) {
+                    resultInputs[index].value = result.share;
+                }
+            });
+
+            // إنشاء الرسم البياني
+            createChart(results);
+            document.getElementById('resultsCard').style.display = 'block';
+        }
+
+        // إنشاء الرسم البياني
+        function createChart(results) {
+            const ctx = document.getElementById('distributionChart').getContext('2d');
+            const labels = results.map(r => r.name);
+            const data = results.map(r => r.share);
+
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // تهيئة الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            createBranchesForm();
+
+            document.getElementById('distributionForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const totalAid = parseInt(document.getElementById('totalAid').value);
+                const type = document.getElementById('distributionType').value;
+
+                if (!totalAid || totalAid <= 0) {
+                    Toastify({
+                        text: "يرجى إدخال عدد صحيح للمساعدات",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "center",
+                        backgroundColor: "#dc3545"
+                    }).showToast();
+                    return;
+                }
+
+                const results = calculateDistribution(totalAid, type);
+                displayResults(results);
+
+                Toastify({
+                    text: "تم حساب التوزيع بنجاح!",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "center",
+                    backgroundColor: "#28a745"
+                }).showToast();
+            });
+        });
+    </script>
+</body>
+</html>
