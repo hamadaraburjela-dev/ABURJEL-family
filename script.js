@@ -6,7 +6,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const App = {
-        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbzWH7WE1KV4lf_Wb5vxjJOCHzALqmGUyeNl0nboad_RavLtvwJ15V_zrH6e5r9FLRKt5Q/exec',
+        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbyi5_-5EKcDdC95urDLUkOcbhax8974S6PJkULj60AWOqzvsmeGzb11Y78SpB4K5FHEag/exec',
         aidCategories: {
             "مساعدات مالية": ["نقد مباشر للعائلات المحتاجة", "دفع فواتير (كهرباء، ماء، إيجار)", "قروض حسنة أو صناديق دوارة"],
             "مساعدات غذائية": ["طرود غذائية أساسية", "وجبات جاهزة / مطبوخة", "توزيع مياه للشرب"],
@@ -15,36 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
             "مساعدات إغاثية (طارئة)": ["خيم وأغطية في حالات النزوح", "ملابس وأحذية", "أدوات نظافة وتعقيم", "تدخل عاجل في الكوارث"],
             "مساعدات سكنية": ["بناء أو ترميم منازل", "دفع إيجارات", "توفير أثاث أو أجهزة كهربائية"],
             "مساعدات تشغيلية": ["تمويل مشاريع صغيرة", "تدريب مهني", "أدوات عمل أو معدات إنتاج"]
-        },
-        // Client-side translation map for server/client messages -> Arabic
-        translations: {
-            'password_required': 'الرجاء إعداد كلمة مرور لحسابك.',
-            'password_exists': 'يرجى إدخال كلمة المرور للمتابعة.',
-            'Server not reachable': 'الخادم غير متصل.',
-            'Failed to fetch': 'فشل في الاتصال بالخادم. يرجى التحقق من الاتصال.',
-            'NetworkError': 'خطأ في الشبكة. الرجاء المحاولة لاحقاً.',
-            'Invalid Date': 'تاريخ غير صالح',
-            'No result from API': 'لم يتم استلام رد من الخادم.',
-            'Submission Failed': 'فشل الإرسال',
-            'Server error': 'خطأ في الخادم. الرجاء المحاولة لاحقاً.'
-        },
-
-        translateMessage(msg) {
-            if (!msg) return 'حدث خطأ غير متوقع.';
-            // if it's already Arabic (contains Arabic letters), return as-is
-            if (/[\u0600-\u06FF]/.test(msg)) return msg;
-            // direct map
-            if (this.translations[msg]) return this.translations[msg];
-            // common substring translations
-            const lower = String(msg).toLowerCase();
-            if (lower.includes('invalid date')) return this.translations['Invalid Date'];
-            if (lower.includes('failed to fetch')) return this.translations['Failed to fetch'];
-            if (lower.includes('network')) return this.translations['NetworkError'];
-            if (lower.includes('server not')) return this.translations['Server not reachable'];
-            // numeric/http status fallback
-            if (/^\d{3}/.test(msg)) return `خطأ في الخادم: ${msg}`;
-            // default: return original but marked in Arabic friendly phrasing
-            return msg;
         },
         searchTimeout: null,
         membersList: [],
@@ -108,13 +78,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const activeSubmitButton = (document.activeElement?.tagName === 'BUTTON' && document.activeElement.type === 'submit') ? document.activeElement : document.querySelector('button[type="submit"]:not(:disabled)');
             const isButtonTriggered = activeSubmitButton !== null;
             if (isButtonTriggered) this.toggleButtonSpinner(true, activeSubmitButton);
-            console.log('Making API call with payload:', payload);
             try {
                 const response = await fetch(this.WEB_APP_URL, { method: 'POST', mode: 'cors', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
-                console.log('Fetch response status:', response.status);
                 if (!response.ok) throw new Error(`خطأ في الشبكة: ${response.statusText}`);
                 const result = await response.json();
-                console.log('Parsed result:', result);
                 if (!result.success) throw new Error(result.message || 'حدث خطأ غير معروف في الخادم.');
                 if (showSuccessToast && result.message) this.showToast(result.message, true);
                 return result;
@@ -227,65 +194,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         },
 
-        async initDashboardPage() { const userId = localStorage.getItem('loggedInUserId'); if (!userId) { window.location.href = 'index.html'; return; } await this.loadUserData(userId); },
-        async handleUserLogin(e) {
-            e.preventDefault();
-            const form = e.target;
-            const userId = form.querySelector('#userId').value;
-            const spouseId = form.querySelector('#spouseId').value;
-            console.log('Starting login for userId:', userId, 'spouseId:', spouseId);
-            // Keep the login modal open while we check password status so the user sees the spinner/disabled button.
-            const result = await this.apiCall({ action: 'checkPasswordStatus', id: userId, spouse_id: spouseId });
-            console.log('API result:', result);
-            if (!result) {
-                console.log('No result from API');
-                return;
-            }
-            if (result.message === 'password_required') {
-                // Move to set password flow
-                console.log('Password required, showing set password modal');
-                this.userLoginModal.hide();
-                document.getElementById('modalUserId').value = userId;
-                this.setPasswordModal.show();
-            } else if (result.message === 'password_exists') {
-                // Ask for existing password
-                console.log('Password exists, showing login password modal');
-                this.userLoginModal.hide();
-                document.getElementById('loginModalUserId').value = userId;
-                document.getElementById('loginModalSpouseId').value = spouseId;
-                this.loginPasswordModal.show();
-            } else {
-                console.log('Unexpected result message:', result.message);
-            }
-        },
+        initDashboardPage() { const userId = localStorage.getItem('loggedInUserId'); if (!userId) { window.location.href = 'index.html'; return; } this.loadUserData(userId); },
+        async handleUserLogin(e) { e.preventDefault(); const form = e.target; const userId = form.querySelector('#userId').value; const spouseId = form.querySelector('#spouseId').value; this.userLoginModal.hide(); const result = await this.apiCall({ action: 'checkPasswordStatus', id: userId, spouse_id: spouseId }); if (!result) return; if (result.message === 'password_required') { document.getElementById('modalUserId').value = userId; this.setPasswordModal.show(); } else if (result.message === 'password_exists') { document.getElementById('loginModalUserId').value = userId; document.getElementById('loginModalSpouseId').value = spouseId; this.loginPasswordModal.show(); } },
         async handleModalSetPassword(e) { e.preventDefault(); const userId = document.getElementById('modalUserId').value; const newPassword = document.getElementById('modalNewPassword').value; const confirmPassword = document.getElementById('modalConfirmPassword').value; if (newPassword !== confirmPassword) { this.showToast('كلمة المرور وتأكيدها غير متطابقين.', false); return; } if (newPassword.length < 6) { this.showToast('كلمة المرور يجب أن لا تقل عن 6 أحرف.', false); return; } const result = await this.apiCall({ action: 'setMemberPassword', userId: userId, password: newPassword }, true); if (result) { this.setPasswordModal.hide(); localStorage.setItem('loggedInUserId', userId); localStorage.setItem('loggedInUserName', result.userName); window.location.href = 'dashboard.html'; } },
-        async handleModalLogin(e) {
-            e.preventDefault();
-            const userId = document.getElementById('loginModalUserId').value;
-            const spouseId = document.getElementById('loginModalSpouseId').value;
-            const password = document.getElementById('loginModalPassword').value;
-            // Keep the password modal open while authenticating so the spinner is visible to the user.
-            const result = await this.apiCall({ action: 'userLoginWithPassword', id: userId, spouse_id: spouseId, password: password });
-            if (result) {
-                this.loginPasswordModal.hide();
-                this.showToast(`أهلاً بك، ${result.user_name}`, true);
-                localStorage.setItem('loggedInUserId', result.user_id);
-                localStorage.setItem('loggedInUserName', result.user_name);
-                setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
-            }
-        },
-        async handleAdminLogin(e) {
-            e.preventDefault();
-            // Keep admin modal open while authenticating so the spinner on submit is visible.
-            const result = await this.apiCall({ action: 'adminLogin', username: document.getElementById('username').value, password: document.getElementById('password').value });
-            if (result) {
-                this.adminLoginModal.hide();
-                this.showToast("تم تسجيل الدخول بنجاح.", true);
-                sessionStorage.setItem('adminToken', result.token);
-                sessionStorage.setItem('adminRole', result.role);
-                window.location.href = 'admin.html';
-            }
-        },
+        async handleModalLogin(e) { e.preventDefault(); const userId = document.getElementById('loginModalUserId').value; const spouseId = document.getElementById('loginModalSpouseId').value; const password = document.getElementById('loginModalPassword').value; this.loginPasswordModal.hide(); const result = await this.apiCall({ action: 'userLoginWithPassword', id: userId, spouse_id: spouseId, password: password }); if (result) { this.showToast(`أهلاً بك، ${result.user_name}`, true); localStorage.setItem('loggedInUserId', result.user_id); localStorage.setItem('loggedInUserName', result.user_name); setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000); } },
+        async handleAdminLogin(e) { e.preventDefault(); this.adminLoginModal.hide(); const result = await this.apiCall({ action: 'adminLogin', username: document.getElementById('username').value, password: document.getElementById('password').value }); if (result) { this.showToast("تم تسجيل الدخول بنجاح.", true); sessionStorage.setItem('adminToken', result.token); sessionStorage.setItem('adminRole', result.role); window.location.href = 'admin.html'; } },
         async handleForgotPassword(e) { e.preventDefault(); this.loginPasswordModal.hide(); this.forgotPasswordModal.show(); },
         
         async loadUserData(userId) {
@@ -328,6 +241,39 @@ document.addEventListener('DOMContentLoaded', () => {
                                 html += `</div>`;
                         }
                         container.innerHTML = html;
+                        // إعادة تفعيل زر تعديل البيانات بعد تحديث البيانات
+                        setTimeout(() => {
+                            const editBtn = document.getElementById('editUserDataBtn');
+                            if (editBtn) {
+                                editBtn.onclick = function() {
+                                    document.getElementById('editPhoneModal').value = document.getElementById('contactPhone')?.textContent || '';
+                                    let birthValue = '-';
+                                    const birthEl = Array.from(document.querySelectorAll('.info-label')).find(e => e.textContent.includes('تاريخ الميلاد'));
+                                    if (birthEl) {
+                                        birthValue = birthEl.nextElementSibling?.textContent || '';
+                                    }
+                                    document.getElementById('editBirthModal').value = birthValue !== '-' ? birthValue : '';
+                                    document.getElementById('editLocationModal').value = document.getElementById('contactLocation')?.textContent || '';
+                                    const modal = new bootstrap.Modal(document.getElementById('editUserDataModal'));
+                                    modal.show();
+                                };
+                            }
+                            const saveBtn = document.getElementById('saveUserDataBtn');
+                            if (saveBtn) {
+                                saveBtn.onclick = function() {
+                                    document.getElementById('contactPhone').textContent = document.getElementById('editPhoneModal').value;
+                                    document.getElementById('contactLocation').textContent = document.getElementById('editLocationModal').value;
+                                    let birthValue = document.getElementById('editBirthModal').value;
+                                    const birthEl = Array.from(document.querySelectorAll('.info-label')).find(e => e.textContent.includes('تاريخ الميلاد'));
+                                    if (birthEl && birthEl.nextElementSibling) {
+                                        birthEl.nextElementSibling.textContent = birthValue;
+                                    }
+                                    const modal = bootstrap.Modal.getInstance(document.getElementById('editUserDataModal'));
+                                    modal.hide();
+                                    App.showToast('تم تعديل البيانات بنجاح!', true);
+                                };
+                            }
+                        }, 100);
         },
 
         renderFutureAid(futureAid) {
@@ -646,7 +592,6 @@ document.addEventListener('DOMContentLoaded', () => {
         async handleStatusChange(event, token) { const button = event.target.closest('.toggle-status-btn'); const username = button.dataset.username; const newStatus = button.dataset.status === 'Active' ? 'Inactive' : 'Active'; const confirmed = await this.showConfirmationModal(`هل أنت متأكد من تغيير حالة المدير ${username} إلى ${newStatus === 'Active' ? 'نشط' : 'غير نشط'}؟`); if (confirmed) { const result = await this.apiCall({ action: 'updateAdminStatus', token, username, newStatus }, true); if (result) this.loadAdmins(token); } },
     };
 
-    window.App = App;
     App.init();
 
     // زر تحديث بيانات المستخدم
@@ -675,6 +620,23 @@ document.addEventListener('DOMContentLoaded', () => {
         // فتح المودال
         const modal = new bootstrap.Modal(document.getElementById('editUserDataModal'));
         modal.show();
+    });
+
+    // حفظ التعديلات من المودال
+    document.getElementById('saveUserDataBtn')?.addEventListener('click', function() {
+        // تحديث القيم في الصفحة مباشرة
+        document.getElementById('contactPhone').textContent = document.getElementById('editPhoneModal').value;
+        document.getElementById('contactLocation').textContent = document.getElementById('editLocationModal').value;
+        // تاريخ الميلاد
+        let birthValue = document.getElementById('editBirthModal').value;
+        const birthEl = Array.from(document.querySelectorAll('.info-label')).find(e => e.textContent.includes('تاريخ الميلاد'));
+        if (birthEl && birthEl.nextElementSibling) {
+            birthEl.nextElementSibling.textContent = birthValue;
+        }
+        // إغلاق المودال
+        const modal = bootstrap.Modal.getInstance(document.getElementById('editUserDataModal'));
+        modal.hide();
+        App.showToast('تم تعديل البيانات بنجاح!', true);
     });
 
   
