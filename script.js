@@ -18,7 +18,10 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         // Client-side translation map for server/client messages -> Arabic
         // This covers both English and common server-returned messages so toasts display Arabic consistently.
-        translations: {
+    // Toggle debugging logs (set to false for production)
+    DEBUG: false,
+
+    translations: {
             // password flow
             'password_required': 'الرجاء إعداد كلمة مرور لحسابك.',
             'password_exists': 'يرجى إدخال كلمة المرور للمتابعة.',
@@ -43,11 +46,42 @@ document.addEventListener('DOMContentLoaded', () => {
             // Friendly fallbacks for some server messages (Arabic passes through unchanged)
             'تم حفظ كلمة المرور بنجاح.': 'تم حفظ كلمة المرور بنجاح.',
             'تمت إضافة المساعدة بنجاح!': 'تمت إضافة المساعدة بنجاح!',
-            'تمت إضافة المساعدة بنجاح!': 'تمت إضافة المساعدة بنجاح!',
-            'تم محو كلمة المرور بنجاح. يمكن للفرد الآن تعيين كلمة مرور جديدة.': 'تم محو كلمة المرور بنجاح. يمكن للفرد الآن تعيين كلمة مرور جديدة.',
+            'تم محو كلمة المرور بنجاح. يمكن للفرد الآن تعيين كلمة مرور جديدة.': 'تمت محو كلمة المرور بنجاح. يمكن للفرد الآن تعيين كلمة مرور جديدة.',
             'تم تحديث الحالة بنجاح!': 'تم تحديث الحالة بنجاح!',
-            'تمت إضافة المساعدة بنجاح!': 'تمت إضافة المساعدة بنجاح!',
             'لا توجد بيانات للتصدير.': 'لا توجد بيانات للتصدير.',
+
+            // All server-thrown English/Arabic messages from Code.gs (pass-through Arabic)
+            'لم يتم العثور على أعمدة "الاسم الكامل" أو "رقم الهوية" في شيت الأفراد.': 'لم يتم العثور على أعمدة "الاسم الكامل" أو "رقم الهوية" في شيت الأفراد.',
+            'Aid or Individuals sheet not found.': 'ورقة البيانات المطلوبة غير موجودة على الخادم.',
+            'يجب إدخال رقم الهوية ورقم هوية الزوجة.': 'يجب إدخال رقم الهوية ورقم هوية الزوجة.',
+            'بيانات الدخول غير صحيحة.': 'بيانات الدخول غير صحيحة.',
+            'لم يتم تعيين كلمة مرور لهذا الحساب بعد. يرجى البدء من جديد.': 'لم يتم تعيين كلمة مرور لهذا الحساب بعد. يرجى البدء من جديد.',
+            'كلمة المرور غير صحيحة.': 'كلمة المرور غير صحيحة.',
+            'معرف المستخدم مفقود.': 'معرف المستخدم مفقود.',
+            'كلمة المرور يجب أن لا تقل عن 6 أحرف.': 'كلمة المرور يجب أن لا تقل عن 6 أحرف.',
+            'أحد الأعمدة المطلوبة مفقود. يرجى التأكد من وجود عمود "كلمة المرور (SHA-256)" في ورقة الأفراد.': 'أحد الأعمدة المطلوبة مفقود. يرجى التأكد من وجود عمود "كلمة المرور (SHA-256)" في ورقة الأفراد.',
+            'لم يتم العثور على الفرد.': 'لم يتم العثور على الفرد.',
+            'لم يتم العثور على بيانات المستخدم.': 'لم يتم العثور على بيانات المستخدم.',
+            'يجب إدخال اسم المستخدم وكلمة المرور.': 'يجب إدخال اسم المستخدم وكلمة المرور.',
+            'اسم المستخدم أو كلمة المرور غير صحيحة.': 'اسم المستخدم أو كلمة المرور غير صحيحة.',
+            'هذا الحساب غير نشط.': 'هذا الحساب غير نشط.',
+            'الرجاء تعبئة جميع الحقول المطلوبة.': 'الرجاء تعبئة جميع الحقول المطلوبة.',
+            'محتوى الملف مفقود.': 'محتوى الملف مفقود.',
+            'عمود "{header}" مفقود في الملف. يرجى استخدام القالب الصحيح.': 'عمود "{header}" مفقود في الملف. يرجى استخدام القالب الصحيح.',
+            'البيانات في الملف غير مكتملة أو غير صالحة.': 'البيانات في الملف غير مكتملة أو غير صالحة.',
+            'الرجاء تعبئة جميع الحقول لإنشاء مدير جديد.': 'الرجاء تعبئة جميع الحقول لإنشاء مدير جديد.',
+            'اسم المستخدم هذا موجود بالفعل.': 'اسم المستخدم هذا موجود بالفعل.',
+            'بيانات غير مكتملة أو حالة غير صالحة لتحديث المدير.': 'بيانات غير مكتملة أو حالة غير صالحة لتحديث المدير.',
+            'لم يتم العثور على المدير المطلوب.': 'لم يتم العثور على المدير المطلوب.',
+            'تم تحديث حالة {username} إلى {status}': 'تم تحديث حالة {username} إلى {status}',
+            'تمت إضافة {count} سجل مساعدة بنجاح!': 'تمت إضافة {count} سجل مساعدة بنجاح!',
+            'يجب تحديد تاريخ البدء والانتهاء.': 'يجب تحديد تاريخ البدء والانتهاء.',
+            'نوع التقرير غير معروف.': 'نوع التقرير غير معروف.',
+            'تم إرسال طلب إعادة تعيين كلمة المرور. سيقوم المسؤول بالتعامل معه قريباً.': 'تم إرسال طلب إعادة تعيين كلمة المرور. سيقوم المسؤول بالتعامل معه قريباً.',
+            'لم يتم العثور على سجل المساعدة.': 'لم يتم العثور على سجل المساعدة.',
+            'Token is missing.': 'رمز الجلسة مفقود. الرجاء تسجيل الدخول مرة أخرى.',
+            'جلسة غير صالحة أو منتهية الصلاحية. الرجاء تسجيل الدخول مرة أخرى.': 'جلسة غير صالحة أو منتهية الصلاحية. الرجاء تسجيل الدخول مرة أخرى.',
+            'ليس لديك الصلاحية الكافية للقيام بهذا الإجراء.': 'ليس لديك الصلاحية الكافية للقيام بهذا الإجراء.',
         },
 
         translateMessage(msg) {
@@ -67,6 +101,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // default: return original but marked in Arabic friendly phrasing
             return msg;
         },
+    // logging helpers (respect DEBUG flag)
+    logDebug(...args) { if (this.DEBUG) console.log(...args); },
+    logError(...args) { if (this.DEBUG) console.error(...args); },
         searchTimeout: null,
         membersList: [],
         allCompletedAidRecords: [],
@@ -129,17 +166,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const activeSubmitButton = (document.activeElement?.tagName === 'BUTTON' && document.activeElement.type === 'submit') ? document.activeElement : document.querySelector('button[type="submit"]:not(:disabled)');
             const isButtonTriggered = activeSubmitButton !== null;
             if (isButtonTriggered) this.toggleButtonSpinner(true, activeSubmitButton);
-            console.log('Making API call with payload:', payload);
+            this.logDebug('Making API call with payload:', payload);
             try {
                 const response = await fetch(this.WEB_APP_URL, { method: 'POST', mode: 'cors', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
-                console.log('Fetch response status:', response.status);
+                this.logDebug('Fetch response status:', response.status);
                 if (!response.ok) throw new Error(`خطأ في الشبكة: ${response.statusText}`);
                 const result = await response.json();
-                console.log('Parsed result:', result);
+                this.logDebug('Parsed result:', result);
                 if (!result.success) throw new Error(result.message || 'حدث خطأ غير معروف في الخادم.');
                 if (showSuccessToast && result.message) this.showToast(result.message, true);
                 return result;
-            } catch (error) { console.error('API Call Failed:', error); this.showToast(error.message, false); return null; } finally { if (isButtonTriggered) this.toggleButtonSpinner(false, activeSubmitButton); }
+            } catch (error) { this.logError('API Call Failed:', error); this.showToast(error.message, false); return null; } finally { if (isButtonTriggered) this.toggleButtonSpinner(false, activeSubmitButton); }
         },
         
         showToast(message, isSuccess = true) {
@@ -246,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.scrollTo(0, 0);
     
                 } catch (error) {
-                    console.error('Submission Failed:', error);
+                    this.logError('Submission Failed:', error);
                     this.showToast(error.message, false);
                 } finally {
                     this.toggleButtonSpinner(false, form.querySelector('button[type="submit"]'));
@@ -260,29 +297,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const form = e.target;
             const userId = form.querySelector('#userId').value;
             const spouseId = form.querySelector('#spouseId').value;
-            console.log('Starting login for userId:', userId, 'spouseId:', spouseId);
+            this.logDebug('Starting login for userId:', userId, 'spouseId:', spouseId);
             // Keep the login modal open while we check password status so the user sees the spinner/disabled button.
             const result = await this.apiCall({ action: 'checkPasswordStatus', id: userId, spouse_id: spouseId });
-            console.log('API result:', result);
+            this.logDebug('API result:', result);
             if (!result) {
-                console.log('No result from API');
+                this.logDebug('No result from API');
                 return;
             }
             if (result.message === 'password_required') {
                 // Move to set password flow
-                console.log('Password required, showing set password modal');
+                this.logDebug('Password required, showing set password modal');
                 this.userLoginModal.hide();
                 document.getElementById('modalUserId').value = userId;
                 this.setPasswordModal.show();
             } else if (result.message === 'password_exists') {
                 // Ask for existing password
-                console.log('Password exists, showing login password modal');
+                this.logDebug('Password exists, showing login password modal');
                 this.userLoginModal.hide();
                 document.getElementById('loginModalUserId').value = userId;
                 document.getElementById('loginModalSpouseId').value = spouseId;
                 this.loginPasswordModal.show();
             } else {
-                console.log('Unexpected result message:', result.message);
+                this.logDebug('Unexpected result message:', result.message);
             }
         },
         async handleModalSetPassword(e) { e.preventDefault(); const userId = document.getElementById('modalUserId').value; const newPassword = document.getElementById('modalNewPassword').value; const confirmPassword = document.getElementById('modalConfirmPassword').value; if (newPassword !== confirmPassword) { this.showToast('كلمة المرور وتأكيدها غير متطابقين.', false); return; } if (newPassword.length < 6) { this.showToast('كلمة المرور يجب أن لا تقل عن 6 أحرف.', false); return; } const result = await this.apiCall({ action: 'setMemberPassword', userId: userId, password: newPassword }, true); if (result) { this.setPasswordModal.hide(); localStorage.setItem('loggedInUserId', userId); localStorage.setItem('loggedInUserName', result.userName); window.location.href = 'dashboard.html'; } },
