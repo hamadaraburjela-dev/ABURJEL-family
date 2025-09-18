@@ -1198,13 +1198,56 @@ body {
 
 /* END professional polish */
 
+/* ---------------- Global professional reset for index ---------------- */
+/* Aim: clean, minimal, easy-on-the-eye landing */
+.main-container { background: #f2f6f8; min-height: 100vh; }
+.header-section { background: transparent; padding-top: 2.6rem; padding-bottom: 1rem; }
+.header-text h1 { font-size: 1.6rem; color: #0c3a0c; margin-bottom: 6px; }
+.header-text p.lead { font-size: 1rem; color: #55626a; margin-bottom: 4px; }
+.header-text small { color: #8a9498; }
+
+.hero-panel { background: #ffffff; border-radius: 14px; padding: 32px; box-shadow: 0 10px 30px rgba(35,55,45,0.06); }
+.hero-panel .row { align-items: stretch; }
+.hero-panel .selection-card { background: #fff; border: 1px solid rgba(15, 40, 25, 0.04); }
+.hero-panel .selection-card .card-title { color: #144e14; }
+.hero-panel .selection-card .card-text { color: #60686c; font-size: 0.95rem; }
+.hero-panel .selection-card.large-card { padding: 28px; }
+
+/* Layout grid spacing */
+.hero-panel .col-12 { margin-bottom: 0; }
+.hero-panel .col-md-6 { display: flex; }
+.hero-panel .col-md-6 .selection-card { width: 100%; display:flex; align-items:center; justify-content:center; }
+
+/* Improve overall fonts and sizes */
+body { font-size: 16px; line-height: 1.6; }
+h1,h2,h3,h4 { line-height: 1.2; }
+
+/* Make buttons and inputs consistent */
+.btn-primary { background: var(--primary-green); border-color: var(--primary-green); }
+.btn-primary:hover { background: #066400; }
+
+/* Footer simpler */
+.footer { background: transparent; padding: 24px 0; color: #586068; }
+
+@media (max-width: 768px) {
+    .hero-panel { padding: 18px; }
+    .header-text h1 { font-size: 1.25rem; }
+    .top-logo { width: 64px; height: 64px; }
+}
+
+/* final small tweaks */
+.selection-card .card-body { padding: 12px 6px; }
+.card-title { font-size: 1.05rem; }
+
+/* ---------------- end global professional reset ---------------- */
+
 /* Overrides for homepage layout that matches provided screenshot */
 .top-logo {
     /* logo kept inside header container to avoid overlap with browser chrome */
     position: relative;
-    width: 86px;
-    height: 86px;
-    padding: 8px;
+    width: 84px;
+    height: 84px;
+    padding: 6px;
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.08);
