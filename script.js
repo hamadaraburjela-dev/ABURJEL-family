@@ -17,16 +17,37 @@ document.addEventListener('DOMContentLoaded', () => {
             "مساعدات تشغيلية": ["تمويل مشاريع صغيرة", "تدريب مهني", "أدوات عمل أو معدات إنتاج"]
         },
         // Client-side translation map for server/client messages -> Arabic
+        // This covers both English and common server-returned messages so toasts display Arabic consistently.
         translations: {
+            // password flow
             'password_required': 'الرجاء إعداد كلمة مرور لحسابك.',
             'password_exists': 'يرجى إدخال كلمة المرور للمتابعة.',
+
+            // network / fetch
             'Server not reachable': 'الخادم غير متصل.',
             'Failed to fetch': 'فشل في الاتصال بالخادم. يرجى التحقق من الاتصال.',
             'NetworkError': 'خطأ في الشبكة. الرجاء المحاولة لاحقاً.',
+            'Server error': 'خطأ في الخادم. الرجاء المحاولة لاحقاً.',
+
+            // dates / parsing
             'Invalid Date': 'تاريخ غير صالح',
+
+            // generic client/server
             'No result from API': 'لم يتم استلام رد من الخادم.',
             'Submission Failed': 'فشل الإرسال',
-            'Server error': 'خطأ في الخادم. الرجاء المحاولة لاحقاً.'
+
+            // English server messages found in Code.gs
+            'Token is missing.': 'رمز الجلسة مفقود. الرجاء تسجيل الدخول مرة أخرى.',
+            'Aid or Individuals sheet not found.': 'ورقة البيانات المطلوبة غير موجودة على الخادم.',
+
+            // Friendly fallbacks for some server messages (Arabic passes through unchanged)
+            'تم حفظ كلمة المرور بنجاح.': 'تم حفظ كلمة المرور بنجاح.',
+            'تمت إضافة المساعدة بنجاح!': 'تمت إضافة المساعدة بنجاح!',
+            'تمت إضافة المساعدة بنجاح!': 'تمت إضافة المساعدة بنجاح!',
+            'تم محو كلمة المرور بنجاح. يمكن للفرد الآن تعيين كلمة مرور جديدة.': 'تم محو كلمة المرور بنجاح. يمكن للفرد الآن تعيين كلمة مرور جديدة.',
+            'تم تحديث الحالة بنجاح!': 'تم تحديث الحالة بنجاح!',
+            'تمت إضافة المساعدة بنجاح!': 'تمت إضافة المساعدة بنجاح!',
+            'لا توجد بيانات للتصدير.': 'لا توجد بيانات للتصدير.',
         },
 
         translateMessage(msg) {
