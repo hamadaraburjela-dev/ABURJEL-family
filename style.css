@@ -139,6 +139,7 @@
 
 :root {
     --primary-green: #008000;
+    --accent-blue: #0d6efd; /* calmer blue to replace orange accents */
     --dark-grey: #212529;
     --light-grey: #f4f7f6;
     --border-grey: #dee2e6;
@@ -278,7 +279,7 @@ body {
 .selection-card .card-body { padding: 1.25rem; }
 
 .card-icon {
-    font-size: 3rem;
+    font-size: 2.4rem; /* reduced icon size globally */
     color: var(--primary-green);
     margin-bottom: 1rem;
     transition: color 0.3s ease;
@@ -887,7 +888,8 @@ html { -webkit-text-size-adjust: 100%; font-size: 16px; }
 .main-content {
     position: relative;
     z-index: 3;
-    margin-top: -100px;
+    /* override previous negative offset that caused overlap with header */
+    margin-top: 1.5rem !important;
     padding-bottom: 50px;
 }
 
@@ -1121,4 +1123,150 @@ html { -webkit-text-size-adjust: 100%; font-size: 16px; }
     #main-content { width: 96%; }
     #main-content h2.h5 { font-size: 18px; }
     #main-content .d-grid .btn { padding: 14px 12px; }
+}
+
+/* Mobile-first centered landing card */
+.mobile-landing {
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+    overflow: hidden;
+}
+.mobile-landing .card-body { padding: 22px; }
+.mobile-landing .d-grid .btn { width: 100%; text-align: center; }
+.mobile-landing .d-grid .btn small { opacity: 0.9; }
+
+@media (min-width: 700px) {
+    .mobile-landing { max-width: 560px; }
+    .logo { max-width: 140px; }
+}
+
+/* ---------------- Professional polish ---------------- */
+/* Improve typography, spacing and card consistency for a professional look */
+body {
+    color: #223; /* subtle deep color for better contrast */
+}
+
+/* Center logo + title for a balanced professional header */
+.header-text { text-align: center; }
+.top-logo { margin: 0 auto; display: block; }
+
+/* Make header background minimal and add a subtle divider */
+.header-section { background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.55)); border-bottom: 1px solid rgba(0,0,0,0.04); }
+
+.header-text h1 { color: #0b3d0b; letter-spacing: 0.4px; }
+.header-text p.lead, .header-text small { color: #4e5b66; }
+
+/* Hero panel: softer, cleaner */
+.hero-panel { background: #ffffff; border: 1px solid rgba(16, 64, 24, 0.04); }
+
+/* Cards: consistent size, centered content, subtle shadow */
+.hero-panel .selection-card {
+    min-height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 28px 20px;
+    border-radius: 12px;
+    transition: transform 220ms ease, box-shadow 220ms ease;
+    border: 1px solid rgba(0,0,0,0.03);
+}
+.hero-panel .selection-card .card-title { font-size: 1.12rem; font-weight: 700; color: #163c16; }
+.hero-panel .selection-card .card-text { color: #6b7176; margin-top: 6px; }
+.hero-panel .selection-card:hover { transform: translateY(-6px); box-shadow: 0 14px 30px rgba(20,40,20,0.06); }
+
+.hero-panel .large-card { min-height: 180px; }
+.hero-panel .card-icon { font-size: 2.4rem; color: var(--primary-green); margin-bottom: 8px; }
+
+/* Buttons and CTAs inside cards should look clickable but subtle */
+.hero-panel a.selection-card { text-decoration: none; color: inherit; }
+
+/* Ensure good spacing on small screens */
+@media (max-width: 576px) {
+    .hero-panel .selection-card { padding: 18px; min-height: 120px; }
+    .hero-panel .large-card { padding: 22px 12px; }
+    .header-section { padding-top: 1.6rem; padding-bottom: 1rem; }
+}
+
+/* Tidy footer spacing */
+.footer { margin-top: 3rem; padding-top: 1.2rem; padding-bottom: 1.2rem; }
+
+/* Small UI details */
+.logo { background: transparent; padding: 6px; }
+.selection-card .card-body { padding: 0; }
+
+/* END professional polish */
+
+/* Overrides for homepage layout that matches provided screenshot */
+.top-logo {
+    /* logo kept inside header container to avoid overlap with browser chrome */
+    position: relative;
+    width: 86px;
+    height: 86px;
+    padding: 8px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+/* header text responsiveness */
+.header-text h1 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #0b3d0b;
+}
+.header-text p.lead { font-size: 1rem; color: #4b5563; }
+.header-text small { font-size: 0.85rem; color: #6c757d; }
+
+@media (min-width: 992px) {
+    .header-text h1 { font-size: 2rem; }
+    .top-logo { width: 96px; height: 96px; }
+}
+
+@media (max-width: 576px) {
+    .header-text h1 { font-size: 1.2rem; }
+    .header-text p.lead { font-size: 0.95rem; }
+    .top-logo { width: 72px; height: 72px; margin: 0 auto; display: block; }
+    .hero-panel { margin: 12px; padding: 18px; }
+}
+
+/* Increase header vertical spacing so the title is visually lower on the page */
+.header-section {
+    padding-top: 3rem; /* push text down on larger screens */
+    padding-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .header-section { padding-top: 2.2rem; padding-bottom: 1rem; }
+}
+
+@media (max-width: 420px) {
+    .header-section { padding-top: 1.6rem; padding-bottom: 0.8rem; }
+}
+
+.selection-hero { background: transparent; }
+.hero-panel {
+    background: rgba(255,255,255,0.95);
+    border-radius: 14px;
+    padding: 42px 36px;
+    box-shadow: 0 10px 30px rgba(15, 50, 50, 0.06);
+    margin: 18px; /* ensure spacing from page edges */
+}
+
+.hero-panel .selection-card { border-radius: 12px; padding: 26px 18px; }
+.hero-panel .selection-card .card-body { padding: 18px; }
+.hero-panel .selection-card.large-card { padding-top: 28px; padding-bottom: 28px; }
+.hero-panel .selection-card.large-card .card-body { padding: 36px 18px; }
+
+.hero-panel .card-icon { font-size: 2.6rem; color: var(--primary-green); }
+
+/* make top two cards smaller height and centered text like screenshot */
+.hero-panel .row > .col-12.col-md-6 { display:flex; }
+.hero-panel .row > .col-12.col-md-6 .card { flex:1; }
+
+@media (max-width: 768px) {
+    .top-logo { position: static; display: inline-block; margin: 8px 0 0 0; }
+    .hero-panel { padding: 20px; }
+    .hero-panel .selection-card.large-card .card-body { padding: 20px 12px; }
 }
