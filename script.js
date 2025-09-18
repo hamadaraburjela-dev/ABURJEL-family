@@ -6,7 +6,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const App = {
-        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbzWH7WE1KV4lf_Wb5vxjJOCHzALqmGUyeNl0nboad_RavLtvwJ15V_zrH6e5r9FLRKt5Q/exec',
+        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbyc1HFvcEdW4oy8WMR772b2ApGdrjrX8TQlOT_q24xItXkjtfdX3Pwbt6w3NRm52QHqfw/exec',
         aidCategories: {
             "مساعدات مالية": ["نقد مباشر للعائلات المحتاجة", "دفع فواتير (كهرباء، ماء، إيجار)", "قروض حسنة أو صناديق دوارة"],
             "مساعدات غذائية": ["طرود غذائية أساسية", "وجبات جاهزة / مطبوخة", "توزيع مياه للشرب"],
@@ -15,6 +15,36 @@ document.addEventListener('DOMContentLoaded', () => {
             "مساعدات إغاثية (طارئة)": ["خيم وأغطية في حالات النزوح", "ملابس وأحذية", "أدوات نظافة وتعقيم", "تدخل عاجل في الكوارث"],
             "مساعدات سكنية": ["بناء أو ترميم منازل", "دفع إيجارات", "توفير أثاث أو أجهزة كهربائية"],
             "مساعدات تشغيلية": ["تمويل مشاريع صغيرة", "تدريب مهني", "أدوات عمل أو معدات إنتاج"]
+        },
+        // Client-side translation map for server/client messages -> Arabic
+        translations: {
+            'password_required': 'الرجاء إعداد كلمة مرور لحسابك.',
+            'password_exists': 'يرجى إدخال كلمة المرور للمتابعة.',
+            'Server not reachable': 'الخادم غير متصل.',
+            'Failed to fetch': 'فشل في الاتصال بالخادم. يرجى التحقق من الاتصال.',
+            'NetworkError': 'خطأ في الشبكة. الرجاء المحاولة لاحقاً.',
+            'Invalid Date': 'تاريخ غير صالح',
+            'No result from API': 'لم يتم استلام رد من الخادم.',
+            'Submission Failed': 'فشل الإرسال',
+            'Server error': 'خطأ في الخادم. الرجاء المحاولة لاحقاً.'
+        },
+
+        translateMessage(msg) {
+            if (!msg) return 'حدث خطأ غير متوقع.';
+            // if it's already Arabic (contains Arabic letters), return as-is
+            if (/[\u0600-\u06FF]/.test(msg)) return msg;
+            // direct map
+            if (this.translations[msg]) return this.translations[msg];
+            // common substring translations
+            const lower = String(msg).toLowerCase();
+            if (lower.includes('invalid date')) return this.translations['Invalid Date'];
+            if (lower.includes('failed to fetch')) return this.translations['Failed to fetch'];
+            if (lower.includes('network')) return this.translations['NetworkError'];
+            if (lower.includes('server not')) return this.translations['Server not reachable'];
+            // numeric/http status fallback
+            if (/^\d{3}/.test(msg)) return `خطأ في الخادم: ${msg}`;
+            // default: return original but marked in Arabic friendly phrasing
+            return msg;
         },
         searchTimeout: null,
         membersList: [],
@@ -91,9 +121,15 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) { console.error('API Call Failed:', error); this.showToast(error.message, false); return null; } finally { if (isButtonTriggered) this.toggleButtonSpinner(false, activeSubmitButton); }
         },
         
-        showToast(message, isSuccess = true) { Toastify({ text: message, duration: 4000, gravity: "top", position: "center", style: { background: isSuccess ? "#28a745" : "#dc3545", boxShadow: "none" } }).showToast(); },
+        showToast(message, isSuccess = true) {
+            // normalize and translate message before showing
+            const msg = (typeof message === 'string') ? this.translateMessage(message) : (message?.message ? this.translateMessage(message.message) : '');
+            Toastify({ text: msg, duration: 4000, gravity: "top", position: "center", style: { background: isSuccess ? "#28a745" : "#dc3545", boxShadow: "none" } }).showToast();
+        },
+
         toggleButtonSpinner(show, button) { const btn = button || document.querySelector('button[type="submit"]'); if (!btn) return; btn.disabled = show; btn.querySelector('.spinner-border')?.classList.toggle('d-none', !show); const buttonText = btn.querySelector('.button-text'); if(buttonText) buttonText.style.opacity = show ? 0.5 : 1; },
-        formatDateToEnglish(dateString) { if (!dateString) return '-'; try { const date = new Date(dateString); if (isNaN(date.getTime())) return 'Invalid Date'; return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; } catch (error) { return dateString; } },
+
+        formatDateToEnglish(dateString) { if (!dateString) return '-'; try { const date = new Date(dateString); if (isNaN(date.getTime())) return this.translateMessage('Invalid Date'); return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; } catch (error) { return dateString; } },
         
         async checkServerStatus() {
             const statusDiv = document.getElementById('server-status');

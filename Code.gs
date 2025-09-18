@@ -32,7 +32,7 @@ function doPost(e) {
       case 'setMemberPassword': response = handleSetMemberPassword(payload.userId, payload.password); break;
       case 'adminLogin': response = handleAdminLogin(payload.username, payload.password); break;
       case 'getUserData': response = handleGetUserData(payload.userId); break;
-      case 'getUserAidHistory': response = handleGetUserHistory(payload.userId); break;
+  case 'getUserAidHistory': response = handleGetUserAidHistory(payload.userId); break;
       case 'getUserFutureAid': response = handleGetUserFutureAid(payload.userId, payload.token); break;
       case 'getAdminStats': response = handleGetStats(payload.token); break;
       case 'getAllMembers': response = handleGetAllMembers(payload.token, payload.searchTerm, payload.page, payload.pageSize); break;
