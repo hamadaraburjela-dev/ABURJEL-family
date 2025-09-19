@@ -155,6 +155,19 @@
                 </div>
               </div>
 
+              <!-- هوية الأب (في حالة لم يكن الشهيد رب أسرة) -->
+              <div class="mb-4" id="fatherIdSection" style="display: none;">
+                <label for="fatherID" class="form-label fw-bold">
+                  رقم هوية الأب أو رب الأسرة
+                </label>
+                <input type="text" class="form-control form-control-lg" id="fatherID" 
+                       placeholder="أدخل رقم هوية الأب للتحقق من انتماء الشهيد للعائلة (9 أرقام)" 
+                       pattern="[0-9]{9}" maxlength="9">
+                <div class="form-text">
+                  اتركه فارغاً إذا كان الشهيد رب أسرة مسجل بالفعل
+                </div>
+              </div>
+
               <!-- تفاصيل إضافية -->
               <div class="mb-4">
                 <label for="additionalDetails" class="form-label fw-bold">
@@ -297,6 +310,8 @@
       // Verify martyr ID when 9 digits entered
       martyrIDInput.addEventListener('input', async function(e) {
         e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        const martyrNameInput = document.getElementById('martyrName');
+        
         if (e.target.value.length === 9) {
           try {
             note.textContent = 'جاري التحقق من هوية الشهيد...';
@@ -322,19 +337,80 @@
 
             martyrExists = !!data.exists;
             martyrName = data.martyrName || '';
+            const fatherIdSection = document.getElementById('fatherIdSection');
+            
             if (martyrExists) {
-              note.textContent = `تم العثور على الشهيد ضمن العائلة${usedFallback && martyrName ? ': ' + martyrName : ''}`;
+              // تعبئة الاسم تلقائياً إذا وُجد الشهيد
+              if (martyrName) {
+                martyrNameInput.value = martyrName;
+                martyrNameInput.style.backgroundColor = '#d4edda'; // لون أخضر فاتح
+              }
+              // إخفاء حقل هوية الأب
+              fatherIdSection.style.display = 'none';
+              
+              note.innerHTML = `✅ <strong>تم العثور على الشهيد ضمن العائلة</strong>${martyrName ? ': ' + martyrName : ''}<br><small class="text-muted">تم تعبئة الاسم تلقائياً</small>`;
               note.style.color = '#198754';
             } else {
-              note.textContent = 'رقم الهوية غير موجود ضمن العائلة. يرجى مراجعة المسؤول ورفع شهادة الوفاة كدليل.';
-              note.style.color = '#dc3545';
+              // مسح الاسم وإظهار حقل هوية الأب
+              martyrNameInput.value = '';
+              martyrNameInput.style.backgroundColor = '';
+              fatherIdSection.style.display = 'block';
+              
+              note.innerHTML = `
+                ⚠️ <strong>رقم الهوية غير موجود ضمن قاعدة البيانات</strong><br>
+                <div class="alert alert-info mt-2 mb-0 p-2" style="font-size: 0.9rem;">
+                  <i class="bi bi-info-circle me-1"></i>
+                  <strong>إذا كان الشهيد من أفراد العائلة وليس رب أسرة:</strong><br>
+                  • يمكنك إكمال التسجيل وتعبئة الاسم يدوياً<br>
+                  • أدخل هوية الأب أو رب الأسرة في الحقل أدناه للتحقق<br>
+                  • سيتم مراجعة الطلب من قبل الإدارة
+                </div>
+              `;
+              note.style.color = '#856404';
             }
           } catch (err) {
+            martyrNameInput.value = '';
+            martyrNameInput.style.backgroundColor = '';
             note.textContent = 'خطأ في الاتصال بالخادم أثناء التحقق.';
             note.style.color = '#dc3545';
           }
         } else {
+          // مسح البيانات عند تغيير رقم الهوية
+          martyrNameInput.value = '';
+          martyrNameInput.style.backgroundColor = '';
+          document.getElementById('fatherIdSection').style.display = 'none';
           note.textContent = '';
+        }
+      });
+
+      // التحقق من هوية الأب
+      const fatherIDInput = document.getElementById('fatherID');
+      const fatherNote = document.createElement('div');
+      fatherNote.className = 'form-text mt-2';
+      fatherIDInput.parentElement.appendChild(fatherNote);
+
+      fatherIDInput.addEventListener('input', async function(e) {
+        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        if (e.target.value.length === 9) {
+          try {
+            fatherNote.textContent = 'جاري التحقق من هوية الأب...';
+            fatherNote.style.color = '#6c757d';
+            
+            const fbData = await postToServer({ action: 'getUserData', userId: e.target.value });
+            if (fbData && fbData.success && fbData.data) {
+              const fatherName = fbData.data['الاسم الكامل'];
+              fatherNote.innerHTML = `✅ <strong>تم التحقق من الأب:</strong> ${fatherName}<br><small class="text-success">يمكن إكمال تسجيل الشهيد</small>`;
+              fatherNote.style.color = '#198754';
+            } else {
+              fatherNote.innerHTML = `❌ <strong>هوية الأب غير موجودة في قاعدة البيانات</strong><br><small class="text-danger">يرجى التأكد من رقم الهوية أو مراجعة الإدارة</small>`;
+              fatherNote.style.color = '#dc3545';
+            }
+          } catch (err) {
+            fatherNote.textContent = 'خطأ في التحقق من هوية الأب';
+            fatherNote.style.color = '#dc3545';
+          }
+        } else {
+          fatherNote.textContent = '';
         }
       });
 
@@ -368,6 +444,16 @@
         (async () => {
           try {
             const deathCert = await toBase64(file);
+            const fatherID = document.getElementById('fatherID').value;
+            const additionalDetailsText = document.getElementById('additionalDetails').value;
+            
+            // إضافة معلومات الأب إلى التفاصيل إذا كانت موجودة
+            let finalAdditionalDetails = additionalDetailsText;
+            if (fatherID && fatherID.length === 9) {
+              finalAdditionalDetails = (additionalDetailsText ? additionalDetailsText + '\n\n' : '') + 
+                                    `هوية الأب/رب الأسرة: ${fatherID}`;
+            }
+            
             const payload = {
               action: 'submitMartyrRegistration',
               martyrID: martyrIDInput.value,
@@ -375,7 +461,8 @@
               martyrdomDate: document.getElementById('martyrdomDate').value,
               martyrdomPlace: document.getElementById('martyrdomPlace').value,
               martyrdomCause: document.getElementById('martyrdomCause').value,
-              additionalDetails: document.getElementById('additionalDetails').value,
+              additionalDetails: finalAdditionalDetails,
+              fatherID: fatherID || null,
               deathCertificate: deathCert
             };
             const result = await postToServer(payload);
@@ -395,8 +482,11 @@
             }
             form.reset();
             imagePreview.style.display = 'none';
+            document.getElementById('fatherIdSection').style.display = 'none';
+            document.getElementById('martyrName').style.backgroundColor = '';
             form.classList.remove('was-validated');
             note.textContent = '';
+            fatherNote.textContent = '';
           } catch (err) {
             if (window.App && App.showDialog) {
               App.showDialog({
@@ -418,8 +508,11 @@
       });
 
       // ID validation (9 digits only)
-      martyrIDInput.addEventListener('input', function(e) {
-        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+      const idInputs = document.querySelectorAll('#martyrID, #fatherID');
+      idInputs.forEach(input => {
+        input.addEventListener('input', function(e) {
+          e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        });
       });
     });
   </script>

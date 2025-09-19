@@ -948,10 +948,10 @@ function handleVerifyMartyrId(martyrId) {
 
 /**
  * تسجيل شهيد جديد
- * payload: { martyrID, martyrName, martyrdomDate, martyrdomPlace, martyrdomCause, additionalDetails, deathCertificate: { name, mimeType, data(Base64) } }
+ * payload: { martyrID, martyrName, martyrdomDate, martyrdomPlace, martyrdomCause, additionalDetails, fatherID, deathCertificate: { name, mimeType, data(Base64) } }
  */
 function handleSubmitMartyrRegistration(payload) {
-  const { martyrID, martyrName, martyrdomDate, martyrdomPlace, martyrdomCause, additionalDetails, deathCertificate } = payload;
+  const { martyrID, martyrName, martyrdomDate, martyrdomPlace, martyrdomCause, additionalDetails, fatherID, deathCertificate } = payload;
   if (!martyrID || !martyrName || !martyrdomDate || !martyrdomPlace || !martyrdomCause) {
     throw new Error('جميع الحقول مطلوبة: رقم الهوية، اسم الشهيد، تاريخ الاستشهاد، مكان الاستشهاد، سبب الاستشهاد');
   }
@@ -979,6 +979,15 @@ function handleSubmitMartyrRegistration(payload) {
   // التحقق من وجود الشهيد في قاعدة البيانات
   const verifyRes = handleVerifyMartyrId(martyrID);
   const martyrExists = verifyRes.exists;
+  
+  // التحقق من هوية الأب إذا كانت موجودة
+  let fatherExists = false;
+  let fatherName = '';
+  if (fatherID && fatherID.length === 9) {
+    const fatherVerifyRes = handleVerifyMartyrId(fatherID); // استخدام نفس الدالة للتحقق
+    fatherExists = fatherVerifyRes.exists;
+    fatherName = fatherVerifyRes.martyrName || '';
+  }
 
   // رفع شهادة الوفاة إلى جوجل درايف إن وُجدت
   let fileUrl = '';
@@ -1001,7 +1010,16 @@ function handleSubmitMartyrRegistration(payload) {
   }
 
   const requestId = 'MARTYR' + new Date().getTime();
-  const status = martyrExists ? 'جديد' : 'قيد المراجعة';
+  
+  // تحديد الحالة بناءً على التحقق
+  let status;
+  if (martyrExists) {
+    status = 'جديد'; // الشهيد موجود في قاعدة البيانات
+  } else if (fatherID && fatherExists) {
+    status = 'جديد'; // الشهيد غير موجود لكن الأب موجود في العائلة
+  } else {
+    status = 'قيد المراجعة'; // يحتاج مراجعة إدارية
+  }
   
   sheet.appendRow([
     requestId, 
@@ -1016,11 +1034,19 @@ function handleSubmitMartyrRegistration(payload) {
     fileUrl
   ]);
 
+  // رسالة الإرجاع حسب الحالة
+  let message;
+  if (martyrExists) {
+    message = 'تم تسجيل الشهيد بنجاح. إنا لله وإنا إليه راجعون.';
+  } else if (fatherID && fatherExists) {
+    message = `تم تسجيل الشهيد بنجاح باستخدام بيانات الأب (${fatherName}). إنا لله وإنا إليه راجعون.`;
+  } else {
+    message = 'تم إرسال الطلب للمراجعة الإدارية. سيتم التواصل معكم قريباً.';
+  }
+  
   return { 
     success: true, 
-    message: martyrExists 
-      ? 'تم تسجيل الشهيد بنجاح. إنا لله وإنا إليه راجعون.' 
-      : 'تم إرسال الطلب للمراجعة بسبب عدم العثور على الشهيد في السجلات.' 
+    message: message
   };
 }
 
