@@ -16,6 +16,7 @@ const ADMIN_ACTIONS_LOG_SHEET = 'سجل عمليات المدراء';
 const PASSWORD_RESET_REQUESTS_SHEET = 'طلبات إعادة تعيين';
 const SPECIAL_CASES_SHEET = 'حالات خاصة';
 const BIRTHS_SHEET = 'مواليد اطفال';
+const CHILDREN_CLOTHES_SHEET = 'بنزط اطفال';
 
 // --- MAIN ENTRY POINTS ---
 function doGet(e) {
@@ -44,6 +45,7 @@ function doPost(e) {
   case 'addSpecialCase': response = handleAddSpecialCase(payload); break;
   case 'verifyFatherId': response = handleVerifyFatherId(payload.fatherId); break;
   case 'submitBirthRegistration': response = handleSubmitBirthRegistration(payload); break;
+  case 'submitChildrenClothes': response = handleSubmitChildrenClothes(payload); break;
   case 'getBirthRequests': response = handleGetBirthRequests(payload.token); break;
   case 'updateBirthRequestStatus': response = handleUpdateBirthRequestStatus(payload); break;
       case 'bulkAddAidFromXLSX': response = handleBulkAddAidFromXLSX(payload); break;
@@ -841,4 +843,60 @@ function handleUpdateBirthRequestStatus(payload) {
     }
   }
   throw new Error('لم يتم العثور على الطلب المطلوب.');
+}
+
+/**
+ * استلام طلب "بنزط أطفال" (ملابس) من الموقع العام
+ * payload: { idNumber, fullName, phone, address, childrenCount, sizesDetails, priority, notes, attachment?: { name, mimeType, data(Base64) } }
+ */
+function handleSubmitChildrenClothes(payload) {
+  const { idNumber, fullName, phone, address, childrenCount, sizesDetails, priority, notes, attachment } = payload || {};
+  if (!idNumber || !fullName || !phone || !childrenCount) {
+    throw new Error('الحقول المطلوبة: رقم الهوية، الاسم الكامل، رقم الجوال، عدد الأطفال');
+  }
+
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(CHILDREN_CLOTHES_SHEET) || ss.insertSheet(CHILDREN_CLOTHES_SHEET);
+
+  // إنشاء العناوين إن لم تكن موجودة
+  const values = sheet.getDataRange().getValues();
+  if (!values || values.length === 0) {
+    sheet.appendRow(['معرف الطلب','تاريخ الإرسال','رقم الهوية','الاسم الكامل','رقم الجوال','مكان الإقامة','عدد الأطفال','تفاصيل المقاسات','الأولوية','ملاحظات','حالة الطلب','رابط الملف']);
+  }
+
+  // رفع الملف الاختياري إلى Google Drive
+  let fileUrl = '';
+  try {
+    if (attachment && attachment.data) {
+      const bytes = Utilities.base64Decode(attachment.data);
+      const blob = Utilities.newBlob(bytes, attachment.mimeType || MimeType.JPEG, attachment.name || `Attachment_${idNumber}.bin`);
+      const folderName = 'مرفقات بنزط أطفال';
+      let folder;
+      const it = DriveApp.getFoldersByName(folderName);
+      folder = it.hasNext() ? it.next() : DriveApp.createFolder(folderName);
+      const file = folder.createFile(blob);
+      file.setName(`مرفق_${idNumber}_${new Date().getTime()}`);
+      fileUrl = file.getUrl();
+    }
+  } catch (fileErr) {
+    Logger.log('Children clothes file upload failed: ' + fileErr);
+  }
+
+  const requestId = 'CLOTH' + new Date().getTime();
+  sheet.appendRow([
+    requestId,
+    new Date(),
+    idNumber || '',
+    fullName || '',
+    phone || '',
+    address || '',
+    Number(childrenCount) || 0,
+    sizesDetails || '',
+    priority || 'عادي',
+    notes || '',
+    'جديد',
+    fileUrl
+  ]);
+
+  return { success: true, message: 'تم استلام طلب بنزط الأطفال وسيتم مراجعته قريباً.' };
 }
