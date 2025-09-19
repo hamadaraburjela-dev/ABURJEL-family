@@ -15,6 +15,7 @@ const ADMINS_LOGIN_LOG_SHEET = 'سجل دخول المدراء';
 const ADMIN_ACTIONS_LOG_SHEET = 'سجل عمليات المدراء';
 const PASSWORD_RESET_REQUESTS_SHEET = 'طلبات إعادة تعيين';
 const SPECIAL_CASES_SHEET = 'حالات خاصة';
+const BIRTHS_SHEET = 'مواليد اطفال';
 
 // --- MAIN ENTRY POINTS ---
 function doGet(e) {
@@ -41,6 +42,10 @@ function doPost(e) {
       case 'getAllAidRecords': response = handleGetAllAidRecords(payload.token); break;
   case 'addAid': response = handleAddAid(payload); break;
   case 'addSpecialCase': response = handleAddSpecialCase(payload); break;
+  case 'verifyFatherId': response = handleVerifyFatherId(payload.fatherId); break;
+  case 'submitBirthRegistration': response = handleSubmitBirthRegistration(payload); break;
+  case 'getBirthRequests': response = handleGetBirthRequests(payload.token); break;
+  case 'updateBirthRequestStatus': response = handleUpdateBirthRequestStatus(payload); break;
       case 'bulkAddAidFromXLSX': response = handleBulkAddAidFromXLSX(payload); break;
       case 'createAdmin': response = handleCreateAdmin(payload); break;
       case 'updateAdminStatus': response = handleUpdateAdminStatus(payload); break;
@@ -51,6 +56,8 @@ function doPost(e) {
       case 'clearMemberPassword': response = handleClearMemberPassword(payload); break;
       case 'updateAidStatus': response = handleUpdateAidStatus(payload); break;
       case 'bulkProcessAid': response = handleBulkProcessAid(payload); break;
+      default:
+        response = { success: false, message: 'Unsupported action: ' + payload.action };
     }
     return createJsonResponse(response);
   } catch (error) {
@@ -734,4 +741,104 @@ function handleAddSpecialCase(payload) {
   } catch (err) {
     return { success: false, message: err.message };
   }
+}
+
+/**
+ * تحقق من رقم هوية الأب إن كان موجوداً في شيت الأفراد
+ */
+function handleVerifyFatherId(fatherId) {
+  if (!fatherId) throw new Error('رقم هوية الأب مفقود.');
+  const members = sheetToJSON(INDIVIDUALS_SHEET);
+  const member = members.find(m => String(m['رقم الهوية']).trim() === String(fatherId).trim());
+  return { success: true, exists: !!member, fatherName: member ? member['الاسم الكامل'] : null };
+}
+
+/**
+ * استلام تسجيل مولود جديد مع رفع شهادة الميلاد كدليل
+ * payload: { fatherID, babyName, babyID, birthDate, birthCertificate: { name, mimeType, data(Base64) } }
+ */
+function handleSubmitBirthRegistration(payload) {
+  const { fatherID, babyName, babyID, birthDate, birthCertificate } = payload;
+  if (!fatherID || !babyName || !babyID || !birthDate) {
+    throw new Error('جميع الحقول مطلوبة: هوية الأب، اسم المولود، هوية المولود، تاريخ الميلاد');
+  }
+
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(BIRTHS_SHEET) || ss.insertSheet(BIRTHS_SHEET);
+
+  // إنشاء العناوين إن لم تكن موجودة
+  const rangeValues = sheet.getDataRange().getValues();
+  if (!rangeValues || rangeValues.length === 0) {
+    sheet.appendRow(['معرف الطلب', 'تاريخ الإرسال', 'رقم هوية الأب', 'اسم الأب', 'اسم المولود', 'رقم هوية المولود', 'تاريخ ميلاد المولود', 'حالة الطلب', 'رابط الملف']);
+  }
+
+  // التحقق من الأب
+  const verifyRes = handleVerifyFatherId(fatherID);
+  const fatherExists = verifyRes.exists;
+  const fatherName = verifyRes.fatherName || '';
+
+  // رفع الملف إلى جوجل درايف إن وُجد
+  let fileUrl = '';
+  try {
+    if (birthCertificate && birthCertificate.data) {
+      const bytes = Utilities.base64Decode(birthCertificate.data);
+      const blob = Utilities.newBlob(bytes, birthCertificate.mimeType || MimeType.JPEG, birthCertificate.name || `BirthCertificate_${babyID || ''}.bin`);
+      // وضع الملف داخل مجلد مخصص إن وُجد/أُنشئ
+      const folderName = 'شهادات المواليد';
+      let folder;
+      const it = DriveApp.getFoldersByName(folderName);
+      folder = it.hasNext() ? it.next() : DriveApp.createFolder(folderName);
+      const file = folder.createFile(blob);
+      file.setName(`شهادة_ميلاد_${babyID || ''}_${new Date().getTime()}`);
+      fileUrl = file.getUrl();
+    }
+  } catch (fileErr) {
+    // لا نوقف العملية بسبب فشل الرفع، فقط نسجل بدون رابط
+    Logger.log('File upload failed: ' + fileErr);
+  }
+
+  const requestId = 'BIRTH' + new Date().getTime();
+  const status = fatherExists ? 'جديد' : 'قيد المراجعة';
+  sheet.appendRow([requestId, new Date(), fatherID, fatherName, babyName, babyID, new Date(birthDate), status, fileUrl]);
+
+  return { success: true, message: fatherExists ? 'تم إرسال طلب تسجيل المولود.' : 'تم إرسال الطلب للمراجعة بسبب عدم العثور على الأب في السجلات.' };
+}
+
+/**
+ * إرجاع طلبات المواليد للإدارة
+ */
+function handleGetBirthRequests(token) {
+  authenticateToken(token);
+  const rows = sheetToJSON(BIRTHS_SHEET);
+  // ترتيب تنازلي حسب التاريخ
+  const sorted = rows.sort((a, b) => new Date(b['تاريخ الإرسال']) - new Date(a['تاريخ الإرسال']));
+  return { success: true, data: sorted };
+}
+
+/**
+ * تحديث حالة طلب مولود
+ * payload: { token, requestId, newStatus }
+ */
+function handleUpdateBirthRequestStatus(payload) {
+  const admin = authenticateToken(payload.token);
+  const { requestId, newStatus } = payload;
+  if (!requestId || !newStatus) throw new Error('بيانات غير مكتملة لتحديث حالة الطلب.');
+
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(BIRTHS_SHEET);
+  if (!sheet) throw new Error('ورقة "مواليد اطفال" غير موجودة.');
+  const data = sheet.getDataRange().getValues();
+  if (data.length < 2) throw new Error('لا توجد طلبات.');
+  const headers = data[0];
+  const idCol = headers.indexOf('معرف الطلب');
+  const statusCol = headers.indexOf('حالة الطلب');
+  if (idCol === -1 || statusCol === -1) throw new Error('أعمدة الطلب غير صحيحة.');
+
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][idCol]).trim() === String(requestId).trim()) {
+      sheet.getRange(i + 1, statusCol + 1).setValue(newStatus);
+      logAdminAction(admin.username, 'تحديث حالة طلب مولود', `تم تحديث ${requestId} إلى ${newStatus}`);
+      return { success: true, message: 'تم تحديث حالة الطلب.' };
+    }
+  }
+  throw new Error('لم يتم العثور على الطلب المطلوب.');
 }

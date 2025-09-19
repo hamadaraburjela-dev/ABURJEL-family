@@ -6,7 +6,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const App = {
-        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbyi5_-5EKcDdC95urDLUkOcbhax8974S6PJkULj60AWOqzvsmeGzb11Y78SpB4K5FHEag/exec',
+        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbzG2zekpsRsWaEuVolFeT6gt7DUKtn0bAjbFCKmIfAQTPVSU18qJImSt56sCt4pVpKO8Q/exec',
         aidCategories: {
             "مساعدات مالية": ["نقد مباشر للعائلات المحتاجة", "دفع فواتير (كهرباء، ماء، إيجار)", "قروض حسنة أو صناديق دوارة"],
             "مساعدات غذائية": ["طرود غذائية أساسية", "وجبات جاهزة / مطبوخة", "توزيع مياه للشرب"],
@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
         async initPageBasedOnURL() {
             const path = window.location.pathname.split('/').pop() || 'index.html';
             const token = sessionStorage.getItem('adminToken');
-            const adminPages = ['admin.html', 'manage-members.html', 'manage-aid.html', 'aid-logs.html', 'reports.html', 'password-resets.html', 'superadmin.html'];
+            const adminPages = ['admin.html', 'manage-members.html', 'manage-aid.html', 'aid-logs.html', 'reports.html', 'password-resets.html', 'superadmin.html', 'life-requests.html'];
             
             if (!token && adminPages.includes(path)) {
                 window.location.href = 'index.html';

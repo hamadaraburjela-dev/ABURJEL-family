@@ -180,23 +180,44 @@
   </main>
 
   <!-- Footer -->
-  <footer class="text-center py-4 mt-5">
-    <div class="container">
-      <p class="text-muted mb-0">
-        جميع الحقوق محفوظة &copy; 2025 | م. حماده أبو رجيلة
-      </p>
+<footer class="footer">
+    <div id="server-status" class="status-indicator mb-2">
+        <span class="status-dot"></span>
+        <span class="status-text">جاري التحقق من حالة الخادم...</span>
     </div>
-  </footer>
+    <p class="copyright-text mb-2">
+        جميع الحقوق محفوظة &copy; 2025 | م. حماده أبو رجيلة
+    </p>
+    <a href="https://wa.me/972569210941" target="_blank" class="whatsapp-link">
+        <i class="bi bi-whatsapp"></i> تواصل عبر الواتساب
+    </a>
+</footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="script.js"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   
   <script>
-    // JavaScript for form validation and image preview
+    // JavaScript for form validation, father verification, API submit, and image preview
     document.addEventListener('DOMContentLoaded', function() {
       const form = document.getElementById('birthForm');
       const birthCertificate = document.getElementById('birthCertificate');
       const imagePreview = document.getElementById('imagePreview');
       const previewImg = document.getElementById('previewImg');
+      const fatherIDInput = document.getElementById('fatherID');
+      const babyIDInput = document.getElementById('babyID');
+
+      const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyi5_-5EKcDdC95urDLUkOcbhax8974S6PJkULj60AWOqzvsmeGzb11Y78SpB4K5FHEag/exec';
+      let fatherExists = null;
+      let fatherName = '';
+
+      // UI note for father verification
+      const note = document.createElement('div');
+      note.className = 'form-text mt-2';
+      fatherIDInput.parentElement.appendChild(note);
 
       // Image preview functionality
       birthCertificate.addEventListener('change', function(e) {
@@ -213,21 +234,111 @@
         }
       });
 
+      // Verify father ID when 9 digits entered
+      fatherIDInput.addEventListener('input', async function(e) {
+        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        if (e.target.value.length === 9) {
+          try {
+            note.textContent = 'جاري التحقق من هوية الأب...';
+            note.style.color = '#6c757d';
+            const primaryReq = await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'verifyFatherId', fatherId: e.target.value }) });
+            let usedFallback = false;
+            let data;
+            if (primaryReq.ok) {
+              try { data = await primaryReq.json(); } catch { data = null; }
+            }
+            if (!primaryReq.ok || !data || data.success === false) {
+              // Fallback: use existing endpoint getUserData (no token required) to verify existence
+              usedFallback = true;
+              const fbReq = await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'getUserData', userId: e.target.value }) });
+              if (fbReq.ok) {
+                try {
+                  const fbData = await fbReq.json();
+                  if (fbData && fbData.success && fbData.data) {
+                    data = { success: true, exists: true, fatherName: fbData.data['الاسم الكامل'] };
+                  } else {
+                    data = { success: true, exists: false };
+                  }
+                } catch {
+                  data = { success: true, exists: false };
+                }
+              } else {
+                data = { success: true, exists: false };
+              }
+            }
+
+            fatherExists = !!data.exists;
+            fatherName = data.fatherName || '';
+            if (fatherExists) {
+              note.textContent = `تم العثور على الأب ضمن العائلة${usedFallback && fatherName ? ': ' + fatherName : ''}`;
+              note.style.color = '#198754';
+            } else {
+              note.textContent = 'رقم الهوية غير موجود ضمن العائلة. يرجى مراجعة المسؤول ورفع شهادة الميلاد كدليل.';
+              note.style.color = '#dc3545';
+            }
+          } catch (err) {
+            note.textContent = 'خطأ في الاتصال بالخادم أثناء التحقق.';
+            note.style.color = '#dc3545';
+          }
+        } else {
+          note.textContent = '';
+        }
+      });
+
       // Form validation
       form.addEventListener('submit', function(e) {
         e.preventDefault();
-        
-        if (form.checkValidity()) {
-          // Show success message
-          alert('تم تسجيل المولود بنجاح! سيتم مراجعة البيانات والتواصل معك قريباً.');
-          
-          // Reset form
-          form.reset();
-          imagePreview.style.display = 'none';
-          form.classList.remove('was-validated');
-        } else {
+
+        if (!form.checkValidity()) {
           form.classList.add('was-validated');
+          return;
         }
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const origText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'جاري الإرسال...';
+
+        const file = birthCertificate.files[0];
+        const toBase64 = (file) => new Promise((resolve, reject) => {
+          if (!file) { resolve(null); return; }
+          const reader = new FileReader();
+          reader.onload = () => {
+            const result = reader.result;
+            const base64Data = result.substring(result.indexOf(',') + 1);
+            resolve({ name: file.name, mimeType: file.type, data: base64Data });
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        (async () => {
+          try {
+            const birthCert = await toBase64(file);
+            const payload = {
+              action: 'submitBirthRegistration',
+              fatherID: fatherIDInput.value,
+              babyName: document.getElementById('babyName').value,
+              babyID: babyIDInput.value,
+              birthDate: document.getElementById('birthDate').value,
+              birthCertificate: birthCert
+            };
+            const res = await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+            const result = await res.json();
+            if (!result.success) throw new Error(result.message || 'فشل إرسال الطلب.');
+
+            alert(result.message || 'تم إرسال الطلب بنجاح.');
+            form.reset();
+            imagePreview.style.display = 'none';
+            form.classList.remove('was-validated');
+            note.textContent = '';
+          } catch (err) {
+            alert(err.message || 'حدث خطأ غير متوقع.');
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = origText;
+          }
+        })();
       });
 
       // ID validation (9 digits only)
@@ -239,5 +350,6 @@
       });
     });
   </script>
+  
 </body>
 </html>
