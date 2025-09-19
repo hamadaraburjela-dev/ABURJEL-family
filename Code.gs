@@ -14,6 +14,7 @@ const INDIVIDUALS_LOGIN_LOG_SHEET = 'سجل دخول الأفراد';
 const ADMINS_LOGIN_LOG_SHEET = 'سجل دخول المدراء';
 const ADMIN_ACTIONS_LOG_SHEET = 'سجل عمليات المدراء';
 const PASSWORD_RESET_REQUESTS_SHEET = 'طلبات إعادة تعيين';
+const SPECIAL_CASES_SHEET = 'حالات خاصة';
 
 // --- MAIN ENTRY POINTS ---
 function doGet(e) {
@@ -38,7 +39,8 @@ function doPost(e) {
       case 'getAllMembers': response = handleGetAllMembers(payload.token, payload.searchTerm, payload.page, payload.pageSize); break;
       case 'getAdmins': response = handleGetAdmins(payload.token); break;
       case 'getAllAidRecords': response = handleGetAllAidRecords(payload.token); break;
-      case 'addAid': response = handleAddAid(payload); break;
+  case 'addAid': response = handleAddAid(payload); break;
+  case 'addSpecialCase': response = handleAddSpecialCase(payload); break;
       case 'bulkAddAidFromXLSX': response = handleBulkAddAidFromXLSX(payload); break;
       case 'createAdmin': response = handleCreateAdmin(payload); break;
       case 'updateAdminStatus': response = handleUpdateAdminStatus(payload); break;
@@ -711,4 +713,25 @@ function logAdminAction(username, actionType, details) {
   if (logSheet) {
     logSheet.appendRow([new Date(), username, actionType, details]);
   }
+}
+
+/**
+ * Handle submission of a special case from the public site.
+ * Expects payload to contain: name, idNumber, phone, caseType, priority, date, notes
+ */
+function handleAddSpecialCase(payload) {
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = ss.getSheetByName(SPECIAL_CASES_SHEET) || ss.insertSheet(SPECIAL_CASES_SHEET);
+    // Ensure header exists
+    const headers = sheet.getDataRange().getValues();
+    if (!headers || headers.length === 0) {
+      sheet.appendRow(['تاريخ الإرسال', 'اسم المعني', 'رقم الهوية', 'رقم الجوال', 'نوع الحالة', 'الأولوية', 'تاريخ الحالة', 'ملاحظات', 'حالة']);
+    }
+    const row = [ new Date(), payload.name || '', payload.idNumber || '', payload.phone || '', payload.caseType || '', payload.priority || '', payload.date || '', payload.notes || '', 'Open' ];
+    sheet.appendRow(row);
+    return { success: true, message: 'تم استلام الحالة الخاصة وسيتم متابعتها.' };
+  } catch (err) {
+    return { success: false, message: err.message };
+  }
 }
