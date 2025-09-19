@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 'password-resets.html': () => this.initPasswordResetsPage(token),
                 'superadmin.html': () => this.initSuperAdminPage(token),
                 'wounded-form.html': () => this.initWoundedFormPage(),
+                'special-cases.html': () => this.initSpecialCasesPage(),
             };
             
             if (pageInitializers[path]) {
@@ -192,6 +193,62 @@ document.addEventListener('DOMContentLoaded', () => {
                     this.toggleButtonSpinner(false, form.querySelector('button[type="submit"]'));
                 }
             });
+
+            // Additional logic from wounded-form.html
+            const injuryFormSection = document.getElementById('injury-form');
+            const searchInput = document.getElementById('searchInput');
+            const grid = document.getElementById('cardsGrid');
+
+            const showInjuryForm = () => {
+                if (injuryFormSection) {
+                    injuryFormSection.style.display = 'block';
+                    injuryFormSection.scrollIntoView({ behavior: 'smooth' });
+                    const injName = document.getElementById('injName');
+                    if (injName) injName.focus();
+                }
+            };
+
+            if (location.hash === '#injury-form') {
+                showInjuryForm();
+            }
+
+            document.querySelectorAll('a[href="#injury-form"]').forEach(a => a.addEventListener('click', function(e) {
+                e.preventDefault();
+                showInjuryForm();
+            }));
+
+            const closeInjury = document.getElementById('closeInjury');
+            if (closeInjury) {
+                closeInjury.addEventListener('click', function() {
+                    if (injuryFormSection) {
+                        injuryFormSection.style.display = 'none';
+                        history.replaceState(null, '', window.location.pathname);
+                    }
+                });
+            }
+
+            const demoInjuryForm = document.getElementById('demoInjuryForm');
+            if (demoInjuryForm) {
+                demoInjuryForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    alert('تم حفظ بيانات الإصابة (عرض تجريبي)');
+                    if (injuryFormSection) {
+                        injuryFormSection.style.display = 'none';
+                        history.replaceState(null, '', window.location.pathname);
+                    }
+                    this.reset();
+                });
+            }
+
+            if (searchInput && grid) {
+                searchInput.addEventListener('input', function() {
+                    const query = searchInput.value.trim().toLowerCase();
+                    Array.from(grid.children).forEach(card => {
+                        const text = (card.innerText || '').toLowerCase();
+                        card.style.display = text.includes(query) ? 'block' : 'none';
+                    });
+                });
+            }
         },
 
         initDashboardPage() { const userId = localStorage.getItem('loggedInUserId'); if (!userId) { window.location.href = 'index.html'; return; } this.loadUserData(userId); },
@@ -590,6 +647,54 @@ document.addEventListener('DOMContentLoaded', () => {
         async loadAdmins(token) { const tableBody = document.getElementById('adminsTable'); tableBody.innerHTML = '<tr><td colspan="5" class="text-center">جاري التحميل...</td></tr>'; const result = await this.apiCall({ action: 'getAdmins', token }); if (result?.admins) this.renderAdminsTable(result.admins); else tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">فشل تحميل القائمة.</td></tr>'; },
         renderAdminsTable(admins) { document.getElementById('adminsTable').innerHTML = admins.map(admin => `<tr><td>${admin['اسم المستخدم']}</td><td><span class="badge bg-primary">${admin['الصلاحية']}</span></td><td>${this.formatDateToEnglish(admin['تاريخ الإنشاء'])}</td><td><span class="badge bg-${admin['الحالة'] === 'Active' ? 'success' : 'danger'}">${admin['الحالة'] === 'Active' ? 'نشط' : 'غير نشط'}</span></td><td><button class="btn btn-sm btn-${admin['الحالة'] === 'Active' ? 'danger' : 'success'} toggle-status-btn" data-username="${admin['اسم المستخدم']}" data-status="${admin['الحالة']}"><i class="bi bi-person-${admin['الحالة'] === 'Active' ? 'x' : 'check'}-fill"></i> ${admin['الحالة'] === 'Active' ? 'إلغاء تنشيط' : 'تنشيط'}</button></td></tr>`).join(''); },
         async handleStatusChange(event, token) { const button = event.target.closest('.toggle-status-btn'); const username = button.dataset.username; const newStatus = button.dataset.status === 'Active' ? 'Inactive' : 'Active'; const confirmed = await this.showConfirmationModal(`هل أنت متأكد من تغيير حالة المدير ${username} إلى ${newStatus === 'Active' ? 'نشط' : 'غير نشط'}؟`); if (confirmed) { const result = await this.apiCall({ action: 'updateAdminStatus', token, username, newStatus }, true); if (result) this.loadAdmins(token); } },
+
+        initSpecialCasesPage() {
+            const specialCaseForm = document.getElementById('specialCaseForm');
+            if (specialCaseForm) {
+                specialCaseForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    if (!this.checkValidity()) {
+                        this.reportValidity();
+                        return;
+                    }
+                    const payload = {
+                        action: 'addSpecialCase',
+                        name: document.getElementById('caseName').value,
+                        idNumber: document.getElementById('caseId').value,
+                        phone: document.getElementById('casePhone').value,
+                        caseType: document.getElementById('caseType').value,
+                        priority: document.getElementById('casePriority').value,
+                        date: document.getElementById('caseDate').value,
+                        notes: document.getElementById('caseNotes').value
+                    };
+                    try {
+                        const btn = this.querySelector('button[type="submit"]');
+                        btn.disabled = true;
+                        const res = await fetch(App.WEB_APP_URL, {
+                            method: 'POST',
+                            mode: 'cors',
+                            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                            body: JSON.stringify(payload)
+                        });
+                        const result = await res.json();
+                        if (!result.success) throw new Error(result.message || 'خطأ في الخادم');
+                        App.showToast(result.message, true);
+                        this.reset();
+                    } catch (err) {
+                        App.showToast('فشل الإرسال: ' + (err.message || err), false);
+                    } finally {
+                        this.querySelector('button[type="submit"]').disabled = false;
+                    }
+                });
+
+                const resetCase = document.getElementById('resetCase');
+                if (resetCase) {
+                    resetCase.addEventListener('click', function() {
+                        specialCaseForm.reset();
+                    });
+                }
+            }
+        },
     };
 
     App.init();

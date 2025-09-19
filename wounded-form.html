@@ -6,226 +6,132 @@
     <title>تسجيل الأحداث الحياتية - عائلة أبو رجيلة</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #28A745;
-            --secondary-color: #6c757d;
-            --info-color: #17a2b8;
-            --danger-color: #dc3545;
-            --warning-color: #ffc107;
-            --background-color: #F8F9FA;
-            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        }
-        body {
-            background-color: var(--background-color);
-            font-family: 'Almarai', sans-serif;
-            color: #343A40;
-        }
-        .navbar {
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            padding: 1.5rem 0;
-        }
-        .container-main {
-            max-width: 1200px;
-            margin: auto;
-            padding: 0 1rem;
-        }
-        .logo-text strong {
-            font-weight: 700;
-        }
-        .hero {
-            padding: 4rem 0 2rem;
-            text-align: center;
-        }
-        .page-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #212529;
-            margin-bottom: 0.5rem;
-        }
-        .lead {
-            color: var(--secondary-color);
-            max-width: 600px;
-            margin: auto;
-        }
-        .search-wrap {
-            margin-top: 1.5rem;
-            max-width: 500px;
-            margin-left: auto;
-            margin-right: auto;
-            position: relative;
-        }
-        .search-input {
-            border-radius: 50px;
-            padding: 0.75rem 1.5rem;
-        }
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1.5rem;
-            padding: 2rem 0;
-        }
-        .card {
-            border: none;
-            border-radius: 15px;
-            padding: 2rem;
-            text-align: center;
-            background-color: #FFFFFF;
-            box-shadow: var(--card-shadow);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-        }
-        .card .icon {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-            color: var(--primary-color);
-        }
-        .card .title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-        .card .desc {
-            font-size: 0.9rem;
-            color: #6c757d;
-            min-height: 40px;
-        }
-        .card .btn {
-            margin-top: 1.5rem;
-            border-radius: 50px;
-            padding: 0.6rem 1.5rem;
-        }
-        .card .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-        .card .btn-primary:hover {
-            background-color: #218838;
-            border-color: #1e7e34;
-        }
-        .section-form {
-            background-color: #FFFFFF;
-            padding: 3rem;
-            border-radius: 15px;
-            box-shadow: var(--card-shadow);
-            margin-top: 2rem;
-            display: none;
-        }
-        .site-footer {
-            background-color: #FFFFFF;
-            padding: 2rem 0;
-            margin-top: 4rem;
-            border-top: 1px solid #E9ECEF;
-            text-align: center;
-            font-size: 0.9rem;
-            color: #6c757d;
-        }
-        .site-footer .social-link {
-            text-decoration: none;
-            color: var(--secondary-color);
-            transition: color 0.3s;
-        }
-        .site-footer .social-link:hover {
-            color: var(--primary-color);
-        }
-        .status-dot {
-            height: 10px;
-            width: 10px;
-            background-color: #ADB5BD;
-            border-radius: 50%;
-            display: inline-block;
-            margin-left: 5px;
-        }
-        .icon.text-info { color: var(--info-color); }
-        .icon.text-danger { color: var(--danger-color); }
-        .icon.text-warning { color: var(--warning-color); }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <nav class="navbar navbar-expand bg-white shadow-sm">
-        <div class="container-main d-flex align-items-center">
-            <a class="navbar-brand d-flex align-items-center" href="index.html">
-                <img src="logo.webp" alt="شعار" class="logo-sm me-2" style="height:40px;">
-                <div class="logo-text" style="line-height:1">
-                    <strong>عائلة أبو رجيلة (قديح)</strong>
-                    <div style="font-size:12px;color:#666">نظام إدارة التسجيلات</div>
+<body class="index-body">
+    <header class="header-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-12 col-md-2 text-center text-md-end order-1 order-md-3 mt-2 mt-md-0">
+                    <img src="logo.webp" alt="شعار عائلة أبو رجيلة" class="logo top-logo" />
                 </div>
-            </a>
-            <div class="ms-auto">
-                <a href="index.html" class="btn btn-outline-secondary rounded-pill px-4">الصفحة الرئيسية</a>
+                <div class="col-12 col-md-8 text-center header-text order-2 order-md-2">
+                    <h1 class="mb-1 display-6">نظام إدارة بيانات عائلة أبو رجيلة</h1>
+                    <p class="lead text-muted mb-1">منصة مبسطة لإدارة سجلات الأسرة ومتابعة المساعدات.</p>
+                    <small class="text-muted d-block">آمن · سريع · سهل الاستخدام</small>
+                </div>
+                <div class="col-2 d-none d-md-block order-md-1">
+                    <!-- left spacer - only visible on md+ to balance header -->
+                </div>
             </div>
         </div>
-    </nav>
+    </header>
 
-    <main class="container-main">
-        <div class="hero">
-            <h1 class="page-title">تسجيل الأحداث الحياتية</h1>
-            <p class="lead">واجهة شاملة لتسجيل الأحداث الحياتية لعائلة أبو رجيلة — سجّل وادِر الطلبات بسهولة.</p>
-            <div class="search-wrap d-flex gap-2">
-                <input id="searchInput" class="form-control search-input" placeholder="ابحث عن نوع التسجيل أو كلمة...">
-                <a class="btn btn-outline-secondary rounded-pill" href="manage-aid.html" title="اذهب لطلبات المساعدة">طلبات المساعدة</a>
+    <main class="main-content">
+        <section class="hero-section">
+            <div class="hero-content">
+                <img src="logo.webp" alt="شعار" class="hero-logo" />
+                <h1 class="hero-title">تسجيل الأحداث الحياتية</h1>
+                <p class="hero-subtitle">واجهة شاملة لتسجيل الأحداث الحياتية لعائلة أبو رجيلة — سجّل وادِر الطلبات بسهولة.</p>
             </div>
-        </div>
+        </section>
 
-        <div class="grid-container" id="cardsGrid">
-            <div class="card">
-                <i class="bi bi-baby icon" aria-hidden="true"></i>
-                <div class="title">تسجيل المواليد</div>
-                <div class="desc">إضافة بيانات مولود جديد.</div>
-                <a class="btn btn-primary" href="births.html">التسجيل</a>
+        <section class="selection-hero d-flex justify-content-center py-4">
+            <div class="hero-panel w-100" style="max-width:1200px;">
+                <div class="row g-4 justify-content-center">
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card h-100 text-center selection-card" role="button">
+                            <div class="card-body">
+                                <i class="bi bi-baby-fill card-icon"></i>
+                                <h3 class="card-title">👶 تسجيل المواليد</h3>
+                                <p class="card-text">نبذة: تسجيل بيانات المواليد الجدد في العائلة لمتابعة النمو والمساعدات الصحية والتعليمية.</p>
+                                <a class="btn btn-primary w-100" href="births.html">التسجيل</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card h-100 text-center selection-card" role="button">
+                            <div class="card-body">
+                                <i class="bi bi-award-fill card-icon"></i>
+                                <h3 class="card-title">🏅 تسجيل الشهداء</h3>
+                                <p class="card-text">نبذة: تسجيل بيانات الشهداء ونبذة عن الحادث للحفاظ على الذاكرة وتقديم الدعم للعائلات.</p>
+                                <a class="btn btn-primary w-100" href="martyrs.html">التسجيل</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card h-100 text-center selection-card" role="button">
+                            <div class="card-body">
+                                <i class="bi bi-x-circle-fill card-icon text-danger"></i>
+                                <h3 class="card-title">⚰️ تسجيل الوفيات</h3>
+                                <p class="card-text">نبذة: تسجيل حالات الوفاة في العائلة وإغلاق ملفات الدعم إذا لزم الأمر.</p>
+                                <a class="btn btn-primary w-100" href="deaths.html">التسجيل</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card h-100 text-center selection-card" role="button">
+                            <div class="card-body">
+                                <i class="bi bi-bandaid-fill card-icon text-info"></i>
+                                <h3 class="card-title">🩹 تسجيل الإصابات</h3>
+                                <p class="card-text">نبذة: نموذج مفصل لتسجيل الإصابات والاحتياجات الطبية لتقديم الدعم المناسب.</p>
+                                <a class="btn btn-primary w-100" href="#injury-form">افتح النموذج</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card h-100 text-center selection-card" role="button">
+                            <div class="card-body">
+                                <i class="bi bi-exclamation-triangle-fill card-icon text-warning"></i>
+                                <h3 class="card-title">⚠️ تسجيل حالات خاصة</h3>
+                                <p class="card-text">نبذة: تسجيل الحالات الإنسانية أو الظروف الخاصة التي تحتاج متابعة ودعم مخصص.</p>
+                                <a class="btn btn-primary w-100" href="special-cases.html">التسجيل</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card h-100 text-center selection-card" role="button">
+                            <div class="card-body">
+                                <i class="bi bi-cup-straw card-icon"></i>
+                                <h3 class="card-title">🍼 تسجيل حليب أطفال</h3>
+                                <p class="card-text">نبذة: طلب أو توزيع حليب للأطفال الرضع لضمان تغذية صحية ومتوازنة.</p>
+                                <a class="btn btn-primary w-100" href="baby-milk.html">التسجيل</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card h-100 text-center selection-card" role="button">
+                            <div class="card-body">
+                                <i class="bi bi-t-shirt card-icon"></i>
+                                <h3 class="card-title">👕 تسجيل بنزط أطفال</h3>
+                                <p class="card-text">نبذة: تسجيل حاجات ملابس الأطفال لتوفير الدعم في الملبس والراحة.</p>
+                                <a class="btn btn-primary w-100" href="children-clothes.html">التسجيل</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card h-100 text-center selection-card" role="button">
+                            <div class="card-body">
+                                <i class="bi bi-person-bounding-box card-icon"></i>
+                                <h3 class="card-title">👔 تسجيل بنزط كبار</h3>
+                                <p class="card-text">نبذة: تلبية حاجات ملابس الكبار لضمان الراحة والكرامة في الحياة اليومية.</p>
+                                <a class="btn btn-primary w-100" href="adult-clothes.html">التسجيل</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card h-100 text-center selection-card" role="button">
+                            <div class="card-body">
+                                <i class="bi bi-life-preserver card-icon"></i>
+                                <h3 class="card-title">🆘 طلب مساعدة</h3>
+                                <p class="card-text">نبذة: فتح طلب مساعدة عام في النظام للحصول على دعم فوري في حالات الطوارئ.</p>
+                                <a class="btn btn-secondary w-100" href="manage-aid.html">اذهب إلى طلبات المساعدة</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card">
-                <i class="bi bi-award icon" aria-hidden="true"></i>
-                <div class="title">تسجيل الشهداء</div>
-                <div class="desc">سجل الشهيد ونبذة عن الحادث.</div>
-                <a class="btn btn-primary" href="martyrs.html">التسجيل</a>
-            </div>
-            <div class="card">
-                <i class="bi bi-x-circle-fill icon text-danger" aria-hidden="true"></i>
-                <div class="title">تسجيل الوفيات</div>
-                <div class="desc">تسجيل حالة وفاة وإغلاق ملفات الدعم إذا لزم.</div>
-                <a class="btn btn-primary" href="deaths.html">التسجيل</a>
-            </div>
-            <div class="card">
-                <i class="bi bi-bandaid-fill icon text-info" aria-hidden="true"></i>
-                <div class="title">تسجيل الإصابات</div>
-                <div class="desc">نموذج مفصل لتسجيل الإصابات والاحتياجات الطبية.</div>
-                <a class="btn btn-primary" href="#injury-form">افتح نموذج الإصابات</a>
-            </div>
-            <div class="card">
-                <i class="bi bi-exclamation-triangle-fill icon text-warning" aria-hidden="true"></i>
-                <div class="title">تسجيل حالات خاصة</div>
-                <div class="desc">حالات إنسانية أو ظروف خاصة تحتاج متابعة.</div>
-                <a class="btn btn-primary" href="special-cases.html">التسجيل</a>
-            </div>
-            <div class="card">
-                <i class="bi bi-cup-straw icon" aria-hidden="true"></i>
-                <div class="title">تسجيل حليب أطفال</div>
-                <div class="desc">طلب أو توزيع حليب للأطفال الرضع.</div>
-                <a class="btn btn-primary" href="baby-milk.html">التسجيل</a>
-            </div>
-            <div class="card">
-                <i class="bi bi-t-shirt icon" aria-hidden="true"></i>
-                <div class="title">تسجيل بنزط أطفال</div>
-                <div class="desc">تسجيل حاجات ملابس للأطفال.</div>
-                <a class="btn btn-primary" href="children-clothes.html">التسجيل</a>
-            </div>
-            <div class="card">
-                <i class="bi bi-person-bounding-box icon" aria-hidden="true"></i>
-                <div class="title">تسجيل بنزط كبار</div>
-                <div class="desc">تلبية حاجات ملابس للكبار.</div>
-                <a class="btn btn-primary" href="adult-clothes.html">التسجيل</a>
-            </div>
-            <div class="card">
-                <i class="bi bi-life-preserver icon" aria-hidden="true"></i>
-                <div class="title">طلب مساعدة</div>
-                <div class="desc">فتح طلب مساعدة عام (موجود في النظام).</div>
-                <a class="btn btn-secondary" href="manage-aid.html">اذهب إلى طلبات المساعدة</a>
-            </div>
-        </div>
+        </section>
 
         <section id="injury-form" class="section-form">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -268,66 +174,20 @@
         </section>
     </main>
 
-    <footer class="site-footer">
-        <div class="container-main">
-            <div class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-2">
-                <div class="status-indicator d-flex align-items-center">
-                    <span class="status-dot"></span>
-                    <span>جاري التحقق من حالة الخادم...</span>
-                </div>
-                <div class="text-muted">جميع الحقوق محفوظة © 2025 عائلة أبو رجيلة (قديح)</div>
-                <a href="https://wa.me/972569210941" target="_blank" class="social-link" title="تواصل عبر واتساب">
-                    <i class="bi bi-whatsapp me-1"></i> تواصل للاستفسار
-                </a>
-            </div>
+    <footer class="footer">
+        <div id="server-status" class="status-indicator mb-2">
+            <span class="status-dot"></span>
+            <span class="status-text">جاري التحقق من حالة الخادم...</span>
         </div>
+        <p class="copyright-text mb-2">
+            جميع الحقوق محفوظة &copy; 2025 | م. حماده أبو رجيلة
+        </p>
+        <a href="https://wa.me/972569210941" target="_blank" class="whatsapp-link">
+            <i class="bi bi-whatsapp"></i> تواصل عبر الواتساب
+        </a>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function(){
-            const injuryFormSection = document.getElementById('injury-form');
-            const searchInput = document.getElementById('searchInput');
-            const grid = document.getElementById('cardsGrid');
-
-            function showInjuryForm() {
-                injuryFormSection.style.display = 'block';
-                injuryFormSection.scrollIntoView({ behavior: 'smooth' });
-                document.getElementById('injName').focus();
-            }
-
-            if(location.hash === '#injury-form'){
-                showInjuryForm();
-            }
-
-            document.querySelectorAll('a[href="#injury-form"]').forEach(a => a.addEventListener('click', function(e){
-                e.preventDefault();
-                showInjuryForm();
-            }));
-
-            document.getElementById('closeInjury').addEventListener('click', function(){
-                injuryFormSection.style.display = 'none';
-                history.replaceState(null, '', window.location.pathname);
-            });
-
-            document.getElementById('demoInjuryForm').addEventListener('submit', function(e){
-                e.preventDefault();
-                alert('تم حفظ بيانات الإصابة (عرض تجريبي)');
-                injuryFormSection.style.display = 'none';
-                history.replaceState(null, '', window.location.pathname);
-                this.reset();
-            });
-
-            if(searchInput && grid) {
-                searchInput.addEventListener('input', function(){
-                    const query = searchInput.value.trim().toLowerCase();
-                    Array.from(grid.children).forEach(card => {
-                        const text = (card.innerText || '').toLowerCase();
-                        card.style.display = text.includes(query) ? 'block' : 'none';
-                    });
-                });
-            }
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
