@@ -1,245 +1,0 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تسجيل المواليد - عائلة أبو رجيلة</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-</head>
-<body style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh;">
-  
-  <!-- Header -->
-  <header class="text-center py-4">
-    <div class="container">
-      <img src="logo.webp" alt="شعار عائلة أبو رجيلة" class="mb-3" style="width: 80px; height: 80px;" />
-      <h1 class="h3 mb-2">عائلة أبو رجيلة (قديح)</h1>
-      <p class="text-muted">تسجيل المواليد الجدد</p>
-      
-      <!-- رسالة من العائلة -->
-      <div class="mt-5 mx-auto" style="max-width: 700px;">
-        <div class="card shadow-lg border-0 pulse-card" style="border-radius: 20px; overflow: hidden; background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #ff6b9d 100%);">
-          <div class="card-body p-5 text-white text-center position-relative" style="backdrop-filter: blur(10px);">
-            
-            <!-- المحتوى الرئيسي -->
-            <div class="position-relative">
-              <!-- الأيقونات البسيطة -->
-              <div class="mb-4 text-center">
-                <span style="font-size: 3rem;">❤️👶🏡</span>
-              </div>
-              
-              <h3 class="mb-4" style="font-weight: 700; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); font-size: 1.8rem;">
-                🌟 أهلاً وسهلاً بكم في عائلة أبو رجيلة الكبيرة! 🌟
-              </h3>
-              
-              <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                  <div class="p-3 rounded-3" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(5px);">
-                    <strong>نحن سعداء جداً</strong><br>
-                    <small>لوصول مولودكم المبارك 👶</small>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="p-3 rounded-3" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(5px);">
-                    <strong>انضمام جديد</strong><br>
-                    <small>إلى عائلتنا المباركة 🏡</small>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="p-4 rounded-4 mb-4" style="background: rgba(255,255,255,0.25); border: 2px solid rgba(255,255,255,0.3); backdrop-filter: blur(10px);">
-                <h5 class="mb-3" style="color: #ffd700;">
-                  📝 خطوات بسيطة للتسجيل
-                </h5>
-                <p class="mb-2">
-                  ✅ املأ البيانات المطلوبة بعناية
-                </p>
-                <p class="mb-0">
-                  ✅ احصل على الدعم والمساعدة الفورية
-                </p>
-              </div>
-              
-              <div class="d-flex justify-content-center">
-                <div class="px-4 py-2 rounded-pill glow-box" style="background: rgba(255,255,255,0.3); border: 2px solid rgba(255,255,255,0.5);">
-                  <span style="font-size: 1.1rem; font-weight: 600;">
-                    💝 بارك الله لكم في المولود الجديد 💝
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- Main Content -->
-  <main class="container" style="max-width: 800px;">
-    <div class="row justify-content-center">
-      <div class="col-12">
-        <div class="card shadow-lg" style="border-radius: 15px; border: none;">
-          <div class="card-header text-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px 15px 0 0;">
-            <h2 class="mb-0">
-              👶 تسجيل مولود جديد
-            </h2>
-            <p class="mb-0 mt-2 opacity-75">املأ البيانات التالية لتسجيل مولود جديد في العائلة</p>
-          </div>
-          
-          <div class="card-body p-4">
-            <form id="birthForm" class="needs-validation" novalidate>
-              
-              <!-- رقم هوية الأب -->
-              <div class="mb-4">
-                <label for="fatherID" class="form-label fw-bold">
-                  رقم هوية الأب <span class="text-danger">*</span>
-                </label>
-                <input type="text" class="form-control form-control-lg" id="fatherID" 
-                       placeholder="أدخل رقم هوية الأب (9 أرقام)" 
-                       pattern="[0-9]{9}" maxlength="9" required>
-                <div class="invalid-feedback">
-                  يرجى إدخال رقم هوية صحيح (9 أرقام)
-                </div>
-              </div>
-
-              <!-- اسم المولود -->
-              <div class="mb-4">
-                <label for="babyName" class="form-label fw-bold">
-                  اسم المولود <span class="text-danger">*</span>
-                </label>
-                <input type="text" class="form-control form-control-lg" id="babyName" 
-                       placeholder="أدخل الاسم الكامل للمولود" required>
-                <div class="invalid-feedback">
-                  يرجى إدخال اسم المولود
-                </div>
-              </div>
-
-              <!-- رقم هوية المولود -->
-              <div class="mb-4">
-                <label for="babyID" class="form-label fw-bold">
-                  رقم هوية المولود <span class="text-danger">*</span>
-                </label>
-                <input type="text" class="form-control form-control-lg" id="babyID" 
-                       placeholder="أدخل رقم هوية المولود (9 أرقام)" 
-                       pattern="[0-9]{9}" maxlength="9" required>
-                <div class="invalid-feedback">
-                  يرجى إدخال رقم هوية صحيح (9 أرقام)
-                </div>
-              </div>
-
-              <!-- تاريخ ميلاد المولود -->
-              <div class="mb-4">
-                <label for="birthDate" class="form-label fw-bold">
-                  تاريخ ميلاد المولود <span class="text-danger">*</span>
-                </label>
-                <input type="date" class="form-control form-control-lg" id="birthDate" required>
-                <div class="invalid-feedback">
-                  يرجى إدخال تاريخ الميلاد
-                </div>
-              </div>
-
-              <!-- رفع شهادة الميلاد -->
-              <div class="mb-4">
-                <label for="birthCertificate" class="form-label fw-bold">
-                  شهادة الميلاد (صورة) <span class="text-danger">*</span>
-                </label>
-                <input type="file" class="form-control form-control-lg" id="birthCertificate" 
-                       accept="image/*,.pdf" required>
-                <div class="form-text">
-                  يرجى رفع صورة واضحة لشهادة الميلاد (PNG, JPG, PDF)
-                </div>
-                <div class="invalid-feedback">
-                  يرجى رفع شهادة الميلاد
-                </div>
-              </div>
-
-              <!-- معاينة الصورة المرفوعة -->
-              <div id="imagePreview" class="mb-4" style="display: none;">
-                <label class="form-label fw-bold">معاينة الملف المرفوع:</label>
-                <div class="border rounded p-3 bg-light">
-                  <img id="previewImg" src="" alt="معاينة شهادة الميلاد" class="img-fluid" style="max-height: 300px;">
-                </div>
-              </div>
-
-              <!-- أزرار التحكم -->
-              <div class="row g-3 mt-4">
-                <div class="col-md-6">
-                  <button type="button" class="btn btn-outline-secondary btn-lg w-100" onclick="window.location.href='wounded-form.html'">
-                    العودة للصفحة الرئيسية
-                  </button>
-                </div>
-                <div class="col-md-6">
-                  <button type="submit" class="btn btn-primary btn-lg w-100">
-                    تسجيل المولود
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <!-- Footer -->
-  <footer class="text-center py-4 mt-5">
-    <div class="container">
-      <p class="text-muted mb-0">
-        جميع الحقوق محفوظة &copy; 2025 | م. حماده أبو رجيلة
-      </p>
-    </div>
-  </footer>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  
-  <script>
-    // JavaScript for form validation and image preview
-    document.addEventListener('DOMContentLoaded', function() {
-      const form = document.getElementById('birthForm');
-      const birthCertificate = document.getElementById('birthCertificate');
-      const imagePreview = document.getElementById('imagePreview');
-      const previewImg = document.getElementById('previewImg');
-
-      // Image preview functionality
-      birthCertificate.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = function(e) {
-            previewImg.src = e.target.result;
-            imagePreview.style.display = 'block';
-          };
-          reader.readAsDataURL(file);
-        } else {
-          imagePreview.style.display = 'none';
-        }
-      });
-
-      // Form validation
-      form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        if (form.checkValidity()) {
-          // Show success message
-          alert('تم تسجيل المولود بنجاح! سيتم مراجعة البيانات والتواصل معك قريباً.');
-          
-          // Reset form
-          form.reset();
-          imagePreview.style.display = 'none';
-          form.classList.remove('was-validated');
-        } else {
-          form.classList.add('was-validated');
-        }
-      });
-
-      // ID validation (9 digits only)
-      const idInputs = document.querySelectorAll('#fatherID, #babyID');
-      idInputs.forEach(input => {
-        input.addEventListener('input', function(e) {
-          e.target.value = e.target.value.replace(/[^0-9]/g, '');
-        });
-      });
-    });
-  </script>
-</body>
-</html>
