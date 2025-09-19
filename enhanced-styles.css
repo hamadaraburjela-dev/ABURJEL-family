@@ -1,0 +1,303 @@
+/* ===== تحسينات بصرية متقدمة لصفحة تسجيل المواليد ===== */
+
+/* تأثيرات الخلفية المتقدمة */
+.enhanced-body {
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%),
+        linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    position: relative;
+}
+
+/* تأثير الجسيمات المتحركة */
+.enhanced-body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.3), transparent),
+        radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.2), transparent),
+        radial-gradient(1px 1px at 90px 40px, rgba(255,255,255,0.4), transparent),
+        radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.2), transparent),
+        radial-gradient(2px 2px at 160px 30px, rgba(255,255,255,0.3), transparent);
+    background-repeat: repeat;
+    background-size: 200px 100px;
+    animation: sparkle 20s linear infinite;
+    pointer-events: none;
+    z-index: -1;
+}
+
+@keyframes sparkle {
+    0% { transform: translateY(0px); }
+    100% { transform: translateY(-100px); }
+}
+
+/* تأثيرات الأنيميشن المتقدمة */
+@keyframes floatUp {
+    0% { transform: translateY(20px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes shimmer {
+    0% { background-position: -200px 0; }
+    100% { background-position: calc(200px + 100%) 0; }
+}
+
+@keyframes pulse-enhanced {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.05); opacity: 1; }
+}
+
+@keyframes rainbow-glow {
+    0% { filter: hue-rotate(0deg) brightness(1); }
+    25% { filter: hue-rotate(90deg) brightness(1.1); }
+    50% { filter: hue-rotate(180deg) brightness(1.2); }
+    75% { filter: hue-rotate(270deg) brightness(1.1); }
+    100% { filter: hue-rotate(360deg) brightness(1); }
+}
+
+/* تحسينات للكروت */
+.super-card {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.super-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.4), 
+        transparent
+    );
+    transition: left 0.6s ease;
+    z-index: 1;
+}
+
+.super-card:hover::before {
+    left: 100%;
+}
+
+.super-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.15),
+        0 0 30px rgba(102, 126, 234, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* تأثيرات الأزرار المتقدمة */
+.magic-btn {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(45deg, #667eea, #764ba2, #ff6b9d);
+    background-size: 300% 300%;
+    border: none;
+    transition: all 0.4s ease;
+    animation: gradient-shift 3s ease infinite;
+}
+
+@keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.magic-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.4s ease, height 0.4s ease;
+    z-index: 1;
+}
+
+.magic-btn:hover::before {
+    width: 400px;
+    height: 400px;
+}
+
+.magic-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+}
+
+.magic-btn span {
+    position: relative;
+    z-index: 2;
+}
+
+/* تأثيرات النصوص المتقدمة */
+.text-magic {
+    background: linear-gradient(
+        45deg,
+        #667eea 0%,
+        #764ba2 25%,
+        #ff6b9d 50%,
+        #667eea 75%,
+        #764ba2 100%
+    );
+    background-size: 300% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 4s linear infinite;
+    font-weight: bold;
+    text-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+}
+
+.text-glow-enhanced {
+    text-shadow: 
+        0 0 5px rgba(255, 255, 255, 0.8),
+        0 0 10px rgba(102, 126, 234, 0.6),
+        0 0 15px rgba(118, 75, 162, 0.4),
+        0 0 20px rgba(255, 107, 157, 0.3);
+    animation: pulse-enhanced 2s ease-in-out infinite;
+}
+
+/* تأثيرات للإيموجي */
+.emoji-dance {
+    display: inline-block;
+    animation: dance 2s ease-in-out infinite;
+}
+
+@keyframes dance {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-5px) rotate(5deg); }
+    50% { transform: translateY(-10px) rotate(0deg); }
+    75% { transform: translateY(-5px) rotate(-5deg); }
+}
+
+.emoji-sparkle {
+    display: inline-block;
+    animation: sparkle-emoji 3s linear infinite;
+}
+
+@keyframes sparkle-emoji {
+    0%, 100% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+    25% { transform: scale(1.1) rotate(90deg); filter: brightness(1.2); }
+    50% { transform: scale(1.2) rotate(180deg); filter: brightness(1.4); }
+    75% { transform: scale(1.1) rotate(270deg); filter: brightness(1.2); }
+}
+
+/* تحسينات الفورم المتقدمة */
+.form-enhanced {
+    position: relative;
+}
+
+.form-enhanced .form-control {
+    transition: all 0.4s ease;
+    border: 2px solid transparent;
+    background: linear-gradient(white, white) padding-box,
+                linear-gradient(45deg, #667eea, #764ba2) border-box;
+}
+
+.form-enhanced .form-control:focus {
+    outline: none;
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 
+        0 10px 25px rgba(102, 126, 234, 0.2),
+        0 0 20px rgba(102, 126, 234, 0.3),
+        inset 0 1px 3px rgba(255, 255, 255, 0.5);
+    background: linear-gradient(white, #f8f9ff) padding-box,
+                linear-gradient(45deg, #667eea, #764ba2) border-box;
+}
+
+.form-enhanced label {
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.form-enhanced .form-control:focus + label {
+    color: #667eea;
+    transform: translateY(-2px);
+    text-shadow: 0 0 8px rgba(102, 126, 234, 0.4);
+}
+
+/* تأثيرات الهيدر */
+.header-enhanced {
+    position: relative;
+    overflow: hidden;
+}
+
+.header-enhanced::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: 
+        radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
+    animation: drift 20s linear infinite;
+}
+
+@keyframes drift {
+    0% { transform: translateX(0) translateY(0); }
+    100% { transform: translateX(-50px) translateY(-50px); }
+}
+
+/* تأثيرات التحميل */
+.loading-shimmer {
+    background: linear-gradient(90deg, 
+        rgba(255,255,255,0) 0%, 
+        rgba(255,255,255,0.4) 50%, 
+        rgba(255,255,255,0) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+}
+
+/* تأثيرات الظهور المتدرجة */
+.fade-in-sequence {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: floatUp 0.8s ease-out forwards;
+}
+
+.fade-in-sequence:nth-child(1) { animation-delay: 0.1s; }
+.fade-in-sequence:nth-child(2) { animation-delay: 0.2s; }
+.fade-in-sequence:nth-child(3) { animation-delay: 0.3s; }
+.fade-in-sequence:nth-child(4) { animation-delay: 0.4s; }
+.fade-in-sequence:nth-child(5) { animation-delay: 0.5s; }
+
+/* تأثيرات الخلفية التفاعلية */
+.interactive-bg {
+    position: relative;
+    cursor: pointer;
+}
+
+.interactive-bg:hover {
+    animation: rainbow-glow 2s ease-in-out;
+}
+
+/* تحسينات للجوال */
+@media (max-width: 768px) {
+    .super-card:hover {
+        transform: translateY(-5px) scale(1.01);
+    }
+    
+    .magic-btn:hover {
+        transform: translateY(-2px) scale(1.02);
+    }
+    
+    .enhanced-body::before {
+        animation-duration: 30s;
+    }
+}
