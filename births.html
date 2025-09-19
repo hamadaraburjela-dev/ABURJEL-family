@@ -193,12 +193,9 @@
     </a>
 </footer>
     
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="script.js"></script>
-
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="script.js"></script>
   
   <script>
@@ -211,7 +208,10 @@
       const fatherIDInput = document.getElementById('fatherID');
       const babyIDInput = document.getElementById('babyID');
 
-  const WEB_APP_URL = (window.App && App.WEB_APP_URL) ? App.WEB_APP_URL : 'https://script.google.com/macros/s/AKfycbyi5_-5EKcDdC95urDLUkOcbhax8974S6PJkULj60AWOqzvsmeGzb11Y78SpB4K5FHEag/exec';
+  // Use the shared App.WEB_APP_URL when available; fallback kept identical to avoid mismatch
+  const WEB_APP_URL = (window.App && App.WEB_APP_URL)
+    ? App.WEB_APP_URL
+    : 'https://script.google.com/macros/s/AKfycbxiyJpbfDqZzpOoBuVEnOPJvsfzV8QT9-6M4wMNe23vzIl251xFI5jVNGtWrfcjp4OplQ/exec';
       let fatherExists = null;
       let fatherName = '';
 
@@ -233,10 +233,16 @@
           console.error('Births POST error', { status: res.status, rawSnippet: snippet, payload });
           throw new Error(msg);
         }
+        // Detect common Google Apps Script auth/HTML responses (status 200 but non‑JSON)
         if (!data) {
           const snippet = raw ? raw.substring(0, 200) : '';
+          const looksHtml = /^\s*<!DOCTYPE|^\s*<html|^\s*<HTML/i.test(snippet);
+          const authHint = /Authorization|login|Sign in|requires authentication|OAuth/i.test(snippet);
           console.error('Births POST empty/non-JSON', { status: res.status, rawSnippet: snippet, payload });
-          throw new Error(`رد الخادم غير صالح (فارغ أو ليس JSON). الحالة ${res.status}${snippet ? ` | المعاينة: ${snippet}` : ''}`);
+          const hint = looksHtml && authHint
+            ? 'يبدو أن تطبيق Google Apps Script يحتاج إلى إعادة نشر مع منح الصلاحيات الجديدة (Drive). افتح Code.gs > Deploy > Manage deployments ثم Update مع Execute as: Me و Access: Anyone، ووافق على الصلاحيات.'
+            : '';
+          throw new Error(`رد الخادم غير صالح (فارغ أو ليس JSON). الحالة ${res.status}${hint ? `\n\n${hint}` : (snippet ? ` | المعاينة: ${snippet}` : '')}`);
         }
         return data;
       }
@@ -346,13 +352,35 @@
             const result = await postToServer(payload);
             if (!result.success) throw new Error(result.message || 'فشل إرسال الطلب.');
 
-            alert(result.message || 'تم إرسال الطلب بنجاح.');
+            if (window.App && App.showDialog) {
+              App.showDialog({
+                type: 'success',
+                title: 'تم إرسال الطلب',
+                message: result.message || 'تم إرسال طلب تسجيل المولود.',
+                confirmText: 'حسناً'
+              });
+            } else if (window.App && App.showToast) {
+              App.showToast(result.message || 'تم إرسال الطلب بنجاح.', true);
+            } else {
+              console.log(result.message || 'تم إرسال الطلب بنجاح.');
+            }
             form.reset();
             imagePreview.style.display = 'none';
             form.classList.remove('was-validated');
             note.textContent = '';
           } catch (err) {
-            alert(err.message || 'حدث خطأ غير متوقع.');
+            if (window.App && App.showDialog) {
+              App.showDialog({
+                type: 'danger',
+                title: 'تعذّر الإرسال',
+                message: err.message || 'حدث خطأ غير متوقع.',
+                confirmText: 'موافق'
+              });
+            } else if (window.App && App.showToast) {
+              App.showToast(err.message || 'حدث خطأ غير متوقع.', false);
+            } else {
+              console.error(err.message || 'حدث خطأ غير متوقع.');
+            }
           } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = origText;

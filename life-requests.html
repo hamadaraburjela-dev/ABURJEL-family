@@ -90,18 +90,45 @@
     document.addEventListener('DOMContentLoaded', function() {
       if (!sessionStorage.getItem('adminToken')) { window.location.href = 'index.html'; return; }
       const token = sessionStorage.getItem('adminToken');
-      const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyi5_-5EKcDdC95urDLUkOcbhax8974S6PJkULj60AWOqzvsmeGzb11Y78SpB4K5FHEag/exec';
+      // Use the unified backend URL used by the whole app
+      const WEB_APP_URL = (window.App && App.WEB_APP_URL)
+        ? App.WEB_APP_URL
+        : 'https://script.google.com/macros/s/AKfycbxiyJpbfDqZzpOoBuVEnOPJvsfzV8QT9-6M4wMNe23vzIl251xFI5jVNGtWrfcjp4OplQ/exec';
       const tbody = document.getElementById('birthRequestsTableBody');
       const search = document.getElementById('birthSearch');
       let allRows = [];
 
       const formatDate = (d) => { try { const dt = new Date(d); return isNaN(dt) ? '-' : `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`; } catch { return d || '-'; } };
 
+      async function postJson(payload) {
+        const res = await fetch(WEB_APP_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const raw = await res.text();
+        let data = null;
+        try { data = raw ? JSON.parse(raw) : null; } catch { data = null; }
+        if (!res.ok) {
+          const snippet = raw ? raw.slice(0, 200) : '';
+          throw new Error((data && data.message) || snippet || `HTTP ${res.status}`);
+        }
+        if (!data) {
+          const snippet = raw ? raw.slice(0, 200) : '';
+          const looksHtml = /^\s*<!DOCTYPE|^\s*<html|^\s*<HTML/i.test(snippet);
+          const authHint = /Authorization|login|Sign in|requires authentication|OAuth/i.test(snippet);
+          const hint = looksHtml && authHint
+            ? 'يبدو أن تطبيق Google Apps Script يحتاج إعادة نشر/تفويض صلاحيات جديدة. حدِّث النشر ثم جرب مجدداً.'
+            : '';
+          throw new Error(hint || 'Unexpected empty/non‑JSON server response.');
+        }
+        return data;
+      }
+
       async function loadBirthRequests() {
         tbody.innerHTML = '<tr><td colspan="9" class="text-center">جاري التحميل...</td></tr>';
         try {
-          const res = await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'getBirthRequests', token }) });
-          const data = await res.json();
+          const data = await postJson({ action: 'getBirthRequests', token });
           if (!data.success) throw new Error(data.message || 'فشل جلب البيانات');
           allRows = data.data || [];
           render();
@@ -132,12 +159,17 @@
         const newStatus = action === 'approve' ? 'مقبول' : 'مرفوض';
         try {
           btn.disabled = true;
-          const res = await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'updateBirthRequestStatus', token, requestId, newStatus }) });
-          const data = await res.json();
+          const data = await postJson({ action: 'updateBirthRequestStatus', token, requestId, newStatus });
           if (!data.success) throw new Error(data.message || 'فشل التحديث');
           await loadBirthRequests();
         } catch (err) {
-          alert(err.message || err);
+          if (window.App && App.showDialog) {
+            App.showDialog({ type: 'danger', title: 'فشل التحديث', message: err.message || err, confirmText: 'موافق' });
+          } else if (window.App && App.showToast) {
+            App.showToast(err.message || 'فشل التحديث', false);
+          } else {
+            console.error(err);
+          }
         } finally {
           btn.disabled = false;
         }

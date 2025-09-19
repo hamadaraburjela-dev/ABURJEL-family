@@ -89,7 +89,69 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) { console.error('API Call Failed:', error); this.showToast(error.message, false); return null; } finally { if (isButtonTriggered) this.toggleButtonSpinner(false, activeSubmitButton); }
         },
         
-        showToast(message, isSuccess = true) { Toastify({ text: message, duration: 4000, gravity: "top", position: "center", style: { background: isSuccess ? "#28a745" : "#dc3545", boxShadow: "none" } }).showToast(); },
+                showToast(message, isSuccess = true) { Toastify({ text: message, duration: 4000, gravity: "top", position: "center", style: { background: isSuccess ? "#28a745" : "#dc3545", boxShadow: "none" } }).showToast(); },
+        
+                // Pretty modal dialog for success/error/info messages
+                showDialog({ title = '', message = '', type = 'info', confirmText = 'حسناً', autoCloseMs = null } = {}) {
+                        // Ensure container exists or create dynamically
+                        let modalEl = document.getElementById('appDialogModal');
+                        if (!modalEl) {
+                                modalEl = document.createElement('div');
+                                modalEl.id = 'appDialogModal';
+                                modalEl.className = 'modal fade';
+                                modalEl.tabIndex = -1;
+                                modalEl.setAttribute('aria-hidden', 'true');
+                                modalEl.innerHTML = `
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title d-flex align-items-center gap-2">
+                                                        <i id="appDialogIcon" class="bi"></i>
+                                                        <span id="appDialogTitle"></span>
+                                                    </h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div id="appDialogMessage" class="fs-6"></div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button id="appDialogConfirm" type="button" class="btn btn-primary" data-bs-dismiss="modal">${confirmText}</button>
+                                                </div>
+                                            </div>
+                                        </div>`;
+                                document.body.appendChild(modalEl);
+                        }
+                        const iconEl = modalEl.querySelector('#appDialogIcon');
+                        const titleEl = modalEl.querySelector('#appDialogTitle');
+                        const msgEl = modalEl.querySelector('#appDialogMessage');
+                        const headerEl = modalEl.querySelector('.modal-header');
+                        const confirmBtn = modalEl.querySelector('#appDialogConfirm');
+
+                        // Type styles
+                        const typeMap = {
+                                success: { header: 'bg-success text-white', icon: 'bi-check-circle-fill' },
+                                danger: { header: 'bg-danger text-white', icon: 'bi-x-circle-fill' },
+                                error: { header: 'bg-danger text-white', icon: 'bi-x-circle-fill' },
+                                warning: { header: 'bg-warning-subtle', icon: 'bi-exclamation-triangle-fill' },
+                                info: { header: 'bg-primary text-white', icon: 'bi-info-circle-fill' }
+                        };
+                        // Reset header classes and apply new
+                        headerEl.className = 'modal-header';
+                        const styleDef = typeMap[type] || typeMap.info;
+                        headerEl.classList.add(...styleDef.header.split(' '));
+                        iconEl.className = `bi ${styleDef.icon}`;
+
+                        // Content
+                        titleEl.textContent = title || (type === 'success' ? 'تم بنجاح' : type === 'danger' || type === 'error' ? 'حدث خطأ' : 'معلومة');
+                        if (typeof message === 'string') msgEl.textContent = message; else { msgEl.innerHTML = ''; msgEl.appendChild(message); }
+                        confirmBtn.textContent = confirmText || 'حسناً';
+
+                        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                        modal.show();
+                        if (autoCloseMs && Number.isFinite(+autoCloseMs)) {
+                                setTimeout(() => modal.hide(), +autoCloseMs);
+                        }
+                },
         toggleButtonSpinner(show, button) { const btn = button || document.querySelector('button[type="submit"]'); if (!btn) return; btn.disabled = show; btn.querySelector('.spinner-border')?.classList.toggle('d-none', !show); const buttonText = btn.querySelector('.button-text'); if(buttonText) buttonText.style.opacity = show ? 0.5 : 1; },
         formatDateToEnglish(dateString) { if (!dateString) return '-'; try { const date = new Date(dateString); if (isNaN(date.getTime())) return 'Invalid Date'; return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; } catch (error) { return dateString; } },
         
@@ -697,6 +759,8 @@ document.addEventListener('DOMContentLoaded', () => {
         },
     };
 
+    // Expose globally for pages with inline scripts (e.g., births.html)
+    window.App = App;
     App.init();
 
     // زر تحديث بيانات المستخدم
