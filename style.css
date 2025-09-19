@@ -1645,44 +1645,131 @@ body {
     display: inline-block;
     margin-left: 5px;
 }
- 
- / *   = = = = =   *#+J1'*  'D#FJEJ4F  'DE4*1C)  D,EJ9  'D5A-'*  = = = = =   * / 
- @ k e y f r a m e s   h e a r t b e a t   { 
-         0 %   {   t r a n s f o r m :   s c a l e ( 1 ) ;   } 
-         5 0 %   {   t r a n s f o r m :   s c a l e ( 1 . 1 ) ;   } 
-         1 0 0 %   {   t r a n s f o r m :   s c a l e ( 1 ) ;   } 
- } 
- 
- @ k e y f r a m e s   b o u n c e   { 
-         0 % ,   2 0 % ,   5 0 % ,   8 0 % ,   1 0 0 %   {   t r a n s f o r m :   t r a n s l a t e Y ( 0 ) ;   } 
-         4 0 %   {   t r a n s f o r m :   t r a n s l a t e Y ( - 1 0 p x ) ;   } 
-         6 0 %   {   t r a n s f o r m :   t r a n s l a t e Y ( - 5 p x ) ;   } 
- } 
- 
- @ k e y f r a m e s   g l o w   { 
-         0 %   {   b o x - s h a d o w :   0   0   2 0 p x   r g b a ( 2 5 5 , 2 5 5 , 2 5 5 , 0 . 5 ) ;   } 
-         1 0 0 %   {   b o x - s h a d o w :   0   0   3 0 p x   r g b a ( 2 5 5 , 2 5 5 , 2 5 5 , 0 . 8 ) ,   0   0   4 0 p x   r g b a ( 2 5 5 , 1 0 7 , 1 5 7 , 0 . 3 ) ;   } 
- } 
- 
- @ k e y f r a m e s   p u l s e   { 
-         0 %   {   t r a n s f o r m :   s c a l e ( 1 ) ;   } 
-         1 0 0 %   {   t r a n s f o r m :   s c a l e ( 1 . 0 2 ) ;   } 
- } 
- 
- / *   CD'3'*  'D#FJEJ4F  * / 
- . h e a r t b e a t - i c o n   { 
-         a n i m a t i o n :   h e a r t b e a t   1 . 5 s   e a s e - i n - o u t   i n f i n i t e ; 
- } 
- 
- . b o u n c e - i c o n   { 
-         a n i m a t i o n :   b o u n c e   2 s   i n f i n i t e ; 
- } 
- 
- . g l o w - b o x   { 
-         a n i m a t i o n :   g l o w   2 s   e a s e - i n - o u t   i n f i n i t e   a l t e r n a t e ; 
- } 
- 
- . p u l s e - c a r d   { 
-         a n i m a t i o n :   p u l s e   2 s   e a s e - i n - o u t   i n f i n i t e   a l t e r n a t e ; 
- }  
- 
+
+/* General & Body Styles */
+:root {
+    --primary-color: #0d6efd;
+    --background-start: #f5f7fa;
+    --background-end: #c3cfe2;
+    --card-shadow-initial: rgba(0,0,0,0.15);
+    --card-shadow-hover: rgba(0,0,0,0.2);
+    --icon-pink: #ff6b9d;
+    --icon-gray: #6c757d;
+    --icon-gold: #ffd700;
+    --icon-teal: #17a2b8;
+    --icon-orange: #fd7e14;
+    --icon-yellow: #ffc107;
+}
+
+.index-body {
+    background: linear-gradient(135deg, var(--background-start) 0%, var(--background-end) 100%);
+    min-height: 100vh;
+}
+
+.logo {
+    width: 80px;
+    height: 80px;
+}
+
+/* Card Styles */
+.selection-card {
+    border-radius: 15px;
+    box-shadow: 0 8px 25px var(--card-shadow-initial);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.selection-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 35px var(--card-shadow-hover);
+}
+
+.card-icon {
+    font-size: 3.5rem;
+}
+
+.card-icon.pink {
+    color: var(--icon-pink);
+}
+
+.card-icon.gray {
+    color: var(--icon-gray);
+}
+
+.card-icon.gold {
+    color: var(--icon-gold);
+}
+
+.card-icon.teal {
+    color: var(--icon-teal);
+}
+
+.card-icon.orange {
+    color: var(--icon-orange);
+}
+
+.card-icon.yellow {
+    color: var(--icon-yellow);
+}
+
+/* Footer & Status Indicator */
+.footer {
+    text-align: center;
+    padding: 2rem 0;
+    background: rgba(255, 255, 255, 0.7);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-weight: bold;
+}
+
+.status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.status-text {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.status-dot.online {
+    background-color: green;
+}
+
+.status-dot.offline {
+    background-color: red;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.7;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.whatsapp-link {
+    text-decoration: none;
+    color: #25D366;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+}
+
+.whatsapp-link:hover {
+    color: #128C7E;
+}

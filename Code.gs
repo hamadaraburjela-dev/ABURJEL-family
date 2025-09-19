@@ -17,6 +17,7 @@ const PASSWORD_RESET_REQUESTS_SHEET = 'طلبات إعادة تعيين';
 const SPECIAL_CASES_SHEET = 'حالات خاصة';
 const BIRTHS_SHEET = 'مواليد اطفال';
 const CHILDREN_CLOTHES_SHEET = 'بنزط اطفال';
+const MARTYRS_SHEET = 'الشهداء';
 
 // --- MAIN ENTRY POINTS ---
 function doGet(e) {
@@ -48,6 +49,10 @@ function doPost(e) {
   case 'submitChildrenClothes': response = handleSubmitChildrenClothes(payload); break;
   case 'getBirthRequests': response = handleGetBirthRequests(payload.token); break;
   case 'updateBirthRequestStatus': response = handleUpdateBirthRequestStatus(payload); break;
+  case 'verifyMartyrId': response = handleVerifyMartyrId(payload.martyrId); break;
+  case 'submitMartyrRegistration': response = handleSubmitMartyrRegistration(payload); break;
+  case 'getMartyrRequests': response = handleGetMartyrRequests(payload.token); break;
+  case 'updateMartyrRequestStatus': response = handleUpdateMartyrRequestStatus(payload); break;
       case 'bulkAddAidFromXLSX': response = handleBulkAddAidFromXLSX(payload); break;
       case 'createAdmin': response = handleCreateAdmin(payload); break;
       case 'updateAdminStatus': response = handleUpdateAdminStatus(payload); break;
@@ -899,4 +904,161 @@ function handleSubmitChildrenClothes(payload) {
   ]);
 
   return { success: true, message: 'تم استلام طلب بنزط الأطفال وسيتم مراجعته قريباً.' };
+}
+
+/**
+ * ========================== MARTYRS FUNCTIONS ==========================
+ */
+
+/**
+ * التحقق من وجود الشهيد في قاعدة البيانات
+ * payload: { martyrId }
+ */
+function handleVerifyMartyrId(martyrId) {
+  if (!martyrId || martyrId.length !== 9) {
+    return { success: true, exists: false };
+  }
+  
+  try {
+    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(INDIVIDUALS_SHEET);
+    if (!sheet) return { success: true, exists: false };
+    
+    const data = sheet.getDataRange().getValues();
+    if (data.length < 2) return { success: true, exists: false };
+    
+    const headers = data[0];
+    const idColIndex = headers.indexOf('رقم الهوية');
+    const nameColIndex = headers.indexOf('الاسم الكامل');
+    
+    if (idColIndex === -1) return { success: true, exists: false };
+    
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][idColIndex]).trim() === String(martyrId).trim()) {
+        const martyrName = nameColIndex >= 0 ? data[i][nameColIndex] : '';
+        return { success: true, exists: true, martyrName };
+      }
+    }
+    
+    return { success: true, exists: false };
+  } catch (error) {
+    Logger.log('Error verifying martyr ID: ' + error);
+    return { success: true, exists: false };
+  }
+}
+
+/**
+ * تسجيل شهيد جديد
+ * payload: { martyrID, martyrName, martyrdomDate, martyrdomPlace, martyrdomCause, additionalDetails, deathCertificate: { name, mimeType, data(Base64) } }
+ */
+function handleSubmitMartyrRegistration(payload) {
+  const { martyrID, martyrName, martyrdomDate, martyrdomPlace, martyrdomCause, additionalDetails, deathCertificate } = payload;
+  if (!martyrID || !martyrName || !martyrdomDate || !martyrdomPlace || !martyrdomCause) {
+    throw new Error('جميع الحقول مطلوبة: رقم الهوية، اسم الشهيد، تاريخ الاستشهاد، مكان الاستشهاد، سبب الاستشهاد');
+  }
+
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(MARTYRS_SHEET) || ss.insertSheet(MARTYRS_SHEET);
+
+  // إنشاء العناوين إن لم تكن موجودة
+  const rangeValues = sheet.getDataRange().getValues();
+  if (!rangeValues || rangeValues.length === 0) {
+    sheet.appendRow([
+      'معرف الطلب', 
+      'تاريخ التسجيل', 
+      'رقم هوية الشهيد', 
+      'اسم الشهيد', 
+      'تاريخ الاستشهاد', 
+      'مكان الاستشهاد', 
+      'سبب الاستشهاد', 
+      'تفاصيل إضافية', 
+      'حالة الطلب', 
+      'رابط شهادة الوفاة'
+    ]);
+  }
+
+  // التحقق من وجود الشهيد في قاعدة البيانات
+  const verifyRes = handleVerifyMartyrId(martyrID);
+  const martyrExists = verifyRes.exists;
+
+  // رفع شهادة الوفاة إلى جوجل درايف إن وُجدت
+  let fileUrl = '';
+  try {
+    if (deathCertificate && deathCertificate.data) {
+      const bytes = Utilities.base64Decode(deathCertificate.data);
+      const blob = Utilities.newBlob(bytes, deathCertificate.mimeType || MimeType.JPEG, deathCertificate.name || `DeathCertificate_${martyrID || ''}.bin`);
+      // وضع الملف داخل مجلد مخصص
+      const folderName = 'شهادات الوفاة - الشهداء';
+      let folder;
+      const it = DriveApp.getFoldersByName(folderName);
+      folder = it.hasNext() ? it.next() : DriveApp.createFolder(folderName);
+      const file = folder.createFile(blob);
+      file.setName(`شهادة_وفاة_${martyrID || ''}_${new Date().getTime()}`);
+      fileUrl = file.getUrl();
+    }
+  } catch (fileErr) {
+    // لا نوقف العملية بسبب فشل الرفع، فقط نسجل بدون رابط
+    Logger.log('Death certificate upload failed: ' + fileErr);
+  }
+
+  const requestId = 'MARTYR' + new Date().getTime();
+  const status = martyrExists ? 'جديد' : 'قيد المراجعة';
+  
+  sheet.appendRow([
+    requestId, 
+    new Date(), 
+    martyrID, 
+    martyrName, 
+    new Date(martyrdomDate), 
+    martyrdomPlace, 
+    martyrdomCause, 
+    additionalDetails || '', 
+    status, 
+    fileUrl
+  ]);
+
+  return { 
+    success: true, 
+    message: martyrExists 
+      ? 'تم تسجيل الشهيد بنجاح. إنا لله وإنا إليه راجعون.' 
+      : 'تم إرسال الطلب للمراجعة بسبب عدم العثور على الشهيد في السجلات.' 
+  };
+}
+
+/**
+ * إرجاع طلبات الشهداء للإدارة
+ */
+function handleGetMartyrRequests(token) {
+  authenticateToken(token);
+  const rows = sheetToJSON(MARTYRS_SHEET);
+  // ترتيب تنازلي حسب التاريخ
+  const sorted = rows.sort((a, b) => new Date(b['تاريخ التسجيل']) - new Date(a['تاريخ التسجيل']));
+  return { success: true, data: sorted };
+}
+
+/**
+ * تحديث حالة طلب شهيد
+ * payload: { token, requestId, newStatus }
+ */
+function handleUpdateMartyrRequestStatus(payload) {
+  const admin = authenticateToken(payload.token);
+  const { requestId, newStatus } = payload;
+  if (!requestId || !newStatus) throw new Error('بيانات غير مكتملة لتحديث حالة الطلب.');
+
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(MARTYRS_SHEET);
+  if (!sheet) throw new Error('ورقة "الشهداء" غير موجودة.');
+  const data = sheet.getDataRange().getValues();
+  if (data.length < 2) throw new Error('لا توجد طلبات.');
+  const headers = data[0];
+  const idCol = headers.indexOf('معرف الطلب');
+  const statusCol = headers.indexOf('حالة الطلب');
+  if (idCol === -1 || statusCol === -1) throw new Error('أعمدة الطلب غير صحيحة.');
+
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][idCol]).trim() === String(requestId).trim()) {
+      sheet.getRange(i + 1, statusCol + 1).setValue(newStatus);
+      logAdminAction(admin.username, 'تحديث حالة طلب شهيد', `تم تحديث ${requestId} إلى ${newStatus}`);
+      return { success: true, message: 'تم تحديث حالة الطلب.' };
+    }
+  }
+  throw new Error('لم يتم العثور على الطلب المطلوب.');
 }

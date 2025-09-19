@@ -810,3 +810,55 @@ document.addEventListener('DOMContentLoaded', () => {
 
   
 });
+// Function to show the injury modal
+function showInjuryForm() {
+    const modal = new bootstrap.Modal(document.getElementById('injuryModal'));
+    modal.show();
+}
+
+// Handle injury form submission
+document.getElementById('injuryForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const spinner = submitBtn.querySelector('.spinner-border');
+    const buttonText = submitBtn.querySelector('.button-text');
+    
+    // Show loading state
+    spinner.classList.remove('d-none');
+    buttonText.textContent = 'جاري الحفظ...';
+    submitBtn.disabled = true;
+    
+    // Simulate data saving (replace with actual backend API call)
+    setTimeout(() => {
+        // Hide loading state
+        spinner.classList.add('d-none');
+        buttonText.textContent = 'تم الحفظ بنجاح';
+        
+        // Reset form and close modal
+        setTimeout(() => {
+            this.reset();
+            bootstrap.Modal.getInstance(document.getElementById('injuryModal')).hide();
+            submitBtn.disabled = false;
+            buttonText.textContent = 'حفظ بيانات الإصابة';
+            
+            // Show success message
+            alert('تم تسجيل الإصابة بنجاح!');
+        }, 1500);
+    }, 2000);
+});
+
+// Simulate server status check
+function checkServerStatus() {
+    const statusDot = document.querySelector('#server-status .status-dot');
+    const statusText = document.querySelector('#server-status .status-text');
+
+    // Simulate a successful check after a delay
+    setTimeout(() => {
+        statusDot.classList.add('online');
+        statusText.textContent = 'الخادم يعمل';
+    }, 2000);
+}
+
+// Run the server status check when the page loads
+document.addEventListener('DOMContentLoaded', checkServerStatus);
