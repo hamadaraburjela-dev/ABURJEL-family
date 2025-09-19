@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الأحداث الحياتية - عائلة أبو رجيلة</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="index-body" style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh;">
+    <header class="text-center py-4">
+        <div class="container">
+            <img src="logo.webp" alt="شعار عائلة أبو رجيلة" class="mb-3" style="width: 80px; height: 80px;" />
+            <h1 class="h3 mb-2">عائلة أبو رجيلة</h1>
+            <p class="text-muted">تسجيل الأحداث الحياتية</p>
+        </div>
+    </header>
+
+    <main class="main-content">
+
+
+        <section class="selection-hero d-flex justify-content-center py-4">
+            <div class="hero-panel w-100" style="max-width:1200px;">
+                <div class="row g-4 justify-content-center">
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card h-100 text-center selection-card" role="button" style="border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); transition: transform 0.3s ease, box-shadow 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 12px 35px rgba(0,0,0,0.2)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.15)'">
+                            <div class="card-body">
+                                <i class="bi bi-baby-fill card-icon" style="color: #ff6b9d; font-size: 2.5rem;"></i>
+                                <h3 class="card-title">👶 تسجيل المواليد</h3>
+                                <p class="card-text">تسجيل بيانات المواليد الجدد</p>
+                                <a class="btn btn-primary w-100" href="births.html">تسجيل المواليد</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card h-100 text-center selection-card" role="button">
+                            <div class="card-body">
+                                <i class="bi bi-award-fill card-icon" style="color: #ffd700; font-size: 2.5rem;"></i>
+                                <h3 class="card-title">�️ تسجيل الشهداء</h3>
+                                <p class="card-text">تسجيل بيانات الشهداء ونبذة عن الحادث</p>
+                                <a class="btn btn-primary w-100" href="martyrs.html">تسجيل الشهداء</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card h-100 text-center selection-card" role="button">
+                            <div class="card-body">
+                                <i class="bi bi-x-circle-fill card-icon" style="color: #dc3545; font-size: 2.5rem;"></i>
+                                <h3 class="card-title">🕊️ تسجيل الوفيات</h3>
+                                <p class="card-text">تسجيل حالات الوفاة في العائلة</p>
+                                <a class="btn btn-primary w-100" href="deaths.html">تسجيل الوفيات</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card h-100 text-center selection-card" role="button">
+                            <div class="card-body">
+                                <i class="bi bi-bandaid-fill card-icon" style="color: #17a2b8; font-size: 2.5rem;"></i>
+                                <h3 class="card-title">🩹 تسجيل الإصابات</h3>
+                                <p class="card-text">نبذة: نموذج مفصل لتسجيل الإصابات والاحتياجات الطبية لتقديم الدعم المناسب.</p>
+                                <a class="btn btn-primary w-100" href="#injury-form">تسجيل الإصابات</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card h-100 text-center selection-card" role="button">
+                            <div class="card-body">
+                                <i class="bi bi-exclamation-triangle-fill card-icon" style="color: #ffc107; font-size: 2.5rem;"></i>
+                                <h3 class="card-title">🤲 تسجيل حالات خاصة</h3>
+                                <p class="card-text">تسجيل الحالات الخاصة التي تحتاج دعم</p>
+                                <a class="btn btn-primary w-100" href="special-cases.html">تسجيل حالات خاصة</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card h-100 text-center selection-card" role="button">
+                            <div class="card-body">
+                                <i class="bi bi-cup-straw card-icon" style="color: #e83e8c; font-size: 2.5rem;"></i>
+                                <h3 class="card-title">🍼 تسجيل حليب أطفال</h3>
+                                <p class="card-text">طلب أو توزيع حليب للأطفال الرضع</p>
+                                <a class="btn btn-primary w-100" href="baby-milk.html">تسجيل حليب أطفال</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card h-100 text-center selection-card" role="button">
+                            <div class="card-body">
+                                <i class="bi bi-t-shirt card-icon" style="color: #6f42c1; font-size: 2.5rem;"></i>
+                                <h3 class="card-title">� تسجيل بنزط أطفال</h3>
+                                <p class="card-text">تسجيل حاجات ملابس الأطفال</p>
+                                <button class="btn btn-secondary w-100" type="button" disabled>غير متاح حالياً</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card h-100 text-center selection-card" role="button">
+                            <div class="card-body">
+                                <i class="bi bi-person-bounding-box card-icon" style="color: #20c997; font-size: 2.5rem;"></i>
+                                <h3 class="card-title">👔 تسجيل بنزط كبار</h3>
+                                <p class="card-text">تلبية حاجات ملابس الكبار</p>
+                                <a class="btn btn-primary w-100" href="adult-clothes.html">تسجيل بنزط كبار</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card h-100 text-center selection-card" role="button">
+                            <div class="card-body">
+                                <i class="bi bi-life-preserver card-icon" style="color: #fd7e14; font-size: 2.5rem;"></i>
+                                <h3 class="card-title">🚨 طلب مساعدة</h3>
+                                <p class="card-text">فتح طلب مساعدة عام للحصول على دعم فوري</p>
+                                <a class="btn btn-primary w-100" href="manage-aid.html">تسجيل طلب مساعدة</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    <footer class="footer">
+        <div id="server-status" class="status-indicator mb-2">
+            <span class="status-dot"></span>
+            <span class="status-text">جاري التحقق من حالة الخادم...</span>
+        </div>
+        <p class="copyright-text mb-2">
+            جميع الحقوق محفوظة &copy; 2025 | م. حماده أبو رجيلة
+        </p>
+        <a href="https://wa.me/972569210941" target="_blank" class="whatsapp-link">
+            <i class="bi bi-whatsapp"></i> تواصل عبر الواتساب
+        </a>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
