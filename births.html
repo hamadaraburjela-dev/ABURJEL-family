@@ -199,6 +199,7 @@
     <script src="script.js"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="script.js"></script>
   
   <script>
     // JavaScript for form validation, father verification, API submit, and image preview
@@ -210,9 +211,35 @@
       const fatherIDInput = document.getElementById('fatherID');
       const babyIDInput = document.getElementById('babyID');
 
-      const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyi5_-5EKcDdC95urDLUkOcbhax8974S6PJkULj60AWOqzvsmeGzb11Y78SpB4K5FHEag/exec';
+  const WEB_APP_URL = (window.App && App.WEB_APP_URL) ? App.WEB_APP_URL : 'https://script.google.com/macros/s/AKfycbyi5_-5EKcDdC95urDLUkOcbhax8974S6PJkULj60AWOqzvsmeGzb11Y78SpB4K5FHEag/exec';
       let fatherExists = null;
       let fatherName = '';
+
+      // Safe POST helper with tolerant JSON parse
+      async function postToServer(payload) {
+        const res = await fetch(WEB_APP_URL, {
+          method: 'POST',
+          mode: 'cors',
+          redirect: 'follow',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const raw = await res.text();
+        let data = null;
+        try { data = raw ? JSON.parse(raw) : null; } catch { data = null; }
+        if (!res.ok) {
+          const snippet = raw ? raw.substring(0, 200) : '';
+          const msg = (data && data.message) ? data.message : (snippet || `HTTP ${res.status}`);
+          console.error('Births POST error', { status: res.status, rawSnippet: snippet, payload });
+          throw new Error(msg);
+        }
+        if (!data) {
+          const snippet = raw ? raw.substring(0, 200) : '';
+          console.error('Births POST empty/non-JSON', { status: res.status, rawSnippet: snippet, payload });
+          throw new Error(`رد الخادم غير صالح (فارغ أو ليس JSON). الحالة ${res.status}${snippet ? ` | المعاينة: ${snippet}` : ''}`);
+        }
+        return data;
+      }
 
       // UI note for father verification
       const note = document.createElement('div');
@@ -241,28 +268,21 @@
           try {
             note.textContent = 'جاري التحقق من هوية الأب...';
             note.style.color = '#6c757d';
-            const primaryReq = await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'verifyFatherId', fatherId: e.target.value }) });
             let usedFallback = false;
-            let data;
-            if (primaryReq.ok) {
-              try { data = await primaryReq.json(); } catch { data = null; }
-            }
-            if (!primaryReq.ok || !data || data.success === false) {
+            let data = null;
+            try {
+              data = await postToServer({ action: 'verifyFatherId', fatherId: e.target.value });
+            } catch (err) {
               // Fallback: use existing endpoint getUserData (no token required) to verify existence
               usedFallback = true;
-              const fbReq = await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'getUserData', userId: e.target.value }) });
-              if (fbReq.ok) {
-                try {
-                  const fbData = await fbReq.json();
-                  if (fbData && fbData.success && fbData.data) {
-                    data = { success: true, exists: true, fatherName: fbData.data['الاسم الكامل'] };
-                  } else {
-                    data = { success: true, exists: false };
-                  }
-                } catch {
+              try {
+                const fbData = await postToServer({ action: 'getUserData', userId: e.target.value });
+                if (fbData && fbData.success && fbData.data) {
+                  data = { success: true, exists: true, fatherName: fbData.data['الاسم الكامل'] };
+                } else {
                   data = { success: true, exists: false };
                 }
-              } else {
+              } catch {
                 data = { success: true, exists: false };
               }
             }
@@ -323,8 +343,7 @@
               birthDate: document.getElementById('birthDate').value,
               birthCertificate: birthCert
             };
-            const res = await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
-            const result = await res.json();
+            const result = await postToServer(payload);
             if (!result.success) throw new Error(result.message || 'فشل إرسال الطلب.');
 
             alert(result.message || 'تم إرسال الطلب بنجاح.');
