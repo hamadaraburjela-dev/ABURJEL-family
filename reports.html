@@ -236,69 +236,10 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <script>
-// Lightweight reports pagination (client-side)
-(function(){
-    const perPage = 10;
-    let items = [];
-    let filtered = [];
-    let page = 1;
-
-    function escapeHtml(s){ if (!s && s!==0) return ''; return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]; }); }
-
-    function createBtn(text, enabled, onClick, active){
-        const li = document.createElement('li'); li.className = `page-item ${active? 'active':''} ${!enabled? 'disabled':''}`;
-        const a = document.createElement('a'); a.className='page-link'; a.href='#'; a.innerHTML=text; if (enabled) a.addEventListener('click', e=>{ e.preventDefault(); onClick(); }); li.appendChild(a); return li;
-    }
-
-    function render(){
-        const tbody = document.getElementById('reportTableBody'); if (!tbody) return;
-        if (!filtered.length){ tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">لا توجد نتائج</td></tr>'; updatePagination(); return; }
-        const start = (page-1)*perPage; const end = Math.min(start+perPage, filtered.length); const pageData = filtered.slice(start,end);
-        tbody.innerHTML = pageData.map(r=>{
-            const name = r.name || r.fullName || r['اسم المستفيد'] || '';
-            const idn = r.id || r.idNo || r['معرف المستفيد'] || '';
-            const kind = r.kind || r.type || r['نوع المساعدة'] || '';
-            const date = r.date || r['تاريخ الاستلام'] || '';
-            const source = r.source || r['مصدر المساعدة'] || '';
-            return `
-                <tr>
-                    <td><strong class="text-dark">${escapeHtml(name)}</strong></td>
-                    <td><span class="font-monospace bg-light px-2 py-1 rounded">${escapeHtml(idn)}</span></td>
-                    <td>${escapeHtml(kind)}</td>
-                    <td>${escapeHtml(date)}</td>
-                    <td>${escapeHtml(source)}</td>
-                </tr>
-            `;
-        }).join('');
-        updatePagination();
-    }
-
-    function updatePagination(){
-        const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
-        const startItem = filtered.length? ((page-1)*perPage)+1 : 0;
-        const endItem = Math.min(page*perPage, filtered.length);
-        document.getElementById('reportStartItem').textContent = startItem;
-        document.getElementById('reportEndItem').textContent = endItem;
-        document.getElementById('reportTotalItems').textContent = filtered.length;
-        const list = document.getElementById('reportPaginationList'); if (!list) return; list.innerHTML='';
-        list.appendChild(createBtn('<i class="bi bi-chevron-right me-1"></i> <span class="d-none d-sm-inline">السابق</span>', page>1, ()=>changePage(page-1)));
-        let s = Math.max(1, page-2); let e = Math.min(totalPages, page+2);
-        if (s>1){ list.appendChild(createBtn('1', true, ()=>changePage(1))); if (s>2){ const dots=document.createElement('li'); dots.className='page-item disabled'; dots.innerHTML='<span class="page-link">...</span>'; list.appendChild(dots); } }
-        for (let i=s;i<=e;i++) list.appendChild(createBtn(i, true, ()=>changePage(i), i===page));
-        if (e<totalPages){ if (e<totalPages-1){ const dots=document.createElement('li'); dots.className='page-item disabled'; dots.innerHTML='<span class="page-link">...</span>'; list.appendChild(dots); } list.appendChild(createBtn(totalPages, true, ()=>changePage(totalPages))); }
-        list.appendChild(createBtn('<span class="d-none d-sm-inline">التالي</span> <i class="bi bi-chevron-left ms-1"></i>', page<totalPages, ()=>changePage(page+1)));
-        const container = document.getElementById('reportPaginationContainer'); if (container) container.style.display = filtered.length? 'flex' : 'none';
-    }
-
-    function changePage(p){ const totalPages = Math.max(1, Math.ceil(filtered.length / perPage)); if (p<1||p>totalPages) return; page=p; render(); document.querySelector('.data-table-card').scrollIntoView({behavior:'smooth', block:'start'}); }
-
-    // public init
-    window.initReportsPagination = function(dataArray){ items = Array.isArray(dataArray)? dataArray : []; // newest-first if date exists
-        const dateKeys = ['تاريخ الاستلام','date','createdAt','created_at']; const keyFound = dateKeys.find(k=> items.some(i=> i[k] )); if (keyFound) items.sort((a,b)=> new Date(b[keyFound]) - new Date(a[keyFound])); filtered = [...items]; page=1; render(); };
-
-    // auto-init if global var exists
-    document.addEventListener('DOMContentLoaded', ()=>{ if (window.reportData) window.initReportsPagination(window.reportData); });
-})();
+    document.addEventListener('DOMContentLoaded', function(){
+        if (window.reportData) window.initReportsPagination(window.reportData, 10);
+        else window.initReportsPagination([], 10);
+    });
 </script>
 </body>
 </html>

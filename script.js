@@ -888,3 +888,134 @@ function checkServerStatus() {
 
 // Run the server status check when the page loads
 document.addEventListener('DOMContentLoaded', checkServerStatus);
+
+/*
+ Shared client-side pagination module
+ Exposes: initMembersPagination, initAidLogsPagination, initReportsPagination, initResetRequestsPagination
+ Each initializer accepts an array (or opts) and will render into the page's table using the known IDs.
+*/
+(function(){
+    function escapeHtml(s){ if (!s && s!==0) return ''; return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]; }); }
+
+    function createPaginationButton(text, enabled, onClick, active){
+        const li = document.createElement('li');
+        li.className = `page-item ${active ? 'active' : ''} ${!enabled ? 'disabled' : ''}`;
+        const a = document.createElement('a');
+        a.className = 'page-link'; a.href = '#'; a.innerHTML = text;
+        if (enabled) a.addEventListener('click', function(e){ e.preventDefault(); onClick(); });
+        li.appendChild(a);
+        return li;
+    }
+
+    function createState(opts){
+        return {
+            items: Array.isArray(opts.items)? opts.items : [],
+            filtered: [],
+            page: 1,
+            perPage: opts.perPage || 10,
+            ids: opts.ids,
+            dateKeys: opts.dateKeys || ['تاريخ التسجيل','تاريخ الاستلام','date','createdAt','created_at','datetime']
+        };
+    }
+
+    function updatePaginationUI(state){
+        const totalPages = Math.max(1, Math.ceil(state.filtered.length / state.perPage));
+        const startItem = state.filtered.length? ((state.page-1)*state.perPage)+1 : 0;
+        const endItem = Math.min(state.page*state.perPage, state.filtered.length);
+        if (state.ids.start) document.getElementById(state.ids.start).textContent = startItem;
+        if (state.ids.end) document.getElementById(state.ids.end).textContent = endItem;
+        if (state.ids.total) document.getElementById(state.ids.total).textContent = state.filtered.length;
+
+        const list = document.getElementById(state.ids.list);
+        if (!list) return;
+        list.innerHTML = '';
+        list.appendChild(createPaginationButton('<i class="bi bi-chevron-right me-1"></i> <span class="d-none d-sm-inline">السابق</span>', state.page>1, ()=>changePage(state, state.page-1)));
+
+        let startPage = Math.max(1, state.page-2);
+        let endPage = Math.min(totalPages, state.page+2);
+        if (startPage > 1){ list.appendChild(createPaginationButton('1', true, ()=>changePage(state,1))); if (startPage>2){ const dots=document.createElement('li'); dots.className='page-item disabled'; dots.innerHTML='<span class="page-link">...</span>'; list.appendChild(dots); } }
+        for (let i=startPage;i<=endPage;i++){ list.appendChild(createPaginationButton(i, true, ()=>changePage(state,i), i===state.page)); }
+        if (endPage < totalPages){ if (endPage < totalPages-1){ const dots=document.createElement('li'); dots.className='page-item disabled'; dots.innerHTML='<span class="page-link">...</span>'; list.appendChild(dots); } list.appendChild(createPaginationButton(totalPages, true, ()=>changePage(state,totalPages))); }
+
+        list.appendChild(createPaginationButton('<span class="d-none d-sm-inline">التالي</span> <i class="bi bi-chevron-left ms-1"></i>', state.page<totalPages, ()=>changePage(state, state.page+1)));
+
+        const container = document.getElementById(state.ids.container);
+        if (container) container.style.display = state.filtered.length? 'flex' : 'none';
+    }
+
+    function renderTableGeneric(state, rowRenderer, colsCount){
+        const tbody = document.getElementById(state.ids.body);
+        if (!tbody) return;
+        if (!state.filtered.length){ tbody.innerHTML = `<tr><td colspan="${colsCount}" class="text-center text-muted py-4">لا توجد سجلات</td></tr>`; updatePaginationUI(state); return; }
+        const start = (state.page-1)*state.perPage;
+        const end = Math.min(start + state.perPage, state.filtered.length);
+        const pageData = state.filtered.slice(start, end);
+        tbody.innerHTML = pageData.map(row=> rowRenderer(row)).join('');
+        updatePaginationUI(state);
+    }
+
+    function changePage(state, p){ const totalPages = Math.max(1, Math.ceil(state.filtered.length / state.perPage)); if (p<1 || p>totalPages) return; state.page = p; if (state.render) state.render(); document.querySelector('.data-table-card')?.scrollIntoView({behavior:'smooth', block:'start'}); }
+
+    function applyFilterGeneric(state, term, extraPredicate){ term = (term||'').toString().trim().toLowerCase(); state.filtered = state.items.filter(it=>{ const name = (it.name||it.fullName||it['الاسم الكامل']||it['المستفيد']||'').toString().toLowerCase(); const idNo = (it.id||it.idNo||it['رقم الهوية']||'').toString().toLowerCase(); const matched = !term || name.includes(term) || idNo.includes(term); return matched && (typeof extraPredicate === 'function' ? extraPredicate(it) : true); });
+        const k = state.dateKeys.find(k=> state.items.some(i=> i[k] )); if (k) state.filtered.sort((a,b)=> new Date(b[k]) - new Date(a[k])); state.page = 1; if (state.render) state.render(); }
+
+    // specific inits
+    window.initMembersPagination = function(dataArray, perPage = 10){
+        const state = createState({ items: Array.isArray(dataArray)? dataArray : [], perPage, ids: { body: 'membersTableBody', list: 'paginationList', container:'paginationContainer', start:'startItem', end:'endItem', total:'totalItems' }, dateKeys: ['تاريخ التسجيل','date','createdAt','created_at'] });
+        state.render = ()=> renderTableGeneric(state, (m)=>{
+            const fullName = m['الاسم الكامل'] || m.fullName || m.name || '';
+            const idNo = m['رقم الهوية'] || m.id || m.idNo || '';
+            const phone = m['رقم الجوال'] || m.phone || '';
+            const residence = m['مكان الاقامة'] || m.residence || '';
+            return `\n                        <tr class="table-row-hover">\n                            <td>\n                                <div class="d-flex align-items-center">\n                                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width:35px;height:35px;"><i class="bi bi-person-fill text-white"></i></div>\n                                    <strong class="text-dark">${escapeHtml(fullName)}</strong>\n                                </div>\n                            </td>\n                            <td><span class="font-monospace bg-light px-2 py-1 rounded">${escapeHtml(idNo)}</span></td>\n                            <td>${escapeHtml(phone)}</td>\n                            <td>${escapeHtml(residence)}</td>\n                            <td>\n                                <div class="btn-group" role="group">\n                                    <button class="btn btn-sm btn-outline-info btn-modern" title="عرض"><i class="bi bi-eye"></i></button>\n                                    <button class="btn btn-sm btn-outline-warning btn-modern" title="تعديل"><i class="bi bi-pencil"></i></button>\n                                </div>\n                            </td>\n                        </tr>\n                    `; }, 5);
+
+        // wire search & filters
+        document.addEventListener('DOMContentLoaded', ()=>{
+            const searchEl = document.getElementById('memberSearchInput'); if (searchEl){ let t; searchEl.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=>applyFilterGeneric(state, searchEl.value), 250); }); }
+            const branchEl = document.getElementById('branchFilter'); if (branchEl) branchEl.addEventListener('change', ()=> applyFilterGeneric(state, document.getElementById('memberSearchInput')?.value));
+            const statusEl = document.getElementById('statusFilter'); if (statusEl) statusEl.addEventListener('change', ()=> applyFilterGeneric(state, document.getElementById('memberSearchInput')?.value));
+            if (window.membersData) window.initMembersPagination(window.membersData, perPage);
+        });
+        // initial load
+        state.filtered = [...state.items]; state.page = 1; state.render();
+    };
+
+    window.initAidLogsPagination = function(opts){
+        // opts: { future: { items: [] }, completed: { items: [] }, perPage }
+        const per = (opts && opts.perPage) || 10;
+        const futureState = createState({ items: Array.isArray(opts.future?.items)? opts.future.items : [], perPage: per, ids: { body: 'futureAidsTableBody', list: 'paginationList', container:'paginationContainer', start:'startItem', end:'endItem', total:'totalItems' } });
+        const completedState = createState({ items: Array.isArray(opts.completed?.items)? opts.completed.items : [], perPage: per, ids: { body: 'completedAidsTableBody', list: 'completedPaginationList', container:'completedPaginationContainer', start:'completedStartItem', end:'completedEndItem', total:'completedTotalItems' } });
+
+        futureState.render = ()=> renderTableGeneric(futureState, (row)=>{
+            const name = row.name || row.fullName || row['المستفيد'] || '';
+            const idNo = row.id || row.idNo || row['رقم الهوية'] || '';
+            const kind = row.kind || row.type || row['نوع المساعدة'] || '';
+            const date = row.date || row.createdAt || row['تاريخ الاستلام'] || '';
+            const source = row.source || row['مصدر المساعدة'] || '';
+            return `\n                            <tr class="table-row-hover">\n                                <td>\n                                    <div class="d-flex align-items-center">\n                                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width:35px;height:35px;"><i class="bi bi-person-fill text-white"></i></div>\n                                        <strong class="text-dark">${escapeHtml(name)}</strong>\n                                    </div>\n                                </td>\n                                <td><span class="font-monospace bg-light px-2 py-1 rounded">${escapeHtml(idNo)}</span></td>\n                                <td>${escapeHtml(kind)}</td>\n                                <td>${escapeHtml(date)}</td>\n                                <td>${escapeHtml(source)}</td>\n                                <td>\n                                    <div class="btn-group" role="group">\n                                        <button class="btn btn-sm btn-outline-info btn-modern" title="عرض"><i class="bi bi-eye"></i></button>\n                                        <button class="btn btn-sm btn-outline-warning btn-modern" title="تعديل"><i class="bi bi-pencil"></i></button>\n                                    </div>\n                                </td>\n                            </tr>\n                        `; }, 6);
+
+        completedState.render = futureState.render; // same layout for completed
+
+        document.addEventListener('DOMContentLoaded', ()=>{
+            const fSearch = document.getElementById('futureAidSearchInput'); if (fSearch){ let t; fSearch.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=> applyFilterGeneric(futureState, fSearch.value), 250); }); }
+            const cSearch = document.getElementById('completedAidSearchInput'); if (cSearch){ let t; cSearch.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=> applyFilterGeneric(completedState, cSearch.value), 250); }); }
+            if (opts && (opts.future?.items || opts.completed?.items)){
+                futureState.filtered = [...futureState.items]; completedState.filtered = [...completedState.items]; futureState.render(); completedState.render();
+            }
+            if (window.aidFutureData || window.aidCompletedData){
+                initAidLogsPagination({ future: { items: window.aidFutureData || [] }, completed: { items: window.aidCompletedData || [] }, perPage: per });
+            }
+        });
+    };
+
+    window.initReportsPagination = function(dataArray, perPage = 10){
+        const state = createState({ items: Array.isArray(dataArray)? dataArray : [], perPage, ids: { body: 'reportTableBody', list: 'reportPaginationList', container:'reportPaginationContainer', start:'reportStartItem', end:'reportEndItem', total:'reportTotalItems' }, dateKeys:['تاريخ الاستلام','date','createdAt','created_at'] });
+        state.render = ()=> renderTableGeneric(state, (r)=>{ const name = r.name || r.fullName || r['اسم المستفيد'] || ''; const idn = r.id || r.idNo || r['معرف المستفيد'] || ''; const kind = r.kind || r.type || r['نوع المساعدة'] || ''; const date = r.date || r['تاريخ الاستلام'] || ''; const source = r.source || r['مصدر المساعدة'] || ''; return `\n                <tr>\n                    <td><strong class="text-dark">${escapeHtml(name)}</strong></td>\n                    <td><span class="font-monospace bg-light px-2 py-1 rounded">${escapeHtml(idn)}</span></td>\n                    <td>${escapeHtml(kind)}</td>\n                    <td>${escapeHtml(date)}</td>\n                    <td>${escapeHtml(source)}</td>\n                </tr>\n            `; }, 5);
+        document.addEventListener('DOMContentLoaded', ()=>{ if (window.reportData) window.initReportsPagination(window.reportData, perPage); }); state.filtered = [...state.items]; state.page=1; state.render(); };
+
+    window.initResetRequestsPagination = function(dataArray, perPage = 10){
+        const state = createState({ items: Array.isArray(dataArray)? dataArray : [], perPage, ids: { body: 'resetRequestsTableBody', list: 'resetPaginationList', container:'resetPaginationContainer', start:'resetStartItem', end:'resetEndItem', total:'resetTotalItems' }, dateKeys:['التاريخ والوقت','date','datetime','createdAt','created_at'] });
+        state.render = ()=> renderTableGeneric(state, (r)=>{ const date = r.date || r.datetime || r['التاريخ والوقت'] || ''; const idn = r.id || r.idNo || r['رقم الهوية'] || ''; return `\n                <tr>\n                    <td>${escapeHtml(date)}</td>\n                    <td><span class="font-monospace bg-light px-2 py-1 rounded">${escapeHtml(idn)}</span></td>\n                    <td>\n                        <div class="btn-group" role="group">\n                            <button class="btn btn-sm btn-outline-success btn-modern" title="موافقة"><i class="bi bi-check-lg"></i></button>\n                            <button class="btn btn-sm btn-outline-danger btn-modern" title="رفض"><i class="bi bi-x-lg"></i></button>\n                        </div>\n                    </td>\n                </tr>\n            `; }, 3);
+        document.addEventListener('DOMContentLoaded', ()=>{ if (window.resetRequestsData) window.initResetRequestsPagination(window.resetRequestsData, perPage); }); state.filtered = [...state.items]; state.page=1; state.render(); };
+
+})();
