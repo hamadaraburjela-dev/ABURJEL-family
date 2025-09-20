@@ -37,23 +37,163 @@
 
         /* تحسينات للأجهزة الصغيرة */
         @media (max-width: 768px) {
+            body {
+                padding: 0;
+                margin: 0;
+            }
+            
             .container-fluid {
-                padding: 10px 10px 0 10px;
+                padding: 5px;
+                max-width: 100%;
             }
             
             .main-content {
-                width: calc(100% - 20px);
-                margin: 10px auto;
-                padding: 20px;
+                width: 100%;
+                margin: 5px 0;
+                padding: 15px;
+                border-radius: 15px;
             }
             
             .header {
-                width: calc(100% - 20px);
-                margin: 0 auto 15px auto;
+                width: 100%;
+                margin: 0 0 10px 0;
+                padding: 10px;
+                border-radius: 15px;
             }
             
             .stats-card {
-                margin-bottom: 15px;
+                margin-bottom: 10px;
+                padding: 15px;
+                border-radius: 15px;
+            }
+            
+            .stats-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+            
+            .data-table-card {
+                border-radius: 15px;
+                margin: 0;
+            }
+            
+            .search-filters {
+                padding: 15px;
+                border-radius: 10px;
+            }
+            
+            .form-control {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+            
+            .table-responsive {
+                margin: 0 -10px;
+                border-radius: 10px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .table-modern {
+                font-size: 11px;
+                min-width: 800px;
+            }
+            
+            .table-modern th,
+            .table-modern td {
+                padding: 6px 4px;
+                white-space: nowrap;
+                min-width: 80px;
+            }
+            
+            .table-modern th:first-child,
+            .table-modern td:first-child {
+                min-width: 60px;
+            }
+            
+            .table-modern th:nth-child(3),
+            .table-modern td:nth-child(3) {
+                min-width: 120px;
+            }
+            
+            .btn-group .btn {
+                padding: 3px 6px;
+                font-size: 10px;
+            }
+            
+            .status-badge {
+                font-size: 10px;
+                padding: 4px 8px;
+                min-width: 70px;
+            }
+            
+            .header-title {
+                font-size: 1.3rem !important;
+            }
+            
+            .action-buttons .btn {
+                padding: 6px 12px;
+                font-size: 12px;
+                margin: 2px;
+            }
+        }
+
+        /* تحسينات للشاشات الصغيرة جداً */
+        @media (max-width: 480px) {
+            .container-fluid {
+                padding: 2px;
+            }
+            
+            .main-content {
+                padding: 10px;
+                margin: 2px 0;
+            }
+            
+            .header {
+                padding: 8px;
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .header > div {
+                margin-bottom: 10px;
+            }
+            
+            .stats-card {
+                padding: 12px;
+            }
+            
+            .stats-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+            
+            .search-filters .row {
+                flex-direction: column;
+            }
+            
+            .search-filters .col-md-4,
+            .search-filters .col-md-3,
+            .search-filters .col-md-2 {
+                margin-bottom: 10px;
+            }
+            
+            .card-header-modern {
+                padding: 15px;
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .action-buttons {
+                margin-top: 10px;
+                flex-direction: column;
+            }
+            
+            .action-buttons .btn {
+                margin: 2px 0;
+                width: 100%;
             }
         }
         
@@ -196,11 +336,33 @@
             border: 2px solid rgba(0, 0, 0, 0.1);
             padding: 12px 20px;
             transition: all 0.3s ease;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            min-height: 44px;
         }
         
         .form-control:focus {
             border-color: #667eea;
             box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        /* تحسينات اللمس للجوال */
+        @media (hover: none) and (pointer: coarse) {
+            .btn-modern:hover {
+                transform: none;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            }
+            
+            .stats-card:hover {
+                transform: none;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            }
+            
+            .table-modern tbody tr:hover {
+                background: rgba(102, 126, 234, 0.05);
+                transform: none;
+                box-shadow: none;
+            }
         }
         
         .table-modern {
@@ -307,6 +469,12 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .btn-modern::before {
@@ -451,7 +619,7 @@
         <main class="main-content">
             <!-- إحصائيات سريعة -->
             <div class="row mb-4">
-                <div class="col-md-3">
+                <div class="col-lg-3 col-md-6 col-sm-6 col-12">
                     <div class="stats-card text-center">
                         <div class="stats-icon danger">
                             <i class="bi bi-heart-fill"></i>
@@ -460,7 +628,7 @@
                         <p class="text-muted mb-0 fw-500">إجمالي الشهداء</p>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-lg-3 col-md-6 col-sm-6 col-12">
                     <div class="stats-card text-center">
                         <div class="stats-icon warning">
                             <i class="bi bi-clock-history"></i>
@@ -469,7 +637,7 @@
                         <p class="text-muted mb-0 fw-500">طلبات قيد المراجعة</p>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-lg-3 col-md-6 col-sm-6 col-12">
                     <div class="stats-card text-center">
                         <div class="stats-icon success">
                             <i class="bi bi-check-circle-fill"></i>
@@ -478,7 +646,7 @@
                         <p class="text-muted mb-0 fw-500">طلبات موافق عليها</p>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-lg-3 col-md-6 col-sm-6 col-12">
                     <div class="stats-card text-center">
                         <div class="stats-icon info">
                             <i class="bi bi-calendar-date"></i>
@@ -508,13 +676,13 @@
                     <!-- فلاتر البحث -->
                     <div class="search-filters">
                         <div class="row g-3">
-                            <div class="col-md-4">
+                            <div class="col-lg-4 col-md-6 col-12">
                                 <div class="position-relative">
                                     <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                                     <input type="text" class="form-control ps-5" id="searchInput" placeholder="البحث برقم الهوية أو الاسم...">
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-lg-3 col-md-6 col-12">
                                 <select class="form-control" id="statusFilter">
                                     <option value="">جميع الحالات</option>
                                     <option value="جديد">جديد</option>
@@ -523,7 +691,7 @@
                                     <option value="مرفوض">مرفوض</option>
                                 </select>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-lg-3 col-md-6 col-12">
                                 <select class="form-control" id="causeFilter">
                                     <option value="">جميع الأسباب</option>
                                     <option value="قصف جوي">قصف جوي</option>
@@ -535,7 +703,7 @@
                                     <option value="أخرى">أخرى</option>
                                 </select>
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-lg-2 col-md-6 col-12">
                                 <button class="btn btn-primary btn-modern w-100" onclick="applyFilters()">
                                     <i class="bi bi-funnel me-1"></i>فلترة
                                 </button>
