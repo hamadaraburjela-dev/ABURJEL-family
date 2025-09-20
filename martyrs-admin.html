@@ -211,7 +211,14 @@
 
         // التحقق من تسجيل الدخول
         document.addEventListener('DOMContentLoaded', function() {
-            if (!App.isAdminLoggedIn()) {
+            console.log('DOM loaded, checking App object:', typeof App);
+            console.log('App.isAdminLoggedIn available:', typeof App?.isAdminLoggedIn);
+            console.log('App.postToAPI available:', typeof App?.postToAPI);
+            
+            // التحقق من تسجيل دخول المدير
+            const adminToken = sessionStorage.getItem('adminToken');
+            if (!adminToken && (!App || !App.isAdminLoggedIn())) {
+                console.log('Admin not logged in');
                 window.location.href = 'index.html';
                 return;
             }
@@ -223,18 +230,47 @@
         async function loadMartyrRequests() {
             try {
                 const token = sessionStorage.getItem('adminToken');
-                const response = await App.postToAPI({ action: 'getMartyrRequests', token });
+                console.log('Loading martyr requests with token:', token ? 'exists' : 'missing');
+                
+                let response;
+                if (App && App.postToAPI) {
+                    response = await App.postToAPI({ action: 'getMartyrRequests', token });
+                } else {
+                    // Fallback direct fetch using shared WEB_APP_URL
+                    const res = await fetch(App.WEB_APP_URL, {
+                        method: 'POST',
+                        mode: 'cors',
+                        redirect: 'follow',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({ action: 'getMartyrRequests', token })
+                    });
+                    const text = await res.text();
+                    console.log('Raw response:', text);
+                    try {
+                        response = JSON.parse(text);
+                    } catch (parseError) {
+                        console.error('JSON parse error:', parseError, 'Raw text:', text);
+                        throw new Error('خطأ في تحليل الاستجابة من الخادم');
+                    }
+                }
+                console.log('Response received:', response);
                 
                 if (response.success) {
                     martyrRequests = response.data || [];
                     filteredRequests = martyrRequests;
+                    console.log('Martyr requests loaded:', martyrRequests.length, 'items');
                     renderRequests();
                     updateStatistics();
                 } else {
                     throw new Error(response.message || 'فشل تحميل البيانات');
                 }
             } catch (error) {
-                App.showToast('خطأ في تحميل البيانات: ' + error.message, false);
+                console.error('Error loading martyr requests:', error);
+                if (App && App.showToast) {
+                    App.showToast('خطأ في تحميل البيانات: ' + error.message, false);
+                } else {
+                    alert('خطأ في تحميل البيانات: ' + error.message);
+                }
                 document.getElementById('loadingSpinner').style.display = 'none';
                 document.getElementById('noData').style.display = 'block';
             }
@@ -372,22 +408,49 @@
                 const newStatus = document.getElementById('newStatus').value;
                 const token = sessionStorage.getItem('adminToken');
                 
-                const response = await App.postToAPI({
-                    action: 'updateMartyrRequestStatus',
-                    token,
-                    requestId,
-                    newStatus
-                });
+                let response;
+                if (App && App.postToAPI) {
+                    response = await App.postToAPI({
+                        action: 'updateMartyrRequestStatus',
+                        token,
+                        requestId,
+                        newStatus
+                    });
+                } else {
+                    // Fallback direct fetch using shared WEB_APP_URL
+                    const res = await fetch(App.WEB_APP_URL, {
+                        method: 'POST',
+                        mode: 'cors',
+                        redirect: 'follow',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({
+                            action: 'updateMartyrRequestStatus',
+                            token,
+                            requestId,
+                            newStatus
+                        })
+                    });
+                    const text = await res.text();
+                    response = JSON.parse(text);
+                }
                 
                 if (response.success) {
-                    App.showToast('تم تحديث حالة الطلب بنجاح', true);
+                    if (App && App.showToast) {
+                        App.showToast('تم تحديث حالة الطلب بنجاح', true);
+                    } else {
+                        alert('تم تحديث حالة الطلب بنجاح');
+                    }
                     bootstrap.Modal.getInstance(document.getElementById('statusUpdateModal')).hide();
                     await loadMartyrRequests();
                 } else {
                     throw new Error(response.message || 'فشل تحديث الحالة');
                 }
             } catch (error) {
-                App.showToast('خطأ في تحديث الحالة: ' + error.message, false);
+                if (App && App.showToast) {
+                    App.showToast('خطأ في تحديث الحالة: ' + error.message, false);
+                } else {
+                    alert('خطأ في تحديث الحالة: ' + error.message);
+                }
             }
         }
 
@@ -419,7 +482,11 @@
         // تصدير إلى Excel
         function exportToExcel() {
             if (!filteredRequests.length) {
-                App.showToast('لا توجد بيانات للتصدير', false);
+                if (App && App.showToast) {
+                    App.showToast('لا توجد بيانات للتصدير', false);
+                } else {
+                    alert('لا توجد بيانات للتصدير');
+                }
                 return;
             }
             
@@ -427,7 +494,11 @@
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "الشهداء");
             XLSX.writeFile(wb, `شهداء-عائلة-أبو-رجيلة-${new Date().toLocaleDateString('ar-EG')}.xlsx`);
-            App.showToast('تم تصدير البيانات بنجاح', true);
+            if (App && App.showToast) {
+                App.showToast('تم تصدير البيانات بنجاح', true);
+            } else {
+                alert('تم تصدير البيانات بنجاح');
+            }
         }
 
         // الحصول على class الحالة

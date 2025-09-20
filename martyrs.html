@@ -248,10 +248,8 @@
       const previewImg = document.getElementById('previewImg');
       const martyrIDInput = document.getElementById('martyrID');
 
-  // Use the shared App.WEB_APP_URL when available; fallback kept identical to avoid mismatch
-  const WEB_APP_URL = (window.App && App.WEB_APP_URL)
-    ? App.WEB_APP_URL
-    : 'https://script.google.com/macros/s/AKfycbxiyJpbfDqZzpOoBuVEnOPJvsfzV8QT9-6M4wMNe23vzIl251xFI5jVNGtWrfcjp4OplQ/exec';
+  // Use the shared App.WEB_APP_URL - no fallback needed since script.js is always loaded
+  const WEB_APP_URL = App.WEB_APP_URL;
       let martyrExists = null;
       let martyrName = '';
 

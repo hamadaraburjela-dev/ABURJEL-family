@@ -689,20 +689,34 @@ function handleBulkProcessAid(payload) {
 
 // --- UTILITY FUNCTIONS ---
 function sheetToJSON(sheetName) {
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(sheetName);
-  if (!sheet) return [];
-  const values = sheet.getDataRange().getValues();
-  if (values.length < 2) return [];
-  const headers = values.shift().map(header => header.trim());
-  return values.map(row =>
-    headers.reduce((obj, header, i) => {
-      obj[header] = row[i];
-      return obj;
-    }, {})
-  );
-}
-
-function authenticateToken(token, requiredRole = null) {
+  try {
+    Logger.log('sheetToJSON called for sheet: ' + sheetName);
+    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(sheetName);
+    if (!sheet) {
+      Logger.log('Sheet not found: ' + sheetName);
+      return [];
+    }
+    const values = sheet.getDataRange().getValues();
+    Logger.log('Sheet data rows: ' + values.length);
+    if (values.length < 2) {
+      Logger.log('Not enough data rows in sheet');
+      return [];
+    }
+    const headers = values.shift().map(header => header.trim());
+    Logger.log('Headers: ' + JSON.stringify(headers));
+    const result = values.map(row =>
+      headers.reduce((obj, header, i) => {
+        obj[header] = row[i];
+        return obj;
+      }, {})
+    );
+    Logger.log('Returning ' + result.length + ' records');
+    return result;
+  } catch (error) {
+    Logger.log('Error in sheetToJSON: ' + error.toString());
+    return [];
+  }
+}function authenticateToken(token, requiredRole = null) {
   if (!token) throw new Error('Token is missing.');
   const cache = CacheService.getScriptCache();
   const storedData = cache.get(token);
@@ -1054,11 +1068,46 @@ function handleSubmitMartyrRegistration(payload) {
  * إرجاع طلبات الشهداء للإدارة
  */
 function handleGetMartyrRequests(token) {
-  authenticateToken(token);
-  const rows = sheetToJSON(MARTYRS_SHEET);
-  // ترتيب تنازلي حسب التاريخ
-  const sorted = rows.sort((a, b) => new Date(b['تاريخ التسجيل']) - new Date(a['تاريخ التسجيل']));
-  return { success: true, data: sorted };
+  try {
+    authenticateToken(token);
+    Logger.log('Getting martyr requests for sheet: ' + MARTYRS_SHEET);
+    
+    // التحقق من وجود الشيت وإنشاؤه إذا لم يكن موجود
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    let sheet = ss.getSheetByName(MARTYRS_SHEET);
+    
+    if (!sheet) {
+      Logger.log('Martyrs sheet not found, creating new sheet: ' + MARTYRS_SHEET);
+      // إنشاء الشيت إذا لم يكن موجود
+      sheet = ss.insertSheet(MARTYRS_SHEET);
+      sheet.appendRow([
+        'معرف الطلب', 
+        'تاريخ التسجيل', 
+        'رقم هوية الشهيد', 
+        'اسم الشهيد', 
+        'تاريخ الاستشهاد', 
+        'مكان الاستشهاد', 
+        'سبب الاستشهاد', 
+        'تفاصيل إضافية', 
+        'حالة الطلب', 
+        'رابط شهادة الوفاة'
+      ]);
+      Logger.log('New martyrs sheet created successfully');
+      return { success: true, data: [] };
+    }
+    
+    Logger.log('Martyrs sheet found, getting data...');
+    const rows = sheetToJSON(MARTYRS_SHEET);
+    Logger.log('Found ' + rows.length + ' martyr records');
+    
+    // ترتيب تنازلي حسب التاريخ
+    const sorted = rows.sort((a, b) => new Date(b['تاريخ التسجيل']) - new Date(a['تاريخ التسجيل']));
+    return { success: true, data: sorted };
+    
+  } catch (error) {
+    Logger.log('Error in handleGetMartyrRequests: ' + error.toString());
+    return { success: false, message: 'خطأ في جلب بيانات الشهداء: ' + error.message };
+  }
 }
 
 /**

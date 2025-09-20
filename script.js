@@ -6,7 +6,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const App = {
-        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbzIkBM_BdJ76t8PI79Nd_ZOPvCBPiZMCydgPGhuJ3ssOwYKTwRe8YIDO91MMR2k1-8/exec',
+        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbxM-_WhMzg1sMeofzUkoQLv_9nuVPBwDHu137IN6x5zYY7wuQWjnE4_ZXcC_OQ2qwJwXg/exec',
         aidCategories: {
             "مساعدات مالية": ["نقد مباشر للعائلات المحتاجة", "دفع فواتير (كهرباء، ماء، إيجار)", "قروض حسنة أو صناديق دوارة"],
             "مساعدات غذائية": ["طرود غذائية أساسية", "وجبات جاهزة / مطبوخة", "توزيع مياه للشرب"],
@@ -757,6 +757,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         },
+
+        // Global API call function for all pages
+        async postToAPI(payload, showSuccessToast = true, activeSubmitButton = null) {
+            const isButtonTriggered = activeSubmitButton !== null;
+            if (isButtonTriggered) this.toggleButtonSpinner(true, activeSubmitButton);
+            try {
+                const response = await fetch(this.WEB_APP_URL, { 
+                    method: 'POST', 
+                    mode: 'cors', 
+                    redirect: 'follow', 
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                    body: JSON.stringify(payload) 
+                });
+                if (!response.ok) throw new Error(`خطأ في الشبكة: ${response.statusText}`);
+                const result = await response.json();
+                if (!result.success) throw new Error(result.message || 'حدث خطأ غير معروف في الخادم.');
+                if (showSuccessToast && result.message) this.showToast(result.message, true);
+                return result;
+            } catch (error) { 
+                console.error('API Call Failed:', error); 
+                this.showToast(error.message, false); 
+                return null; 
+            } finally { 
+                if (isButtonTriggered) this.toggleButtonSpinner(false, activeSubmitButton); 
+            }
+        }
     };
 
     // Expose globally for pages with inline scripts (e.g., births.html)

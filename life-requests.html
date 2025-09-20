@@ -90,10 +90,8 @@
     document.addEventListener('DOMContentLoaded', function() {
       if (!sessionStorage.getItem('adminToken')) { window.location.href = 'index.html'; return; }
       const token = sessionStorage.getItem('adminToken');
-      // Use the unified backend URL used by the whole app
-      const WEB_APP_URL = (window.App && App.WEB_APP_URL)
-        ? App.WEB_APP_URL
-        : 'https://script.google.com/macros/s/AKfycbxiyJpbfDqZzpOoBuVEnOPJvsfzV8QT9-6M4wMNe23vzIl251xFI5jVNGtWrfcjp4OplQ/exec';
+      // Use the shared App.WEB_APP_URL - no fallback needed since script.js is always loaded
+      const WEB_APP_URL = App.WEB_APP_URL;
       const tbody = document.getElementById('birthRequestsTableBody');
       const search = document.getElementById('birthSearch');
       let allRows = [];
