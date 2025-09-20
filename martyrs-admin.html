@@ -364,6 +364,83 @@
                 box-shadow: none;
             }
         }
+
+        /* تصميم الـ Pagination */
+        .pagination-modern {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .pagination-modern .page-item {
+            border: none;
+            margin: 0 2px;
+        }
+
+        .pagination-modern .page-link {
+            border: none;
+            border-radius: 10px;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            min-width: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pagination-modern .page-link:hover {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .pagination-modern .page-item.active .page-link {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .pagination-modern .page-item.disabled .page-link {
+            background: rgba(255, 255, 255, 0.5);
+            color: #aaa;
+            cursor: not-allowed;
+        }
+
+        .pagination-info {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* تحسينات للجوال */
+        @media (max-width: 768px) {
+            .pagination-modern .page-link {
+                padding: 8px 10px;
+                font-size: 12px;
+                min-width: 36px;
+            }
+            
+            .pagination-info {
+                padding: 8px 15px;
+                font-size: 12px;
+            }
+            
+            #paginationContainer {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .pagination-modern {
+                justify-content: center;
+            }
+        }
         
         .table-modern {
             background: white;
@@ -746,6 +823,21 @@
                         <h4 class="text-muted fw-600 mb-2">لا توجد طلبات لعرضها</h4>
                         <p class="text-muted mb-0">لم يتم العثور على أي طلبات تسجيل شهداء بالفلاتر المحددة</p>
                     </div>
+
+                    <!-- نظام الصفحات -->
+                    <div id="paginationContainer" class="d-flex justify-content-between align-items-center mt-4 pt-3" style="display: none !important;">
+                        <div class="pagination-info">
+                            <span class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                عرض <strong id="startItem">1</strong> - <strong id="endItem">10</strong> من أصل <strong id="totalItems">0</strong> عنصر
+                            </span>
+                        </div>
+                        <nav aria-label="التنقل بين الصفحات">
+                            <ul class="pagination pagination-modern mb-0" id="paginationList">
+                                <!-- سيتم إنشاؤها بواسطة JavaScript -->
+                            </ul>
+                        </nav>
+                    </div>
                 </div>
             </div>
         </main>
@@ -810,6 +902,8 @@
     <script>
         let martyrRequests = [];
         let filteredRequests = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
 
         // التحقق من تسجيل الدخول
         document.addEventListener('DOMContentLoaded', function() {
@@ -873,8 +967,15 @@
                 
                 if (response.success) {
                     martyrRequests = response.data || [];
-                    filteredRequests = martyrRequests;
-                    console.log('Martyr requests loaded:', martyrRequests.length, 'items');
+                    // ترتيب البيانات بحسب تاريخ التسجيل (الأحدث أولاً)
+                    martyrRequests.sort((a, b) => {
+                        const dateA = new Date(a['تاريخ التسجيل']);
+                        const dateB = new Date(b['تاريخ التسجيل']);
+                        return dateB - dateA; // الأحدث أولاً
+                    });
+                    filteredRequests = [...martyrRequests];
+                    currentPage = 1; // إعادة تعيين الصفحة للأولى
+                    console.log('Martyr requests loaded and sorted:', martyrRequests.length, 'items');
                     
                     // تأخير بسيط لإظهار التأثير البصري
                     setTimeout(() => {
@@ -923,6 +1024,7 @@
             const tbody = document.getElementById('requestsTableBody');
             const loadingSpinner = document.getElementById('loadingSpinner');
             const noData = document.getElementById('noData');
+            const paginationContainer = document.getElementById('paginationContainer');
             
             // تأثير الانتقال للجدول
             tbody.style.transition = 'opacity 0.3s ease';
@@ -933,6 +1035,7 @@
             if (!filteredRequests || filteredRequests.length === 0) {
                 tbody.innerHTML = '';
                 noData.style.display = 'block';
+                paginationContainer.style.display = 'none';
                 noData.style.opacity = '0';
                 setTimeout(() => {
                     noData.style.opacity = '1';
@@ -942,8 +1045,14 @@
             }
             
             noData.style.display = 'none';
+            paginationContainer.style.display = 'flex';
+
+            // حساب البيانات للصفحة الحالية
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageData = filteredRequests.slice(startIndex, endIndex);
             
-            tbody.innerHTML = filteredRequests.map(request => {
+            tbody.innerHTML = pageData.map(request => {
                 const statusBadge = getStatusBadge(request['حالة الطلب']);
                 const martyrdomDate = new Date(request['تاريخ الاستشهاد']).toLocaleDateString('ar-EG');
                 const registrationDate = new Date(request['تاريخ التسجيل']).toLocaleDateString('ar-EG');
@@ -1015,6 +1124,9 @@
                     }, index * 50); // تأخير تدريجي لكل صف
                 });
             }, 100);
+
+            // تحديث معلومات وعناصر الـ pagination
+            updatePagination();
         }
 
         // تحديث الإحصائيات مع تأثيرات بصرية
@@ -1186,6 +1298,108 @@
             }
         }
 
+        // تحديث الـ pagination
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
+            const startItem = ((currentPage - 1) * itemsPerPage) + 1;
+            const endItem = Math.min(currentPage * itemsPerPage, filteredRequests.length);
+            
+            // تحديث معلومات العرض
+            document.getElementById('startItem').textContent = startItem;
+            document.getElementById('endItem').textContent = endItem;
+            document.getElementById('totalItems').textContent = filteredRequests.length;
+            
+            // إنشاء أزرار الـ pagination
+            const paginationList = document.getElementById('paginationList');
+            paginationList.innerHTML = '';
+            
+            // زر السابق
+            const prevButton = createPaginationButton('previous', currentPage > 1, () => changePage(currentPage - 1));
+            prevButton.innerHTML = `
+                <i class="bi bi-chevron-right me-1"></i>
+                <span class="d-none d-sm-inline">السابق</span>
+            `;
+            paginationList.appendChild(prevButton);
+            
+            // أزرار الأرقام
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 2);
+            
+            // إضافة الصفحة الأولى إذا لم تكن مرئية
+            if (startPage > 1) {
+                paginationList.appendChild(createPaginationButton(1, true, () => changePage(1)));
+                if (startPage > 2) {
+                    const dots = document.createElement('li');
+                    dots.className = 'page-item disabled';
+                    dots.innerHTML = '<span class="page-link">...</span>';
+                    paginationList.appendChild(dots);
+                }
+            }
+            
+            // إضافة أزرار الصفحات المرئية
+            for (let i = startPage; i <= endPage; i++) {
+                const button = createPaginationButton(i, true, () => changePage(i), i === currentPage);
+                paginationList.appendChild(button);
+            }
+            
+            // إضافة الصفحة الأخيرة إذا لم تكن مرئية
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const dots = document.createElement('li');
+                    dots.className = 'page-item disabled';
+                    dots.innerHTML = '<span class="page-link">...</span>';
+                    paginationList.appendChild(dots);
+                }
+                paginationList.appendChild(createPaginationButton(totalPages, true, () => changePage(totalPages)));
+            }
+            
+            // زر التالي
+            const nextButton = createPaginationButton('next', currentPage < totalPages, () => changePage(currentPage + 1));
+            nextButton.innerHTML = `
+                <span class="d-none d-sm-inline">التالي</span>
+                <i class="bi bi-chevron-left ms-1"></i>
+            `;
+            paginationList.appendChild(nextButton);
+        }
+
+        // إنشاء زر pagination
+        function createPaginationButton(text, enabled, onClick, active = false) {
+            const li = document.createElement('li');
+            li.className = `page-item ${active ? 'active' : ''} ${!enabled ? 'disabled' : ''}`;
+            
+            const button = document.createElement('a');
+            button.className = 'page-link';
+            button.href = '#';
+            button.textContent = text;
+            button.style.cursor = enabled ? 'pointer' : 'not-allowed';
+            
+            if (enabled) {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    onClick();
+                });
+            }
+            
+            li.appendChild(button);
+            return li;
+        }
+
+        // تغيير الصفحة
+        function changePage(newPage) {
+            if (newPage < 1 || newPage > Math.ceil(filteredRequests.length / itemsPerPage)) {
+                return;
+            }
+            
+            currentPage = newPage;
+            renderRequests();
+            
+            // تمرير ناعم لأعلى الجدول
+            document.querySelector('.data-table-card').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }
+
         // تطبيق الفلاتر مع تسليط الضوء على النتائج
         function applyFilters() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
@@ -1222,11 +1436,14 @@
                 } catch (e) {}
             }
             
+            // إعادة تعيين الصفحة للأولى عند تطبيق فلتر جديد
+            currentPage = 1;
             renderRequests();
         }
 
         // تحديث البيانات
         function refreshRequests() {
+            currentPage = 1; // إعادة تعيين للصفحة الأولى
             loadMartyrRequests();
         }
 
