@@ -45,6 +45,7 @@ body {
     margin-bottom: 20px;
     position: relative;
     overflow: hidden;
+    padding: 14px 18px; /* ensure header content doesn't sit on the edge */
 }
 
 .header::before {
@@ -80,12 +81,20 @@ body {
 }
 
 .header-title {
-    background: linear-gradient(45deg, #fff, #f0f0f0, #fff);
-    background-size: 200% 200%;
-    animation: textShine 3s ease-in-out infinite;
-    -webkit-background-clip: text;
-    background-clip: text;
-    font-weight: 700;
+    /* change to black per request */
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    background-clip: initial !important;
+    font-weight: 800;
+    font-size: 1.6rem;
+    text-shadow: none;
+    z-index: 3;
+}
+
+.header .text-white-50 {
+    color: rgba(0,0,0,0.7) !important;
 }
 
 @keyframes textShine {
