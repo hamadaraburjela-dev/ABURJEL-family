@@ -7,87 +7,206 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="modern-theme.css">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="theme.css">
 </head>
 <body>
-    <header class="header">
-        <div class="container d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center">
-                <img src="logo.webp" alt="شعار" class="header-logo">
-                <h1 class="header-title ms-3 d-none d-sm-inline-block">نظام إدارة بيانات عائلة أبو رجيـلة</h1>
-            </div>
-            <div class="d-flex align-items-center">
-                <a href="admin.html" class="btn btn-outline-success me-2">لوحة الإدارة</a>
-                <a href="index.html" onclick="sessionStorage.clear(); localStorage.clear();" class="btn btn-outline-danger">تسجيل الخروج</a>
-            </div>
-        </div>
-    </header>
-
-    <main class="container my-4">
-        <div class="card mb-4">
-            <div class="card-header bg-white border-0 pt-3">
-                <h3><i class="bi bi-file-earmark-bar-graph me-2 text-success"></i>توليد التقارير</h3>
-            </div>
-            <div class="card-body">
-                <form id="reportForm">
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label for="reportType" class="form-label">نوع التقرير</label>
-                            <select class="form-select" id="reportType">
-                                <option value="aidByDateRange">المساعدات حسب الفترة الزمنية</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="startDate" class="form-label">تاريخ البدء</label>
-                            <input type="date" class="form-control" id="startDate" lang="en" style="direction:ltr;text-align:left" title="يرجى اختيار التاريخ بصيغة سنة-شهر-يوم (YYYY-MM-DD)">
-                            <small class="text-muted d-block mt-1" style="font-size:0.95em">مثال: 2025-09-17</small>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="endDate" class="form-label">تاريخ الانتهاء</label>
-                            <input type="date" class="form-control" id="endDate" lang="en" style="direction:ltr;text-align:left" title="يرجى اختيار التاريخ بصيغة سنة-شهر-يوم (YYYY-MM-DD)">
-                            <small class="text-muted d-block mt-1" style="font-size:0.95em">مثال: 2025-09-17</small>
-                        </div>
+    <div class="app-container">
+        <!-- Header حديث -->
+        <header class="modern-header">
+            <div class="header-content">
+                <div class="header-brand">
+                    <img src="logo.webp" alt="شعار العائلة" class="brand-logo">
+                    <div class="brand-text">
+                        <h1 class="brand-title">التقارير والإحصائيات</h1>
+                        <p class="brand-subtitle">نظام توليد وعرض التقارير التفصيلية</p>
                     </div>
-                    <button type="submit" class="btn btn-primary mt-3">
-                        <span class="spinner-border spinner-border-sm d-none"></span>
-                        <span class="button-text">توليد التقرير</span>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-modern btn-outline" data-bs-toggle="tooltip" title="الإعدادات">
+                        <i class="bi bi-gear-fill"></i>
                     </button>
-                    <button type="button" class="btn btn-success mt-3" id="exportReportBtn" style="margin-right: 10px; display: none;">
-                   <i class="bi bi-file-earmark-excel-fill me-2"></i>تصدير إلى Excel
-                   </button>
-                </form>
-                <div class="table-responsive mt-4 d-none" id="reportResults">
-                    <h5 class="mb-3">نتائج التقرير</h5>
-                    <table class="table table-striped table-hover align-middle">
-                        <thead>
-                            <tr>
-                                <th>اسم المستفيد</th>
-                                <th>معرف المستفيد</th>
-                                <th>نوع المساعدة</th>
-                                <th>تاريخ الاستلام</th>
-                                <th>مصدر المساعدة</th>
-                            </tr>
-                        </thead>
-                        <tbody id="reportTableBody"></tbody>
-                    </table>
+                    <a href="admin.html" class="btn-modern btn-secondary">
+                        <i class="bi bi-arrow-right me-2"></i>
+                        لوحة التحكم
+                    </a>
+                    <a href="index.html" onclick="sessionStorage.clear(); localStorage.clear();" class="btn-modern btn-danger">
+                        <i class="bi bi-box-arrow-left me-2"></i>
+                        خروج
+                    </a>
                 </div>
             </div>
-        </div>
-    </main>
-</div>
-<footer class="footer">
-    <div id="server-status" class="status-indicator mb-2">
-        <span class="status-dot"></span>
-        <span class="status-text">جاري التحقق من حالة الخادم...</span>
+        </header>
+
+        <main class="main-content">
+            <!-- نموذج توليد التقارير -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="data-table-card">
+                        <div class="card-header-modern d-flex justify-content-between align-items-center">
+                            <div class="header-info">
+                                <h5 class="mb-1 fw-600">
+                                    <i class="bi bi-file-earmark-bar-graph me-2"></i>مولد التقارير
+                                </h5>
+                                <p class="text-muted mb-0 small">إنشاء تقارير مفصلة حسب الفترات الزمنية والمعايير المختلفة</p>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn-modern btn-outline" data-bs-toggle="tooltip" title="إعدادات التقرير">
+                                    <i class="bi bi-sliders"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <form id="reportForm" class="modern-form">
+                                <div class="row g-4">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="reportType" class="form-label">
+                                                <i class="bi bi-graph-up me-2"></i>نوع التقرير
+                                            </label>
+                                            <select class="form-select modern-select" id="reportType">
+                                                <option value="aidByDateRange">المساعدات حسب الفترة الزمنية</option>
+                                                <option value="membersByBranch">الأعضاء حسب الفروع</option>
+                                                <option value="statisticsReport">تقرير الإحصائيات العامة</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="startDate" class="form-label">
+                                                <i class="bi bi-calendar-event me-2"></i>تاريخ البدء
+                                            </label>
+                                            <input type="date" class="form-control modern-input" id="startDate" lang="en" style="direction:ltr;text-align:left">
+                                            <div class="form-hint">
+                                                <i class="bi bi-info-circle me-1"></i>
+                                                مثال: 2025-01-01
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="endDate" class="form-label">
+                                                <i class="bi bi-calendar-check me-2"></i>تاريخ الانتهاء
+                                            </label>
+                                            <input type="date" class="form-control modern-input" id="endDate" lang="en" style="direction:ltr;text-align:left">
+                                            <div class="form-hint">
+                                                <i class="bi bi-info-circle me-1"></i>
+                                                مثال: 2025-12-31
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-actions mt-4">
+                                    <button type="submit" class="btn-modern btn-primary">
+                                        <span class="spinner-border spinner-border-sm d-none me-2"></span>
+                                        <i class="bi bi-play-circle me-2"></i>
+                                        <span class="button-text">توليد التقرير</span>
+                                    </button>
+                                    <button type="button" class="btn-modern btn-success d-none" id="exportReportBtn">
+                                        <i class="bi bi-file-earmark-excel-fill me-2"></i>تصدير إلى Excel
+                                    </button>
+                                    <button type="button" class="btn-modern btn-outline">
+                                        <i class="bi bi-arrow-clockwise me-2"></i>إعادة تعيين
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- نتائج التقرير -->
+            <div class="row d-none" id="reportResults">
+                <div class="col-12">
+                    <div class="data-table-card">
+                        <div class="card-header-modern d-flex justify-content-between align-items-center">
+                            <div class="header-info">
+                                <h5 class="mb-1 fw-600">
+                                    <i class="bi bi-graph-up me-2"></i>نتائج التقرير
+                                </h5>
+                                <p class="text-muted mb-0 small">البيانات المطلوبة حسب المعايير المحددة</p>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn-modern btn-outline" data-bs-toggle="tooltip" title="طباعة التقرير">
+                                    <i class="bi bi-printer"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="table-container">
+                                <div class="table-responsive">
+                                    <table class="modern-table">
+                                        <thead>
+                                            <tr>
+                                                <th>
+                                                    <div class="th-content">
+                                                        <i class="bi bi-person me-2"></i>
+                                                        اسم المستفيد
+                                                    </div>
+                                                </th>
+                                                <th>
+                                                    <div class="th-content">
+                                                        <i class="bi bi-card-text me-2"></i>
+                                                        معرف المستفيد
+                                                    </div>
+                                                </th>
+                                                <th>
+                                                    <div class="th-content">
+                                                        <i class="bi bi-box me-2"></i>
+                                                        نوع المساعدة
+                                                    </div>
+                                                </th>
+                                                <th>
+                                                    <div class="th-content">
+                                                        <i class="bi bi-calendar me-2"></i>
+                                                        تاريخ الاستلام
+                                                    </div>
+                                                </th>
+                                                <th>
+                                                    <div class="th-content">
+                                                        <i class="bi bi-building me-2"></i>
+                                                        مصدر المساعدة
+                                                    </div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="reportTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <!-- التذييل الحديث -->
+        <footer class="modern-footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="server-status" id="server-status">
+                        <div class="status-indicator">
+                            <span class="status-dot"></span>
+                            <span class="status-text">جاري التحقق من حالة الخادم...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-section text-center">
+                    <p class="copyright-text">
+                        جميع الحقوق محفوظة &copy; 2025 | م. حماده أبو رجيلة
+                    </p>
+                </div>
+                <div class="footer-section">
+                    <a href="https://wa.me/972569210941" target="_blank" class="whatsapp-link">
+                        <i class="bi bi-whatsapp me-2"></i>تواصل عبر الواتساب
+                    </a>
+                </div>
+            </div>
+        </footer>
     </div>
-    <p class="copyright-text mb-2">
-        جميع الحقوق محفوظة &copy; 2025 | م. حماده أبو رجيلة
-    </p>
-    <a href="https://wa.me/972569210941" target="_blank" class="whatsapp-link">
-        <i class="bi bi-whatsapp"></i> تواصل عبر الواتساب
-    </a>
-    </footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
