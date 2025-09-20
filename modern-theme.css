@@ -383,6 +383,69 @@ body {
     text-align: center;
 }
 
+/* ===== تحسين شريط البحث وجداول الإدارة ===== */
+.search-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: #f7f7fb;
+    border-radius: 12px;
+    padding: 8px 12px;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.search-input-group .search-icon {
+    color: #3b82f6;
+    font-size: 1.05rem;
+    margin-inline-start: 8px;
+}
+
+.search-input-group .search-input {
+    border: none;
+    background: transparent;
+    outline: none;
+    padding: 8px 6px;
+    width: 100%;
+    font-size: 0.98rem;
+}
+
+.search-input-group .search-clear {
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    font-size: 1.05rem;
+}
+
+.table-container {
+    background: white;
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.04);
+}
+
+.table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 8px 0 8px;
+    gap: 12px;
+}
+
+.table-footer .results-info { color: #6b7280; font-weight: 600; }
+
+.table-actions .btn-modern { padding: 8px 12px; }
+
+.table-modern {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+}
+
+.table-modern thead th { background: transparent; color: #374151; padding: 12px 14px; font-weight: 700; }
+.table-modern tbody tr { background: #fff; border-radius: 8px; box-shadow: 0 6px 16px rgba(14, 30, 37, 0.04); }
+.table-modern td { padding: 12px 14px; vertical-align: middle; }
+
+
 /* ===== النوافذ المنبثقة ===== */
 .modal-modern .modal-content {
     border: none;
@@ -397,6 +460,97 @@ body {
     border: none;
     padding: 20px 30px;
 }
+
+/* ===== بطاقات الإجراءات (Action Cards) - أيقونات وتنسيق العرض ===== */
+.action-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 18px;
+    border-radius: 16px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    min-height: 170px;
+}
+
+.action-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 36px rgba(0,0,0,0.12);
+}
+
+.action-card .action-header {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.action-card .action-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 8px;
+    font-size: 28px;
+    color: #fff;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.action-card .action-icon i {
+    display: inline-block;
+    line-height: 1;
+    font-size: 1.35rem;
+}
+
+.action-card .action-badge span {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.9);
+    color: #333;
+    font-weight: 600;
+    font-size: 0.82rem;
+}
+
+.action-card .action-content h6 {
+    margin: 8px 0 4px;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.action-card .action-content p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.88rem;
+}
+
+.action-card .action-footer .action-link {
+    color: #2563eb;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    font-weight: 600;
+}
+
+/* ألوان أيقونات مخصصة حسب نوع البطاقة */
+.action-card.action-primary .action-icon { background: linear-gradient(135deg,#4e73df,#6c5ce7); }
+.action-card.action-success .action-icon { background: linear-gradient(135deg,#34d399,#10b981); }
+.action-card.action-info .action-icon { background: linear-gradient(135deg,#60a5fa,#3b82f6); }
+.action-card.action-warning .action-icon { background: linear-gradient(135deg,#f59e0b,#f97316); }
+.action-card.action-danger .action-icon { background: linear-gradient(135deg,#ef4444,#f43f5e); }
+.action-card.action-secondary .action-icon { background: linear-gradient(135deg,#94a3b8,#64748b); }
+
+/* تحسين تناسق الشبكة على الشاشات الصغيرة */
+@media (max-width: 576px) {
+    .action-card { min-height: 150px; padding: 14px; }
+    .action-card .action-icon { width: 60px; height: 60px; font-size: 24px; }
+    .action-card .action-badge span { font-size: 0.78rem; padding: 5px 8px; }
+}
+
 
 /* ===== نظام الصفحات ===== */
 .pagination-modern {
