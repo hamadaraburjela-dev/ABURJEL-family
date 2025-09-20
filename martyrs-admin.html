@@ -17,24 +17,28 @@
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            margin: 0;
+            padding: 0;
         }
         
         .container-fluid {
             max-width: 1600px;
             margin: 0 auto;
-            padding: 0 15px;
+            padding: 15px 15px 0 15px;
         }
 
         .header {
             max-width: 1400px;
-            margin: 15px auto;
+            margin: 0 auto;
             width: calc(100% - 30px);
+            margin-top: 0;
+            margin-bottom: 20px;
         }
 
         /* تحسينات للأجهزة الصغيرة */
         @media (max-width: 768px) {
             .container-fluid {
-                padding: 0 10px;
+                padding: 10px 10px 0 10px;
             }
             
             .main-content {
@@ -45,7 +49,7 @@
             
             .header {
                 width: calc(100% - 20px);
-                margin: 10px auto;
+                margin: 0 auto 15px auto;
             }
             
             .stats-card {
@@ -421,7 +425,7 @@
     </style>
 </head>
 <body>
-    <div class="container-fluid px-0">
+    <div class="container-fluid">
         <!-- Header -->
         <header class="header position-relative overflow-hidden">
             <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%); backdrop-filter: blur(10px);"></div>
