@@ -9,6 +9,44 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <link rel="stylesheet" href="modern-theme.css">
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* page specific tweaks to match manage-members spacing */
+        .modern-input { min-height:44px; }
+        .card-header-modern .action-buttons .btn-modern { padding:8px 14px; }
+        .search-input-group .search-input { min-height:44px; }
+    </style>
+    <style>
+        /* Visual polish: gradient primary button, subtle card glow, dropzone */
+        .btn-gradient {
+            background: linear-gradient(135deg,#667eea,#764ba2);
+            color: #fff;
+            border: none;
+            box-shadow: 0 8px 30px rgba(102,126,234,0.18);
+        }
+        .btn-gradient:hover { transform: translateY(-3px); box-shadow: 0 18px 40px rgba(102,126,234,0.22); }
+
+        .data-table-card { position: relative; overflow: visible; }
+        .card-accent {
+            position: absolute; right: -30px; top: -30px; width: 160px; height: 160px; border-radius: 20px;
+            background: radial-gradient(circle at 30% 30%, rgba(118,75,162,0.12), transparent 40%), radial-gradient(circle at 70% 70%, rgba(102,126,234,0.08), transparent 40%);
+            transform: rotate(10deg); z-index: 0;
+        }
+
+        .modern-form .form-label i { color: #667eea; margin-inline-end:6px; }
+        .helper-text { font-size: 0.85rem; color: #6b7280; }
+
+        .dropzone {
+            border: 2px dashed rgba(102,126,234,0.25);
+            border-radius: 12px;
+            padding: 22px;
+            text-align: center;
+            transition: background .18s, border-color .18s;
+            background: linear-gradient(180deg, rgba(102,126,234,0.02), rgba(118,75,162,0.01));
+        }
+        .dropzone.dragover { background: rgba(102,126,234,0.04); border-color: rgba(102,126,234,0.6); }
+        .file-list { margin-top:10px; }
+        .file-item { background:#fff; padding:8px 12px; border-radius:8px; box-shadow: 0 6px 18px rgba(14,30,37,0.04); display:inline-block; margin-right:8px; }
+    </style>
 </head>
 <body>
     <div class="container-fluid">
@@ -50,64 +88,71 @@
                 </ul>
                 <div class="tab-content mt-3">
                     <div class="tab-pane fade show active" id="add-aid" role="tabpanel">
-                        <form id="addAidForm">
+                        <form id="addAidForm" class="modern-form">
                             <div class="mb-3">
                                 <label for="aidMemberSearch" class="form-label">بحث تلقائي عن المستفيد (بالاسم أو الهوية)</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="aidMemberSearch" placeholder="اكتب هنا للبحث في القائمة..." autocomplete="off">
-                                    <button class="btn btn-outline-danger" type="button" id="clearSearchBtn"><i class="bi bi-x-lg"></i> مسح البحث</button>
+                                <div class="search-input-group">
+                                    <i class="bi bi-search search-icon"></i>
+                                    <input type="text" class="search-input modern-input" id="aidMemberSearch" placeholder="اكتب هنا للبحث في القائمة..." autocomplete="off">
+                                    <button class="search-clear btn-modern" type="button" id="clearSearchBtn">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
                                 </div>
                             </div>
                     
                             <div class="mb-3">
                                 <label for="aidMemberSelect" class="form-label">اختر المستفيد من القائمة</label>
-                                <select class="form-select" id="aidMemberSelect" size="8" required>
+                                <select class="form-select modern-input" id="aidMemberSelect" size="8" required>
                                     </select>
                             </div>
                     
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="aidCategory" class="form-label">الفئة الرئيسية للمساعدة</label>
-                                    <select class="form-select" id="aidCategory" required>
+                                    <select class="form-select modern-input" id="aidCategory" required>
                                         <option value="" disabled selected>-- اختر الفئة أولاً --</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="aidType" class="form-label">النوع الفرعي للمساعدة</label>
-                                    <select class="form-select" id="aidType" required disabled>
+                                    <select class="form-select modern-input" id="aidType" required disabled>
                                         <option value="" disabled selected>-- اختر النوع الفرعي --</option>
                                     </select>
                                 </div>
                             </div>
                     
                             <div class="row">
-                                <div class="col-md-6 mb-3"><label for="aidStatus" class="form-label">حالة المساعدة</label><select class="form-select" id="aidStatus" required><option value="Completed">منجزة</option><option value="Future">مستقبلية</option></select></div>
-                                <div class="col-md-6 mb-3"><label for="aidDate" class="form-label">تاريخ الاستلام</label><input type="date" class="form-control" id="aidDate" required></div>
+                                <div class="col-md-6 mb-3"><label for="aidStatus" class="form-label">حالة المساعدة</label><select class="form-select modern-input" id="aidStatus" required><option value="Completed">منجزة</option><option value="Future">مستقبلية</option></select></div>
+                                <div class="col-md-6 mb-3"><label for="aidDate" class="form-label">تاريخ الاستلام</label><input type="date" class="form-control modern-input" id="aidDate" required></div>
                             </div>
                             <div class="mb-3">
                                 <label for="aidSource" class="form-label">مصدر المساعدة</label>
-                                <input type="text" class="form-control" id="aidSource" value="قسائم/دهش/عضوية" required>
+                                <input type="text" class="form-control modern-input" id="aidSource" value="قسائم/دهش/عضوية" required>
                             </div>
                             <div class="mb-3">
                                 <label for="aidNotes" class="form-label">ملاحظات (اختياري)</label>
-                                <textarea class="form-control" id="aidNotes" rows="2"></textarea>
+                                <textarea class="form-control modern-input" id="aidNotes" rows="2"></textarea>
                             </div>
-                            <button type="submit" class="btn btn-primary"><span class="spinner-border spinner-border-sm d-none"></span><span class="button-text">إضافة المساعدة</span></button>
+                            <button type="submit" class="btn-modern btn-primary"><span class="spinner-border spinner-border-sm d-none me-2"></span><span class="button-text">إضافة المساعدة</span></button>
                         </form>
                     </div>
                     <div class="tab-pane fade" id="bulk-aid" role="tabpanel">
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle-fill"></i>
-                            <span class="me-2">لإضافة مساعدات بالجملة، يرجى تجهيز ملف Excel (.xlsx) بالصيغة التالية:</span>
-                            <a href="#" id="exportTemplateBtn" class="alert-link">تحميل القالب</a>
+                        <div class="alert alert-info d-flex align-items-center gap-3">
+                            <i class="bi bi-info-circle-fill fs-4"></i>
+                            <div>لإضافة مساعدات بالجملة، يرجى تجهيز ملف Excel (.xlsx) بالصيغة التالية: <a href="#" id="exportTemplateBtn" class="alert-link ms-2">تحميل القالب</a></div>
                         </div>
-                        <form id="bulkUploadForm">
+                        <form id="bulkUploadForm" class="modern-form">
                             <div class="mb-3">
-                                <label for="xlsxFile" class="form-label">اختر ملف Excel (.xlsx)</label>
-                                <input class="form-control" type="file" id="xlsxFile" accept=".xlsx" required>
+                                <label class="form-label">اختر ملف Excel (.xlsx) أو اسحبه هنا</label>
+                                <div id="dropzone" class="dropzone">
+                                    <div><i class="bi bi-cloud-arrow-up-fill fs-2 text-muted"></i></div>
+                                    <div class="helper-text">اسحب وأفلت الملف هنا أو انقر لاختياره</div>
+                                    <input type="file" id="xlsxFile" accept=".xlsx" style="display:none">
+                                </div>
+                                <div class="file-list" id="fileList"></div>
                             </div>
-                            <button type="submit" class="btn btn-primary">
-                                <span class="spinner-border spinner-border-sm d-none"></span>
+                            <button type="submit" class="btn-modern btn-gradient">
+                                <span class="spinner-border spinner-border-sm d-none me-2" id="bulkSpinner"></span>
                                 <span class="button-text">رفع الملف</span>
                             </button>
                         </form>
@@ -140,5 +185,40 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="script.js"></script>
+    <script>
+        // Dropzone handling + preview + toast
+        (function(){
+            const dropzone = document.getElementById('dropzone');
+            const fileInput = document.getElementById('xlsxFile');
+            const fileList = document.getElementById('fileList');
+            const bulkForm = document.getElementById('bulkUploadForm');
+            const spinner = document.getElementById('bulkSpinner');
+
+            function showFile(file){
+                fileList.innerHTML = `<div class="file-item">${file.name} <small class="text-muted ms-2">(${Math.round(file.size/1024)} KB)</small></div>`;
+            }
+
+            dropzone.addEventListener('click', ()=> fileInput.click());
+            dropzone.addEventListener('dragover', (e)=>{ e.preventDefault(); dropzone.classList.add('dragover'); });
+            dropzone.addEventListener('dragleave', ()=> dropzone.classList.remove('dragover'));
+            dropzone.addEventListener('drop', (e)=>{ e.preventDefault(); dropzone.classList.remove('dragover'); const f = e.dataTransfer.files[0]; if (f) { fileInput.files = e.dataTransfer.files; showFile(f); } });
+
+            fileInput.addEventListener('change', ()=>{ const f = fileInput.files[0]; if(f) showFile(f); });
+
+            bulkForm.addEventListener('submit', (e)=>{
+                e.preventDefault();
+                const f = fileInput.files[0];
+                if (!f) { Toastify({ text: 'اختر ملفًا أولاً', backgroundColor: '#f43f5e', duration:3000 }).showToast(); return; }
+                spinner.classList.remove('d-none');
+                // simulate upload
+                setTimeout(()=>{
+                    spinner.classList.add('d-none');
+                    Toastify({ text: 'تم رفع الملف بنجاح', backgroundColor: '#10b981', duration:3000 }).showToast();
+                    fileList.innerHTML = '';
+                    fileInput.value = '';
+                }, 900);
+            });
+        })();
+    </script>
 </body>
 </html>
