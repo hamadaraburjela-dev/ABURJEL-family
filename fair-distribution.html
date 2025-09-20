@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="modern-theme.css">
 </head>
 <body>
     <div class="container-fluid">
@@ -25,8 +26,8 @@
         <main class="main-content">
             <div class="row">
                 <div class="col-12">
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-header bg-primary text-white">
+                    <div class="data-table-card shadow-sm mb-4">
+                        <div class="card-header-modern">
                             <h5 class="mb-0"><i class="bi bi-arrow-left-right me-2"></i>نظام التوزيع العادل</h5>
                         </div>
                         <div class="card-body">
@@ -61,7 +62,7 @@
                                 </div>
 
                                 <div class="text-center">
-                                    <button type="submit" class="btn btn-success btn-lg">
+                                    <button type="submit" class="btn btn-success btn-modern btn-lg">
                                         <i class="bi bi-calculator me-2"></i>حساب التوزيع
                                     </button>
                                 </div>
@@ -69,8 +70,8 @@
                         </div>
                     </div>
 
-                    <div class="card shadow-sm" id="resultsCard" style="display: none;">
-                        <div class="card-header bg-success text-white">
+                    <div class="data-table-card shadow-sm" id="resultsCard" style="display: none;">
+                        <div class="card-header-modern card-header-success">
                             <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>نتائج التوزيع</h5>
                         </div>
                         <div class="card-body">
@@ -117,9 +118,12 @@
             { name: 'فرع آل حماد', families: 9 }
         ];
 
-        // إنشاء نموذج الفروع
+        let distributionChartInstance = null;
+
+        // إنشاء نموذج الفروع (مستخدم تصميم مدرن)
         function createBranchesForm() {
             const container = document.getElementById('branchesContainer');
+            container.innerHTML = '';
             branches.forEach((branch, index) => {
                 const branchDiv = document.createElement('div');
                 branchDiv.className = 'row mb-3 align-items-center';
@@ -129,12 +133,15 @@
                         <small class="text-muted d-block">عدد العائلات: ${branch.families}</small>
                     </div>
                     <div class="col-md-4">
-                        <input type="number" class="form-control branch-weight" placeholder="عامل التوزيع (اختياري)" data-index="${index}">
-                        <small class="text-muted">اتركه فارغاً لاستخدام عدد العائلات</small>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-sliders"></i></span>
+                            <input type="number" class="form-control branch-weight modern-input" placeholder="عامل التوزيع (اختياري)" data-index="${index}">
+                        </div>
+                        <small class="text-muted d-block">اتركه فارغاً لاستخدام عدد العائلات</small>
                     </div>
                     <div class="col-md-4">
                         <div class="input-group">
-                            <input type="number" class="form-control branch-result" readonly data-index="${index}">
+                            <input type="number" class="form-control branch-result modern-input" readonly data-index="${index}">
                             <span class="input-group-text">مساعدة</span>
                         </div>
                     </div>
@@ -191,29 +198,39 @@
 
             resultsDiv.innerHTML = '';
             results.forEach((result, index) => {
-                resultsDiv.innerHTML += `
-                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
-                        <span class="fw-bold">${result.name}</span>
-                        <span class="badge bg-primary">${result.share} مساعدة (${result.percentage}%)</span>
-                    </div>
+                const row = document.createElement('div');
+                row.className = 'd-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded';
+                row.innerHTML = `
+                    <span class="fw-bold">${result.name}</span>
+                    <span class="badge bg-primary">${result.share} مساعدة (${result.percentage}%)</span>
                 `;
+                resultsDiv.appendChild(row);
+
                 if (resultInputs[index]) {
                     resultInputs[index].value = result.share;
                 }
             });
 
-            // إنشاء الرسم البياني
+            // إنشاء/تحديث الرسم البياني
             createChart(results);
-            document.getElementById('resultsCard').style.display = 'block';
+
+            const card = document.getElementById('resultsCard');
+            card.style.display = 'block';
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        // إنشاء الرسم البياني
+        // إنشاء الرسم البياني مع تنظيف سابق
         function createChart(results) {
             const ctx = document.getElementById('distributionChart').getContext('2d');
             const labels = results.map(r => r.name);
             const data = results.map(r => r.share);
 
-            new Chart(ctx, {
+            if (distributionChartInstance) {
+                try { distributionChartInstance.destroy(); } catch (e) { /* ignore */ }
+                distributionChartInstance = null;
+            }
+
+            distributionChartInstance = new Chart(ctx, {
                 type: 'pie',
                 data: {
                     labels: labels,
@@ -223,24 +240,25 @@
                             '#FF6384',
                             '#36A2EB',
                             '#FFCE56',
-                            '#4BC0C0'
+                            '#4BC0C0',
+                            '#9b59b6',
+                            '#e67e22'
                         ],
-                        borderWidth: 2
+                        borderWidth: 1
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            position: 'bottom',
-                        },
+                        legend: { position: 'bottom' },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
                                     const label = context.label || '';
                                     const value = context.parsed;
                                     const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    const percentage = total ? ((value / total) * 100).toFixed(1) : '0.0';
                                     return `${label}: ${value} (${percentage}%)`;
                                 }
                             }
@@ -254,33 +272,28 @@
         document.addEventListener('DOMContentLoaded', function() {
             createBranchesForm();
 
-            document.getElementById('distributionForm').addEventListener('submit', function(e) {
-                e.preventDefault();
+            const form = document.getElementById('distributionForm');
+            const totalAidEl = document.getElementById('totalAid');
+            const typeEl = document.getElementById('distributionType');
+            const submitBtn = form.querySelector('button[type="submit"]');
 
-                const totalAid = parseInt(document.getElementById('totalAid').value);
-                const type = document.getElementById('distributionType').value;
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const totalAid = parseInt(totalAidEl.value);
+                const type = typeEl.value;
 
                 if (!totalAid || totalAid <= 0) {
-                    Toastify({
-                        text: "يرجى إدخال عدد صحيح للمساعدات",
-                        duration: 3000,
-                        gravity: "top",
-                        position: "center",
-                        backgroundColor: "#dc3545"
-                    }).showToast();
+                    Toastify({ text: 'يرجى إدخال عدد صحيح للمساعدات', duration: 3000, gravity: 'top', position: 'center', backgroundColor: '#dc3545' }).showToast();
                     return;
                 }
+
+                submitBtn.disabled = true;
+                setTimeout(()=>{ submitBtn.disabled = false; }, 400);
 
                 const results = calculateDistribution(totalAid, type);
                 displayResults(results);
 
-                Toastify({
-                    text: "تم حساب التوزيع بنجاح!",
-                    duration: 3000,
-                    gravity: "top",
-                    position: "center",
-                    backgroundColor: "#28a745"
-                }).showToast();
+                Toastify({ text: 'تم حساب التوزيع بنجاح!', duration: 2500, gravity: 'top', position: 'center', backgroundColor: '#28a745' }).showToast();
             });
         });
     </script>
