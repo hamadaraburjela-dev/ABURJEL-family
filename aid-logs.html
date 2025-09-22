@@ -219,19 +219,7 @@
                 // if there is global data use it, otherwise initialize with empty arrays
                 window.initAidLogsPagination({ future: { items: window.aidFutureData || [] }, completed: { items: window.aidCompletedData || [] }, perPage: 10 });
             });
-        </script>
-                    // wire search inputs
-                    const fSearch = document.getElementById('futureAidSearchInput'); if (fSearch) { let t; fSearch.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=>applyFilters(futureState,{search:fSearch}),250); }); }
-                    const cSearch = document.getElementById('completedAidSearchInput'); if (cSearch) { let t; cSearch.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=>applyFilters(completedState,{search:cSearch}),250); }); }
-                };
-
-                // If there's global data variables, use them automatically on DOMContentLoaded
-                document.addEventListener('DOMContentLoaded', ()=>{
-                    if (window.aidFutureData || window.aidCompletedData){
-                        window.initAidLogsPagination({ future: { items: window.aidFutureData || [] }, completed: { items: window.aidCompletedData || [] }, perPage: 10 });
-                    }
-                });
-            })();
+                
         </script>
     </body>
     </html>

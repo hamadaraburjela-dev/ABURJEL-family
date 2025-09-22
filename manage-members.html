@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="modern-theme.css">
     <link rel="stylesheet" href="style.css">
 </head>
+<body>
     <div class="container-fluid">
         <!-- Header -->
         <header class="header position-relative overflow-hidden">
@@ -24,12 +25,56 @@
                     else window.initMembersPagination([], 10); // initializes empty state and wires controls
                 });
             </script>
+            <main class="main-content">
+                <div class="container my-4">
+                    <div class="data-table-card card shadow-sm">
+                        <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                            <div>
+                                <h5 class="mb-0">إدارة الأفراد</h5>
+                                <small class="text-muted">قائمة الأفراد مع بحث سريع وتصفية</small>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 w-100 w-md-auto">
+                                <input id="memberSearchInput" class="form-control form-control-sm" placeholder="ابحث بالاسم أو رقم الهوية">
+                                <select id="branchFilter" class="form-select form-select-sm">
+                                    <option value="">كل الفروع</option>
+                                </select>
+                                <select id="statusFilter" class="form-select form-select-sm">
+                                    <option value="">الحالة</option>
+                                    <option value="Active">نشط</option>
+                                    <option value="Inactive">غير نشط</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>الاسم</th>
+                                            <th>الهوية</th>
+                                            <th>الجوال</th>
+                                            <th>مكان الإقامة</th>
+                                            <th>إجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="membersTableBody">
+                                        <!-- rows rendered by script.js -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card-footer d-flex justify-content-between align-items-center">
+                            <div id="paginationContainer" style="display:flex;align-items:center;gap:1rem;">
+                                <div class="small text-muted">عرض <span id="startItem">0</span> - <span id="endItem">0</span> من <span id="totalItems">0</span></div>
+                                <ul id="paginationList" class="pagination mb-0"></ul>
+                            </div>
+                            <div>
+                                <span id="membersTotalCount" class="small text-muted"></span>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </main>
+            </main>
     
         <!-- نافذة تعديل العضو -->
         <div class="modal fade" id="editMemberModal" tabindex="-1" aria-labelledby="editMemberModalLabel" aria-hidden="true">

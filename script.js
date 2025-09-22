@@ -838,41 +838,47 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 // Function to show the injury modal
 function showInjuryForm() {
-    const modal = new bootstrap.Modal(document.getElementById('injuryModal'));
+    const el = document.getElementById('injuryModal');
+    if (!el) return; // modal not present on this page
+    const modal = new bootstrap.Modal(el);
     modal.show();
 }
 
 // Handle injury form submission
-document.getElementById('injuryForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const submitBtn = this.querySelector('button[type="submit"]');
-    const spinner = submitBtn.querySelector('.spinner-border');
-    const buttonText = submitBtn.querySelector('.button-text');
-    
-    // Show loading state
-    spinner.classList.remove('d-none');
-    buttonText.textContent = 'جاري الحفظ...';
-    submitBtn.disabled = true;
-    
-    // Simulate data saving (replace with actual backend API call)
-    setTimeout(() => {
-        // Hide loading state
-        spinner.classList.add('d-none');
-        buttonText.textContent = 'تم الحفظ بنجاح';
-        
-        // Reset form and close modal
+const _injuryForm = document.getElementById('injuryForm');
+if (_injuryForm) {
+    _injuryForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const spinner = submitBtn?.querySelector('.spinner-border');
+        const buttonText = submitBtn?.querySelector('.button-text');
+        if (spinner) spinner.classList.remove('d-none');
+        if (buttonText) buttonText.textContent = 'جاري الحفظ...';
+        if (submitBtn) submitBtn.disabled = true;
+
+        // Simulate data saving (replace with actual backend API call)
         setTimeout(() => {
-            this.reset();
-            bootstrap.Modal.getInstance(document.getElementById('injuryModal')).hide();
-            submitBtn.disabled = false;
-            buttonText.textContent = 'حفظ بيانات الإصابة';
-            
-            // Show success message
-            alert('تم تسجيل الإصابة بنجاح!');
-        }, 1500);
-    }, 2000);
-});
+            // Hide loading state
+            if (spinner) spinner.classList.add('d-none');
+            if (buttonText) buttonText.textContent = 'تم الحفظ بنجاح';
+
+            // Reset form and close modal
+            setTimeout(() => {
+                this.reset();
+                const modalEl = document.getElementById('injuryModal');
+                if (modalEl) {
+                    const instance = bootstrap.Modal.getInstance(modalEl);
+                    if (instance) instance.hide();
+                }
+                if (submitBtn) submitBtn.disabled = false;
+                if (buttonText) buttonText.textContent = 'حفظ بيانات الإصابة';
+
+                // Show success message
+                alert('تم تسجيل الإصابة بنجاح!');
+            }, 1500);
+        }, 2000);
+    });
+}
 
 // Simulate server status check
 function checkServerStatus() {
