@@ -509,6 +509,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // removed 'رقم هوية الزوج' per UX request
                 { key: 'رقم هوية الزوجة', label: 'رقم هوية الزوجة', icon: 'person-badge-fill' },
                 { key: 'عدد افراد الاسرة', label: 'عدد أفراد الأسرة', icon: 'people-fill' },
+                { key: 'معرف العائلة', label: 'معرف العائلة', icon: 'hash' },
                 { key: 'عدد الأطفال', label: 'عدد الأطفال', icon: 'people-fill' },
                 { key: 'عدد الأطفال الذكور', label: 'أطفال ذكور', icon: 'person-standing' },
                 { key: 'عدد الأطفال الإناث', label: 'أطفال إناث', icon: 'person-standing-dress' },
@@ -552,7 +553,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 'editProfession': 'المهنة',
                 'editWorkPlace': 'مكان العمل',
                 'editMonthlyIncome': 'الدخل الشهري',
-                'editEducation': 'المؤهل العلمي'
+                'editEducation': 'المؤهل العلمي',
+                'editFamilySize': 'عدد افراد الاسرة',
+                'editFamilyId': 'معرف العائلة'
             };
             
             for (const [fieldId, dataKey] of Object.entries(editFields)) {
