@@ -6,7 +6,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const App = {
-        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbz43C2rTi8Om58bnxLA79Sz-OqcZFeUPbb6m74GwnGFymGyjZmwVPFavAQtdXffLxRdBA/exec', // سيتم تحديثه بالرابط الجديد من Google Apps Script
+        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbwYaSyuw6RyCxqbOJl0nU-rK2wpViJVUV_9_UdOQoW0GDAr_6BnyxemDOu2MaSLj-n_nQ/exec', // سيتم تحديثه بالرابط الجديد من Google Apps Script
         
         async testNewUrl() {
             const input = document.getElementById('newScriptUrl');
@@ -456,34 +456,110 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         
     renderUserInfo(data) {
+            // تحديث العنوان الرئيسي
             document.getElementById('userName').textContent = data['الاسم الكامل'] || 'عضو العائلة';
             document.getElementById('userTitle').textContent = `رقم الهوية: ${data['رقم الهوية'] || '---'}`;
-            const container = document.getElementById('userInfo');
-            const sections = {
-                "البيانات الشخصية": [
-                    { key: 'الاسم الكامل', label: 'الاسم الكامل', icon: 'bi-person-fill' }, { key: 'رقم الهوية', label: 'رقم الهوية', icon: 'bi-person-badge' },
-                    { key: 'الحالة الاجتماعية', label: 'الحالة الاجتماعية', icon: 'bi-heart-fill' }, { key: 'تاريخ الميلاد', label: 'تاريخ الميلاد', icon: 'bi-calendar-event' },
-                ],
-                "بيانات العائلة": [
-                    { key: 'اسم الزوجة رباعي', label: 'اسم الزوجة', icon: 'bi-person-heart' }, { key: 'رقم هوية الزوجة', label: 'رقم هوية الزوجة', icon: 'bi-person-badge-fill' },
-                    { key: 'عدد الأولاد', label: 'عدد الأولاد', icon: 'bi-people-fill' },
-                ],
-                "معلومات التواصل": [
-                    { key: 'رقم الجوال', label: 'رقم الجوال', icon: 'bi-telephone-fill' }, { key: 'مكان الإقامة', label: 'مكان الإقامة', icon: 'bi-geo-alt-fill' },
-                ]
+            
+            // البيانات الشخصية الأساسية
+            const basicInfoSection = document.getElementById('basicInfo');
+            const basicFields = [
+                { key: 'الاسم الكامل', label: 'الاسم الكامل', icon: 'person-fill' },
+                { key: 'رقم الهوية', label: 'رقم الهوية', icon: 'person-badge' },
+                { key: 'تاريخ الميلاد', label: 'تاريخ الميلاد', icon: 'calendar-event' },
+                { key: 'العمر', label: 'العمر', icon: 'hourglass-split' },
+                { key: 'الجنس', label: 'الجنس', icon: 'gender-ambiguous' },
+                { key: 'الحالة الاجتماعية', label: 'الحالة الاجتماعية', icon: 'heart-fill' }
+            ];
+            
+            basicInfoSection.innerHTML = this.renderInfoSection(basicFields, data);
+            
+            // بيانات الاتصال والعنوان
+            const contactInfoSection = document.getElementById('contactInfo');
+            const contactFields = [
+                { key: 'رقم الهاتف', label: 'رقم الهاتف', icon: 'telephone-fill' },
+                { key: 'رقم هاتف بديل', label: 'رقم هاتف بديل', icon: 'phone' },
+                { key: 'البريد الإلكتروني', label: 'البريد الإلكتروني', icon: 'envelope-fill' },
+                { key: 'العنوان', label: 'العنوان', icon: 'house-fill' },
+                { key: 'المدينة', label: 'المدينة', icon: 'building' },
+                { key: 'المحافظة', label: 'المحافظة', icon: 'geo-alt-fill' },
+                { key: 'الفرع', label: 'الفرع', icon: 'diagram-3' },
+                { key: 'رقم الواتساب', label: 'رقم الواتساب', icon: 'whatsapp' }
+            ];
+            
+            contactInfoSection.innerHTML = this.renderInfoSection(contactFields, data);
+            
+            // بيانات العمل والتعليم
+            const workEducationSection = document.getElementById('workEducationInfo');
+            const workEducationFields = [
+                { key: 'المهنة', label: 'المهنة', icon: 'briefcase-fill' },
+                { key: 'مكان العمل', label: 'مكان العمل', icon: 'building-gear' },
+                { key: 'الحالة المهنية', label: 'الحالة المهنية', icon: 'person-workspace' },
+                { key: 'الدخل الشهري', label: 'الدخل الشهري', icon: 'cash-coin' },
+                { key: 'المؤهل العلمي', label: 'المؤهل العلمي', icon: 'mortarboard-fill' },
+                { key: 'التخصص', label: 'التخصص', icon: 'journal-bookmark-fill' }
+            ];
+            
+            workEducationSection.innerHTML = this.renderInfoSection(workEducationFields, data);
+            
+            // بيانات العائلة
+            const familyInfoSection = document.getElementById('familyInfo');
+            const familyFields = [
+                { key: 'اسم الزوج', label: 'اسم الزوج', icon: 'person-heart' },
+                { key: 'اسم الزوجة', label: 'اسم الزوجة', icon: 'person-heart' },
+                { key: 'رقم هوية الزوج', label: 'رقم هوية الزوج', icon: 'person-badge-fill' },
+                { key: 'رقم هوية الزوجة', label: 'رقم هوية الزوجة', icon: 'person-badge-fill' },
+                { key: 'عدد الأطفال', label: 'عدد الأطفال', icon: 'people-fill' },
+                { key: 'عدد الأطفال الذكور', label: 'أطفال ذكور', icon: 'person-standing' },
+                { key: 'عدد الأطفال الإناث', label: 'أطفال إناث', icon: 'person-standing-dress' },
+                { key: 'اسم الأب', label: 'اسم الأب', icon: 'person-fill' }
+            ];
+            
+            familyInfoSection.innerHTML = this.renderInfoSection(familyFields, data);
+            
+            // ملء نموذج التعديل بالبيانات الحالية
+            this.populateEditForm(data);
+        },
+        
+        renderInfoSection(fields, data) {
+            return fields.map(field => {
+                let value = data[field.key] || '-';
+                if (field.key === 'تاريخ الميلاد' && value !== '-') { 
+                    value = this.formatDateToEnglish(value); 
+                }
+                
+                return `
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="info-item">
+                            <i class="bi bi-${field.icon} info-icon"></i>
+                            <span class="info-label">${field.label}</span>
+                            <div class="info-value">${value}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        },
+        
+        populateEditForm(data) {
+            // ملء نموذج التعديل بالبيانات الحالية
+            const editFields = {
+                'editPhone': 'رقم الهاتف',
+                'editEmail': 'البريد الإلكتروني', 
+                'editAddress': 'العنوان',
+                'editCity': 'المدينة',
+                'editProvince': 'المحافظة',
+                'editAltPhone': 'رقم هاتف بديل',
+                'editProfession': 'المهنة',
+                'editWorkPlace': 'مكان العمل',
+                'editMonthlyIncome': 'الدخل الشهري',
+                'editEducation': 'المؤهل العلمي'
             };
-                        let html = '';
-                        for (const sectionTitle in sections) {
-                                html += `<h6 class="info-section-title">${sectionTitle}</h6>`;
-                                html += `<div class="row">`;
-                                sections[sectionTitle].forEach(field => {
-                                        let value = data[field.key] || '-';
-                                        if (field.key === 'تاريخ الميلاد' && value !== '-') { value = this.formatDateToEnglish(value); }
-                                        html += `<div class="col-lg-6"><div class="info-item-pro"><i class="bi ${field.icon}"></i><span class="info-label">${field.label}:</span><span class="info-value" id="${field.key === 'رقم الجوال' ? 'contactPhone' : field.key === 'مكان الإقامة' ? 'contactLocation' : ''}">${value}</span></div></div>`;
-                                });
-                                html += `</div>`;
-                        }
-                        container.innerHTML = html;
+            
+            for (const [fieldId, dataKey] of Object.entries(editFields)) {
+                const element = document.getElementById(fieldId);
+                if (element) {
+                    element.value = data[dataKey] || '';
+                }
+            }
                         // إعادة تفعيل زر تعديل البيانات بعد تحديث البيانات
                         setTimeout(() => {
                             const editBtn = document.getElementById('editUserDataBtn');
@@ -882,6 +958,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
 
+        // Update user profile function
+        async updateUserProfile(userId, profileData) {
+            try {
+                const payload = {
+                    action: 'updateUserProfile',
+                    userId: userId,
+                    profileData: profileData
+                };
+                const result = await this.postToAPI(payload, false);
+                if (result && result.success) {
+                    this.showToast('تم تحديث البيانات الشخصية بنجاح', true);
+                    // Reload user data to show updated information
+                    if (typeof this.loadUserData === 'function') {
+                        this.loadUserData(userId);
+                    }
+                    return true;
+                } else {
+                    throw new Error(result?.message || 'فشل في تحديث البيانات');
+                }
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                this.showToast('خطأ في تحديث البيانات: ' + error.message, false);
+                return false;
+            }
+        },
+
         // Global API call function for all pages
         async postToAPI(payload, showSuccessToast = true, activeSubmitButton = null) {
             const isButtonTriggered = activeSubmitButton !== null;
@@ -1123,6 +1225,61 @@ document.addEventListener('DOMContentLoaded', checkServerStatus);
             const date = row.date || row.createdAt || row['تاريخ الاستلام'] || '';
             const source = row.source || row['مصدر المساعدة'] || '';
             return `\n                            <tr class="table-row-hover">\n                                <td>\n                                    <div class="d-flex align-items-center">\n                                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width:35px;height:35px;"><i class="bi bi-person-fill text-white"></i></div>\n                                        <strong class="text-dark">${escapeHtml(name)}</strong>\n                                    </div>\n                                </td>\n                                <td><span class="font-monospace bg-light px-2 py-1 rounded">${escapeHtml(idNo)}</span></td>\n                                <td>${escapeHtml(kind)}</td>\n                                <td>${escapeHtml(date)}</td>\n                                <td>${escapeHtml(source)}</td>\n                                <td>\n                                    <div class="btn-group" role="group">\n                                        <button class="btn btn-sm btn-outline-info btn-modern" title="عرض"><i class="bi bi-eye"></i></button>\n                                        <button class="btn btn-sm btn-outline-warning btn-modern" title="تعديل"><i class="bi bi-pencil"></i></button>\n                                    </div>\n                                </td>\n                            </tr>\n                        `; }, 6);
+
+// Add profile edit form handler for dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle profile edit form submission
+    const profileEditForm = document.getElementById('profileEditForm');
+    if (profileEditForm) {
+        profileEditForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Get user ID from sessionStorage or current context
+            const userId = sessionStorage.getItem('userId') || window.currentUserId;
+            if (!userId) {
+                App.showToast('لم يتم العثور على معرف المستخدم', false);
+                return;
+            }
+            
+            // Collect form data
+            const formData = new FormData(this);
+            const profileData = {};
+            
+            // Map form fields to backend field names
+            const fieldMapping = {
+                'fullName': 'الاسم الكامل',
+                'phone': 'رقم الهاتف',
+                'email': 'البريد الإلكتروني',
+                'address': 'العنوان',
+                'workplace': 'مكان العمل',
+                'education': 'التعليم',
+                'maritalStatus': 'الحالة الاجتماعية',
+                'spouseId': 'رقم هوية الزوج/ة',
+                'childrenCount': 'عدد الأطفال',
+                'notes': 'ملاحظات'
+            };
+            
+            for (let [key, value] of formData.entries()) {
+                if (fieldMapping[key] && value.trim()) {
+                    profileData[fieldMapping[key]] = value.trim();
+                }
+            }
+            
+            // Call update function
+            const success = await App.updateUserProfile(userId, profileData);
+            if (success) {
+                // Hide modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editProfileModal'));
+                modal.hide();
+                
+                // Reload page data if needed
+                if (typeof window.loadUserData === 'function') {
+                    window.loadUserData(userId);
+                }
+            }
+        });
+    }
+});
 
         completedState.render = futureState.render; // same layout for completed
 

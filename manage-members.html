@@ -1318,12 +1318,8 @@
                         throw new Error('خطأ في تحليل الاستجابة من الخادم');
                     }
                 } else {
-                    console.warn('App object not found or incomplete, using demo data');
-                    // استخدام بيانات تجريبية في حالة عدم وجود App
-                    response = {
-                        success: true,
-                        data: generateDemoMembersData()
-                    };
+                    console.error('App object not found or incomplete');
+                    throw new Error('كائن App غير متوفر للاتصال بالخادم');
                 }
                 
                 console.log('Response received:', response);
@@ -2041,46 +2037,44 @@
                 </div>
             `;
 
-            // جدول المساعدات (تجريبي للآن)
-            const aidHistoryHtml = `
-                <table class="table table-bordered table-sm mb-4">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>نوع المساعدة</th>
-                            <th>التاريخ</th>
-                            <th>المبلغ/الكمية</th>
-                            <th>المصدر</th>
-                            <th>الحالة</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="demo-row">
-                            <td>مساعدة مالية</td>
-                            <td>2024-01-15</td>
-                            <td>500 ريال</td>
-                            <td>العائلة</td>
-                            <td><span class="badge bg-success">مكتملة</span></td>
-                        </tr>
-                        <tr class="demo-row">
-                            <td>كسوة عيد</td>
-                            <td>2024-04-10</td>
-                            <td>مجموعة ملابس</td>
-                            <td>تبرعات</td>
-                            <td><span class="badge bg-success">مكتملة</span></td>
-                        </tr>
-                        <tr class="demo-row">
-                            <td>مواد غذائية</td>
-                            <td>2024-06-20</td>
-                            <td>سلة رمضان</td>
-                            <td>العائلة</td>
-                            <td><span class="badge bg-success">مكتملة</span></td>
-                        </tr>
-                        <tr class="text-center text-muted">
-                            <td colspan="5">البيانات أعلاه تجريبية - سيتم ربطها بقاعدة البيانات الحقيقية</td>
-                        </tr>
-                    </tbody>
-                </table>
-            `;
+            // جدول المساعدات (سيتم تحميله من الخادم أو عرض رسالة)
+            let aidHistoryHtml = '';
+            
+            // محاولة عرض المساعدات إذا كانت متوفرة في بيانات العضو
+            if (member.aids && member.aids.length > 0) {
+                aidHistoryHtml = `
+                    <table class="table table-bordered table-sm mb-4">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>نوع المساعدة</th>
+                                <th>التاريخ</th>
+                                <th>المبلغ/الكمية</th>
+                                <th>المصدر</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${member.aids.map(aid => `
+                                <tr>
+                                    <td>${aid['نوع المساعدة'] || aid.type || '-'}</td>
+                                    <td>${aid['التاريخ'] ? formatDate(aid['التاريخ']) : (aid.date ? formatDate(aid.date) : '-')}</td>
+                                    <td>${aid['المبلغ'] || aid['الكمية'] || aid.amount || '-'}</td>
+                                    <td>${aid['المصدر'] || aid.source || '-'}</td>
+                                    <td><span class="badge ${(aid['الحالة'] || aid.status) === 'مكتملة' || (aid['الحالة'] || aid.status) === 'completed' ? 'bg-success' : 'bg-warning'}">${aid['الحالة'] || aid.status || 'قيد المراجعة'}</span></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } else {
+                aidHistoryHtml = `
+                    <div class="alert alert-info text-center">
+                        <i class="bi bi-info-circle me-2"></i>
+                        لا توجد مساعدات مسجلة لهذا العضو حتى الآن
+                        <br><small class="text-muted">سيتم عرض المساعدات هنا عند توفرها في قاعدة البيانات</small>
+                    </div>
+                `;
+            }
 
             return `
                 <div class="report-header">
@@ -2209,45 +2203,67 @@
                 return;
             }
             
-            // تحديث العضو في الوضع التجريبي
-            console.log('Updating member in demo mode:', updatedData);
+            console.log('Updating member:', updatedData);
             
-            // العثور على العضو وتحديثه في البيانات المحلية
-            const originalId = member['رقم الهوية'];
-            const memberIndexInData = membersData.findIndex(m => m['رقم الهوية'] === originalId);
-            const memberIndexInFiltered = filteredMembers.findIndex(m => m['رقم الهوية'] === originalId);
-            
-            if (memberIndexInData !== -1) {
-                // تحديث البيانات مع الاحتفاظ بتاريخ التسجيل
-                const originalDate = membersData[memberIndexInData]['تاريخ التسجيل'];
-                membersData[memberIndexInData] = { ...updatedData, 'تاريخ التسجيل': originalDate };
-                delete membersData[memberIndexInData].memberId;
-            }
-            
-            if (memberIndexInFiltered !== -1) {
-                const originalDate = filteredMembers[memberIndexInFiltered]['تاريخ التسجيل'];
-                filteredMembers[memberIndexInFiltered] = { ...updatedData, 'تاريخ التسجيل': originalDate };
-                delete filteredMembers[memberIndexInFiltered].memberId;
-            }
-            
-            if (typeof Toastify !== 'undefined') {
+            try {
+                const token = sessionStorage.getItem('adminToken');
+                
+                // إرسال التحديث للخادم
+                const response = await App.postToAPI({
+                    action: 'updateMember',
+                    token: token,
+                    memberData: updatedData
+                });
+                
+                if (response && response.success) {
+                    // إعادة تحميل البيانات من الخادم بعد التحديث
+                    await loadMembersData();
+                    
+                    if (typeof Toastify !== 'undefined') {
                         Toastify({
                             text: "تم تحديث بيانات العضو بنجاح",
                             duration: 3000,
                             gravity: "top",
                             position: "center",
                             backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-                        text: "تم تحديث بيانات العضو بنجاح (وضع تجريبي)",
-                        duration: 3000,
-                        gravity: "top",
-                        position: "center",
-                        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-                    }).showToast();
+                        }).showToast();
+                    }
+                } else {
+                    throw new Error(response?.message || 'فشل في تحديث بيانات العضو');
+                }
+            } catch (error) {
+                console.error('Error updating member:', error);
+                
+                // في حالة فشل التحديث على الخادم، نحدث محلياً
+                const originalId = member['رقم الهوية'];
+                const memberIndexInData = membersData.findIndex(m => m['رقم الهوية'] === originalId);
+                const memberIndexInFiltered = filteredMembers.findIndex(m => m['رقم الهوية'] === originalId);
+                
+                if (memberIndexInData !== -1) {
+                    const originalDate = membersData[memberIndexInData]['تاريخ التسجيل'];
+                    membersData[memberIndexInData] = { ...updatedData, 'تاريخ التسجيل': originalDate };
+                    delete membersData[memberIndexInData].memberId;
                 }
                 
-                // تحديث العرض
+                if (memberIndexInFiltered !== -1) {
+                    const originalDate = filteredMembers[memberIndexInFiltered]['تاريخ التسجيل'];
+                    filteredMembers[memberIndexInFiltered] = { ...updatedData, 'تاريخ التسجيل': originalDate };
+                    delete filteredMembers[memberIndexInFiltered].memberId;
+                }
+                
                 renderMembers();
                 updateStatistics();
+                
+                if (typeof Toastify !== 'undefined') {
+                    Toastify({
+                        text: `تم تحديث البيانات محلياً (خطأ في الخادم: ${error.message})`,
+                        duration: 5000,
+                        gravity: "top",
+                        position: "center",
+                        backgroundColor: "linear-gradient(to right, #ff9800, #f57c00)",
+                    }).showToast();
+                }
+            }
                 
                 // إغلاق النافذة
                 bootstrap.Modal.getInstance(document.getElementById('editMemberModal')).hide();
@@ -2261,45 +2277,74 @@
             
             if (!member) return;
             
-            // تحديث حالة العضو في الوضع التجريبي
-            console.log('Updating member status in demo mode to:', newStatus);
+            console.log('Updating member status to:', newStatus);
             
-            // تحديث الحالة في البيانات المحلية
-            const memberId = member['رقم الهوية'];
-            const memberIndexInData = membersData.findIndex(m => m['رقم الهوية'] === memberId);
-            const memberIndexInFiltered = filteredMembers.findIndex(m => m['رقم الهوية'] === memberId);
-            
-            if (memberIndexInData !== -1) {
-                membersData[memberIndexInData]['الحالة'] = newStatus;
-            }
-            
-            if (memberIndexInFiltered !== -1) {
-                filteredMembers[memberIndexInFiltered]['الحالة'] = newStatus;
-            }
-            
-            // إشعار مؤقت مع تنبيه حول الوصول
-            if (typeof Toastify !== 'undefined') {
-                const statusText = newStatus === 'نشط' ? 'نشط' : 'غير نشط';
-                const accessNote = newStatus === 'غير نشط' 
-                    ? ' - لن يتمكن من الوصول للموقع' 
-                    : ' - يمكنه الوصول للموقع';
-                    
-                const backgroundColor = newStatus === 'نشط' 
-                    ? "linear-gradient(to right, #00b09b, #96c93d)"
-                    : "linear-gradient(to right, #ff9a9e, #fad0c4)";
+            try {
+                const token = sessionStorage.getItem('adminToken');
                 
-                Toastify({
-                    text: `تم تغيير حالة العضو إلى "${statusText}"${accessNote} (وضع تجريبي)`,
-                    duration: 5000,
-                    gravity: "top",
-                    position: "center",
-                    backgroundColor: backgroundColor,
-                }).showToast();
+                // إرسال التحديث للخادم
+                const response = await App.postToAPI({
+                    action: 'updateMemberStatus',
+                    token: token,
+                    memberId: member['رقم الهوية'],
+                    status: newStatus
+                });
+                
+                if (response && response.success) {
+                    // إعادة تحميل البيانات من الخادم بعد التحديث
+                    await loadMembersData();
+                    
+                    // إشعار مؤقت مع تنبيه حول الوصول
+                    if (typeof Toastify !== 'undefined') {
+                        const statusText = newStatus === 'نشط' ? 'نشط' : 'غير نشط';
+                        const accessNote = newStatus === 'غير نشط' 
+                            ? ' - لن يتمكن من الوصول للموقع' 
+                            : ' - يمكنه الوصول للموقع';
+                            
+                        const backgroundColor = newStatus === 'نشط' 
+                            ? "linear-gradient(to right, #00b09b, #96c93d)"
+                            : "linear-gradient(to right, #ff9a9e, #fad0c4)";
+                        
+                        Toastify({
+                            text: `تم تغيير حالة العضو إلى "${statusText}"${accessNote}`,
+                            duration: 5000,
+                            gravity: "top",
+                            position: "center",
+                            backgroundColor: backgroundColor,
+                        }).showToast();
+                    }
+                } else {
+                    throw new Error(response?.message || 'فشل في تحديث حالة العضو');
+                }
+            } catch (error) {
+                console.error('Error updating member status:', error);
+                
+                // في حالة فشل التحديث على الخادم، نحدث محلياً
+                const memberId = member['رقم الهوية'];
+                const memberIndexInData = membersData.findIndex(m => m['رقم الهوية'] === memberId);
+                const memberIndexInFiltered = filteredMembers.findIndex(m => m['رقم الهوية'] === memberId);
+                
+                if (memberIndexInData !== -1) {
+                    membersData[memberIndexInData]['الحالة'] = newStatus;
+                }
+                
+                if (memberIndexInFiltered !== -1) {
+                    filteredMembers[memberIndexInFiltered]['الحالة'] = newStatus;
+                }
+                
+                renderMembers();
+                updateStatistics();
+                
+                if (typeof Toastify !== 'undefined') {
+                    Toastify({
+                        text: `تم تحديث الحالة محلياً (خطأ في الخادم: ${error.message})`,
+                        duration: 5000,
+                        gravity: "top",
+                        position: "center",
+                        backgroundColor: "linear-gradient(to right, #ff9800, #f57c00)",
+                    }).showToast();
+                }
             }
-            
-            // تحديث العرض
-            renderMembers();
-            updateStatistics();
             
             bootstrap.Modal.getInstance(document.getElementById('statusUpdateModal')).hide();
         }
@@ -2370,26 +2415,53 @@
             
             console.log('Adding new member:', newMemberData);
             
-            // في الوضع التجريبي، نضيف العضو محلياً
-            console.log('Adding new member in demo mode:', newMemberData);
-            
-            // محاكاة إضافة العضو للبيانات المحلية
-            membersData.unshift(newMemberData); // إضافة في المقدمة
-            filteredMembers = [...membersData];
-            
-            if (typeof Toastify !== 'undefined') {
-                Toastify({
-                    text: "تم إضافة العضو الجديد بنجاح (وضع تجريبي)",
-                    duration: 3000,
-                    gravity: "top",
-                    position: "center",
-                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-                }).showToast();
+            try {
+                const token = sessionStorage.getItem('adminToken');
+                
+                // إرسال البيانات للخادم
+                const response = await App.postToAPI({
+                    action: 'addMember',
+                    token: token,
+                    memberData: newMemberData
+                });
+                
+                if (response && response.success) {
+                    // إعادة تحميل البيانات من الخادم بعد الإضافة
+                    await loadMembersData();
+                    
+                    if (typeof Toastify !== 'undefined') {
+                        Toastify({
+                            text: "تم إضافة العضو الجديد بنجاح",
+                            duration: 3000,
+                            gravity: "top",
+                            position: "center",
+                            backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                        }).showToast();
+                    }
+                } else {
+                    throw new Error(response?.message || 'فشل في إضافة العضو');
+                }
+            } catch (error) {
+                console.error('Error adding member:', error);
+                
+                // في حالة فشل الإضافة للخادم، نضيف محلياً كحل بديل
+                console.log('Server add failed, adding locally:', error.message);
+                
+                membersData.unshift(newMemberData);
+                filteredMembers = [...membersData];
+                renderMembers();
+                updateStatistics();
+                
+                if (typeof Toastify !== 'undefined') {
+                    Toastify({
+                        text: `تم إضافة العضو محلياً (خطأ في الخادم: ${error.message})`,
+                        duration: 5000,
+                        gravity: "top",
+                        position: "center",
+                        backgroundColor: "linear-gradient(to right, #ff9800, #f57c00)",
+                    }).showToast();
+                }
             }
-            
-            // تحديث العرض
-            renderMembers();
-            updateStatistics();
             
             // إغلاق النافذة وإعادة تعيين النموذج
             bootstrap.Modal.getInstance(document.getElementById('addMemberModal')).hide();

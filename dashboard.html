@@ -118,6 +118,63 @@
         .whatsapp-link:hover {
             color: #128c7e;
         }
+        
+        .section-container {
+            background: rgba(255,255,255,0.6);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        
+        .section-title {
+            color: #2d3a4b;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e1e8ed;
+        }
+        
+        .info-item {
+            background: rgba(255,255,255,0.8);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .info-item:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+            display: block;
+        }
+        
+        .info-value {
+            color: #2d3a4b;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        .info-icon {
+            color: #667eea;
+            font-size: 1.1rem;
+            margin-left: 8px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
@@ -133,14 +190,58 @@
     </header>
   <main class="container my-4">
     <div class="data-table-card mb-4">
-        <div class="card-header-modern d-flex align-items-center">
-            <i class="bi bi-person-circle profile-icon me-2"></i>
-            <div>
-                <h4 class="mb-0" id="userName">جاري التحميل...</h4>
-                <p class="text-muted mb-0" id="userTitle">رقم الهوية: ---</p>
+        <div class="card-header-modern d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-person-circle profile-icon me-2"></i>
+                <div>
+                    <h4 class="mb-0" id="userName">جاري التحميل...</h4>
+                    <p class="text-muted mb-0" id="userTitle">رقم الهوية: ---</p>
+                </div>
             </div>
+            <button class="btn btn-outline-primary btn-sm" id="editProfileBtn">
+                <i class="bi bi-pencil-square"></i> تعديل البيانات
+            </button>
         </div>
-        <div class="card-body" id="userInfo">
+        <div class="card-body">
+            <!-- البيانات الشخصية الأساسية -->
+            <div class="section-container mb-4">
+                <h5 class="section-title">
+                    <i class="bi bi-person-fill me-2"></i>البيانات الشخصية الأساسية
+                </h5>
+                <div class="row" id="basicInfo">
+                    <!-- سيتم ملؤها بالجافاسكريبت -->
+                </div>
+            </div>
+
+            <!-- بيانات الاتصال والعنوان -->
+            <div class="section-container mb-4">
+                <h5 class="section-title">
+                    <i class="bi bi-geo-alt-fill me-2"></i>بيانات الاتصال والعنوان
+                </h5>
+                <div class="row" id="contactInfo">
+                    <!-- سيتم ملؤها بالجافاسكريبت -->
+                </div>
+            </div>
+
+            <!-- بيانات العمل والتعليم -->
+            <div class="section-container mb-4">
+                <h5 class="section-title">
+                    <i class="bi bi-briefcase-fill me-2"></i>بيانات العمل والتعليم
+                </h5>
+                <div class="row" id="workEducationInfo">
+                    <!-- سيتم ملؤها بالجافاسكريبت -->
+                </div>
+            </div>
+
+            <!-- بيانات العائلة -->
+            <div class="section-container">
+                <h5 class="section-title">
+                    <i class="bi bi-people-fill me-2"></i>بيانات العائلة
+                </h5>
+                <div class="row" id="familyInfo">
+                    <!-- سيتم ملؤها بالجافاسكريبت -->
+                </div>
+            </div>
         </div>
     </div>
     <div class="data-table-card mb-4">
@@ -198,8 +299,176 @@
             <i class="bi bi-whatsapp"></i> تواصل عبر الواتساب
         </a>
     </footer>
+
+    <!-- نموذج تعديل البيانات الشخصية -->
+    <div class="modal fade" id="editProfileModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-person-gear me-2"></i>تحديث البيانات الشخصية
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="profileUpdateForm">
+                        <div class="row">
+                            <!-- البيانات الأساسية -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">رقم الهاتف</label>
+                                <input type="text" class="form-control" id="editPhone" placeholder="059xxxxxxx">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">البريد الإلكتروني</label>
+                                <input type="email" class="form-control" id="editEmail" placeholder="example@email.com">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">العنوان</label>
+                                <input type="text" class="form-control" id="editAddress" placeholder="العنوان التفصيلي">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">المدينة</label>
+                                <input type="text" class="form-control" id="editCity" placeholder="المدينة">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">المحافظة</label>
+                                <select class="form-control" id="editProvince">
+                                    <option value="">اختر المحافظة</option>
+                                    <option value="غزة">غزة</option>
+                                    <option value="الشمال">شمال غزة</option>
+                                    <option value="الوسطى">الوسطى</option>
+                                    <option value="خانيونس">خان يونس</option>
+                                    <option value="رفح">رفح</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">رقم هاتف بديل</label>
+                                <input type="text" class="form-control" id="editAltPhone" placeholder="059xxxxxxx">
+                            </div>
+                            
+                            <!-- بيانات العمل -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">المهنة</label>
+                                <input type="text" class="form-control" id="editProfession" placeholder="المهنة الحالية">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">مكان العمل</label>
+                                <input type="text" class="form-control" id="editWorkPlace" placeholder="مكان العمل">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">الدخل الشهري</label>
+                                <select class="form-control" id="editMonthlyIncome">
+                                    <option value="">اختر الفئة</option>
+                                    <option value="أقل من 1000">أقل من 1000 شيكل</option>
+                                    <option value="1000-2000">1000-2000 شيكل</option>
+                                    <option value="2000-3000">2000-3000 شيكل</option>
+                                    <option value="3000-4000">3000-4000 شيكل</option>
+                                    <option value="أكثر من 4000">أكثر من 4000 شيكل</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">المؤهل العلمي</label>
+                                <select class="form-control" id="editEducation">
+                                    <option value="">اختر المؤهل</option>
+                                    <option value="ابتدائية">ابتدائية</option>
+                                    <option value="إعدادية">إعدادية</option>
+                                    <option value="ثانوية عامة">ثانوية عامة</option>
+                                    <option value="دبلوم">دبلوم</option>
+                                    <option value="بكالوريوس">بكالوريوس</option>
+                                    <option value="ماجستير">ماجستير</option>
+                                    <option value="دكتوراه">دكتوراه</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>إلغاء
+                    </button>
+                    <button type="button" class="btn btn-primary" id="saveProfileBtn">
+                        <i class="bi bi-check-circle me-2"></i>حفظ التغييرات
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="script.js"></script>
+    
+    <script>
+        // إضافة وظيفة تحديث البيانات الشخصية
+        document.addEventListener('DOMContentLoaded', function() {
+            // زر فتح نموذج التعديل
+            document.getElementById('editProfileBtn')?.addEventListener('click', function() {
+                new bootstrap.Modal(document.getElementById('editProfileModal')).show();
+            });
+
+            // زر تحديث البيانات
+            document.getElementById('refreshUserDataBtn')?.addEventListener('click', function() {
+                const userId = localStorage.getItem('loggedInUserId');
+                if (userId && typeof App !== 'undefined') {
+                    App.loadUserData(userId);
+                    Toastify({
+                        text: "تم تحديث البيانات",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "center",
+                        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                    }).showToast();
+                }
+            });
+
+            // حفظ التغييرات
+            document.getElementById('saveProfileBtn')?.addEventListener('click', async function() {
+                const userId = localStorage.getItem('loggedInUserId');
+                if (!userId) return;
+
+                const updatedData = {
+                    'رقم الهاتف': document.getElementById('editPhone').value,
+                    'البريد الإلكتروني': document.getElementById('editEmail').value,
+                    'العنوان': document.getElementById('editAddress').value,
+                    'المدينة': document.getElementById('editCity').value,
+                    'المحافظة': document.getElementById('editProvince').value,
+                    'رقم هاتف بديل': document.getElementById('editAltPhone').value,
+                    'المهنة': document.getElementById('editProfession').value,
+                    'مكان العمل': document.getElementById('editWorkPlace').value,
+                    'الدخل الشهري': document.getElementById('editMonthlyIncome').value,
+                    'المؤهل العلمي': document.getElementById('editEducation').value
+                };
+
+                try {
+                    const response = await App.apiCall({
+                        action: 'updateUserProfile',
+                        userId: userId,
+                        profileData: updatedData
+                    });
+
+                    if (response && response.success) {
+                        bootstrap.Modal.getInstance(document.getElementById('editProfileModal')).hide();
+                        App.loadUserData(userId); // إعادة تحميل البيانات
+                        
+                        Toastify({
+                            text: "تم تحديث البيانات بنجاح",
+                            duration: 3000,
+                            gravity: "top",
+                            position: "center",
+                            backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                        }).showToast();
+                    }
+                } catch (error) {
+                    Toastify({
+                        text: "حدث خطأ في تحديث البيانات",
+                        duration: 5000,
+                        gravity: "top",
+                        position: "center",
+                        backgroundColor: "linear-gradient(to right, #ff6b6b, #feca57)",
+                    }).showToast();
+                }
+            });
+        });
+    </script>
 </body>
 </html>

@@ -62,7 +62,8 @@ function doPost(e) {
       case 'getResetRequests': response = handleGetResetRequests(payload.token); break;
       case 'clearMemberPassword': response = handleClearMemberPassword(payload); break;
       case 'updateAidStatus': response = handleUpdateAidStatus(payload); break;
-      case 'bulkProcessAid': response = handleBulkProcessAid(payload); break;
+    case 'bulkProcessAid': response = handleBulkProcessAid(payload); break;
+    case 'updateUserProfile': response = handleUpdateUserProfile(payload.userId, payload.profileData); break;
       default:
         response = { success: false, message: 'Unsupported action: ' + payload.action };
     }
@@ -280,13 +281,71 @@ function handleGetUserFutureAid(userId, token) {
 }
 
 function handleGetUserData(userId) {
-  const members = sheetToJSON(INDIVIDUALS_SHEET);
-  const memberData = members.find(m => String(m['رقم الهوية']).trim() == String(userId).trim());
-  if (!memberData) throw new Error('لم يتم العثور على بيانات المستخدم.');
-  return { success: true, data: memberData };
+  const members = sheetToJSON(INDIVIDUALS_SHEET);
+  const memberData = members.find(m => String(m['رقم الهوية']).trim() == String(userId).trim());
+  if (!memberData) throw new Error('لم يتم العثور على بيانات المستخدم.');
+  return { success: true, data: memberData };
 }
 
-function handleAdminLogin(username, password) {
+function handleUpdateUserProfile(userId, profileData) {
+  try {
+    if (!userId || !profileData) {
+      throw new Error('معرف المستخدم وبيانات الملف الشخصي مطلوبان.');
+    }
+    
+    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(INDIVIDUALS_SHEET);
+    if (!sheet) {
+      throw new Error('لم يتم العثور على شيت الأفراد.');
+    }
+    
+    const dataRange = sheet.getDataRange();
+    const values = dataRange.getValues();
+    const headers = values[0];
+    
+    // البحث عن السجل المطلوب تحديثه
+    let rowIndex = -1;
+    for (let i = 1; i < values.length; i++) {
+      const idColIndex = headers.indexOf('رقم الهوية');
+      if (idColIndex !== -1 && String(values[i][idColIndex]).trim() === String(userId).trim()) {
+        rowIndex = i;
+        break;
+      }
+    }
+    
+    if (rowIndex === -1) {
+      throw new Error('لم يتم العثور على المستخدم المطلوب تحديثه.');
+    }
+    
+    // تحديث البيانات
+    for (const [fieldName, fieldValue] of Object.entries(profileData)) {
+      const colIndex = headers.indexOf(fieldName);
+      if (colIndex !== -1 && fieldValue && fieldValue.trim() !== '') {
+        values[rowIndex][colIndex] = fieldValue;
+      }
+    }
+    
+    // إضافة تاريخ آخر تحديث
+    const lastUpdateColIndex = headers.indexOf('آخر تحديث');
+    if (lastUpdateColIndex !== -1) {
+      values[rowIndex][lastUpdateColIndex] = new Date().toISOString().split('T')[0];
+    }
+    
+    // حفظ التغييرات
+    sheet.getRange(1, 1, values.length, values[0].length).setValues(values);
+    
+    return { 
+      success: true, 
+      message: 'تم تحديث البيانات الشخصية بنجاح' 
+    };
+    
+  } catch (error) {
+    Logger.log('خطأ في تحديث الملف الشخصي: ' + error.message);
+    return { 
+      success: false, 
+      message: 'حدث خطأ في تحديث البيانات: ' + error.message 
+    };
+  }
+}function handleAdminLogin(username, password) {
   const logSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(ADMINS_LOGIN_LOG_SHEET);
   let logStatus = 'فاشل';
   let logReason = '';
