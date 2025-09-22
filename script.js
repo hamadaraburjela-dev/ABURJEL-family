@@ -504,14 +504,15 @@ document.addEventListener('DOMContentLoaded', () => {
             // بيانات العائلة
             const familyInfoSection = document.getElementById('familyInfo');
             const familyFields = [
-                { key: 'اسم الزوج', label: 'اسم الزوج', icon: 'person-heart' },
+                // removed 'اسم الزوج' per UX request
                 { key: 'اسم الزوجة', label: 'اسم الزوجة', icon: 'person-heart' },
-                { key: 'رقم هوية الزوج', label: 'رقم هوية الزوج', icon: 'person-badge-fill' },
+                // removed 'رقم هوية الزوج' per UX request
                 { key: 'رقم هوية الزوجة', label: 'رقم هوية الزوجة', icon: 'person-badge-fill' },
+                { key: 'عدد افراد الاسرة', label: 'عدد أفراد الأسرة', icon: 'people-fill' },
                 { key: 'عدد الأطفال', label: 'عدد الأطفال', icon: 'people-fill' },
                 { key: 'عدد الأطفال الذكور', label: 'أطفال ذكور', icon: 'person-standing' },
                 { key: 'عدد الأطفال الإناث', label: 'أطفال إناث', icon: 'person-standing-dress' },
-                { key: 'اسم الأب', label: 'اسم الأب', icon: 'person-fill' }
+                // removed 'اسم الأب' per request
             ];
             
             familyInfoSection.innerHTML = this.renderInfoSection(familyFields, data);
@@ -1228,54 +1229,48 @@ document.addEventListener('DOMContentLoaded', checkServerStatus);
 
 // Add profile edit form handler for dashboard
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle profile edit form submission
-    const profileEditForm = document.getElementById('profileEditForm');
-    if (profileEditForm) {
-        profileEditForm.addEventListener('submit', async function(e) {
+    // Handle profile edit form submission (dashboard uses id="profileUpdateForm")
+    const profileForm = document.getElementById('profileUpdateForm') || document.getElementById('profileEditForm');
+    if (profileForm) {
+        profileForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            // Get user ID from sessionStorage or current context
-            const userId = sessionStorage.getItem('userId') || window.currentUserId;
+
+            const userId = localStorage.getItem('loggedInUserId') || sessionStorage.getItem('userId') || window.currentUserId;
             if (!userId) {
                 App.showToast('لم يتم العثور على معرف المستخدم', false);
                 return;
             }
-            
-            // Collect form data
-            const formData = new FormData(this);
-            const profileData = {};
-            
-            // Map form fields to backend field names
-            const fieldMapping = {
-                'fullName': 'الاسم الكامل',
-                'phone': 'رقم الهاتف',
-                'email': 'البريد الإلكتروني',
-                'address': 'العنوان',
-                'workplace': 'مكان العمل',
-                'education': 'التعليم',
-                'maritalStatus': 'الحالة الاجتماعية',
-                'spouseId': 'رقم هوية الزوج/ة',
-                'childrenCount': 'عدد الأطفال',
-                'notes': 'ملاحظات'
+
+            // Build profileData using the exact sheet headers
+            const profileData = {
+                'رقم الجوال': (this.querySelector('#editPhone')?.value || '').trim(),
+                'البريد الإلكتروني': (this.querySelector('#editEmail')?.value || '').trim(),
+                'العنوان': (this.querySelector('#editAddress')?.value || '').trim(),
+                'المدينة': (this.querySelector('#editCity')?.value || '').trim(),
+                'المحافظة': (this.querySelector('#editProvince')?.value || '').trim(),
+                'رقم جوال بديل': (this.querySelector('#editAltPhone')?.value || '').trim(),
+                'المهنة': (this.querySelector('#editProfession')?.value || '').trim(),
+                'مكان العمل': (this.querySelector('#editWorkPlace')?.value || '').trim(),
+                'الدخل الشهري': (this.querySelector('#editMonthlyIncome')?.value || '').trim(),
+                'المؤهل العلمي': (this.querySelector('#editEducation')?.value || '').trim(),
+                'المدينة': (this.querySelector('#editCity')?.value || '').trim()
             };
-            
-            for (let [key, value] of formData.entries()) {
-                if (fieldMapping[key] && value.trim()) {
-                    profileData[fieldMapping[key]] = value.trim();
+
+            // Remove empty keys to avoid unnecessary writes (server ignores empty anyway)
+            Object.keys(profileData).forEach(k => { if (profileData[k] === '') delete profileData[k]; });
+
+            const result = await App.postToAPI({ action: 'updateUserProfile', userId, profileData }, true);
+            if (result && result.success) {
+                // Close modal if present
+                const modalEl = document.getElementById('editProfileModal') || document.getElementById('editUserDataModal');
+                if (modalEl) {
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
                 }
-            }
-            
-            // Call update function
-            const success = await App.updateUserProfile(userId, profileData);
-            if (success) {
-                // Hide modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('editProfileModal'));
-                modal.hide();
-                
-                // Reload page data if needed
-                if (typeof window.loadUserData === 'function') {
-                    window.loadUserData(userId);
-                }
+                App.showToast(result.message || 'تم تحديث البيانات بنجاح', true);
+                if (typeof App.loadUserData === 'function') App.loadUserData(userId);
+            } else {
+                App.showToast(result?.message || 'فشل في تحديث البيانات', false);
             }
         });
     }
