@@ -110,166 +110,201 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="script.js"></script>
     <script>
-        // بيانات الفروع (يمكن جلبها من قاعدة البيانات)
-        const branches = [
-            { name: 'فرع آل أحمد', families: 12 },
-            { name: 'فرع آل حامد', families: 8 },
-            { name: 'فرع آل حمدان', families: 7 },
-            { name: 'فرع آل حماد', families: 9 }
+    (function(){
+        // Professional distribution module
+        const SAMPLE_BRANCHES = [
+            { id: 1, name: 'فرع آل أحمد', families: 12 },
+            { id: 2, name: 'فرع آل حامد', families: 8 },
+            { id: 3, name: 'فرع آل حمدان', families: 7 },
+            { id: 4, name: 'فرع آل حماد', families: 9 }
         ];
 
-        let distributionChartInstance = null;
+        let branches = [];
+        let chartInstance = null;
 
-        // إنشاء نموذج الفروع (مستخدم تصميم مدرن)
-        function createBranchesForm() {
+        async function fetchJson(path){
+            try{
+                const res = await fetch(path, {cache:'no-store'});
+                if (!res.ok) return null;
+                return await res.json();
+            }catch(e){ return null; }
+        }
+
+        async function loadBranches(){
+            // Priority: window.branchesData -> branches.json (root) -> data/branches.json -> sample
+            if (Array.isArray(window.branchesData) && window.branchesData.length){ branches = window.branchesData.map(normalizeBranch); return; }
+            const root = await fetchJson('branches.json');
+            if (Array.isArray(root) && root.length){ branches = root.map(normalizeBranch); return; }
+            const dataFolder = await fetchJson('data/branches.json');
+            if (Array.isArray(dataFolder) && dataFolder.length){ branches = dataFolder.map(normalizeBranch); return; }
+            branches = SAMPLE_BRANCHES.map(normalizeBranch);
+        }
+
+        function normalizeBranch(b){
+            return {
+                id: b.id ?? (Math.random()*1e9|0),
+                name: String(b.name || b.branch || 'غير معروف'),
+                families: Number(b.families || b.households || 0),
+                meta: b
+            };
+        }
+
+        function createBranchesForm(){
             const container = document.getElementById('branchesContainer');
             container.innerHTML = '';
-            branches.forEach((branch, index) => {
-                const branchDiv = document.createElement('div');
-                branchDiv.className = 'row mb-3 align-items-center';
-                branchDiv.innerHTML = `
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">${branch.name}</label>
-                        <small class="text-muted d-block">عدد العائلات: ${branch.families}</small>
+            branches.forEach((br, idx)=>{
+                const row = document.createElement('div');
+                row.className = 'row mb-3 align-items-center';
+                row.dataset.branchId = br.id;
+                row.innerHTML = `
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold">${escapeHtml(br.name)}</label>
+                        <div class="text-muted small">عدد العائلات: ${br.families}</div>
                     </div>
                     <div class="col-md-4">
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-sliders"></i></span>
-                            <input type="number" class="form-control branch-weight modern-input" placeholder="عامل التوزيع (اختياري)" data-index="${index}">
+                            <input type="number" min="0" step="1" class="form-control branch-weight modern-input" placeholder="عامل التخصيص (اختياري)" data-index="${idx}">
                         </div>
-                        <small class="text-muted d-block">اتركه فارغاً لاستخدام عدد العائلات</small>
+                        <div class="text-muted small mt-1">اتركه فارغاً لاستخدام عدد العائلات</div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="input-group">
-                            <input type="number" class="form-control branch-result modern-input" readonly data-index="${index}">
+                            <input type="number" class="form-control branch-result modern-input" readonly data-index="${idx}">
                             <span class="input-group-text">مساعدة</span>
                         </div>
                     </div>
                 `;
-                container.appendChild(branchDiv);
+                container.appendChild(row);
             });
         }
 
-        // حساب التوزيع
-        function calculateDistribution(totalAid, type) {
-            const results = [];
-            let totalWeight = 0;
+        function escapeHtml(s){ if (s==null) return ''; return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c])); }
 
-            if (type === 'equal') {
-                const equalShare = Math.floor(totalAid / branches.length);
-                const remainder = totalAid % branches.length;
+        // Allocation algorithm using fractional remainders to preserve totals
+        function allocate(totalAid, mode){
+            const n = branches.length;
+            if (n===0) return [];
 
-                branches.forEach((branch, index) => {
-                    const share = equalShare + (index < remainder ? 1 : 0);
-                    results.push({
-                        name: branch.name,
-                        share: share,
-                        percentage: ((share / totalAid) * 100).toFixed(1)
-                    });
-                });
-            } else if (type === 'proportional') {
-                const weights = document.querySelectorAll('.branch-weight');
-                let hasCustomWeights = false;
+            // build weights: for 'equal' use 1 for all; for 'proportional' use custom weight || families
+            const weightEls = document.querySelectorAll('.branch-weight');
+            const weights = branches.map((b, i)=>{
+                const el = weightEls[i];
+                const custom = el && el.value !== '' ? Number(el.value) : null;
+                return mode === 'equal' ? 1 : (custom != null ? Math.max(0, Number(custom)) : Math.max(0, Number(b.families || 0)));
+            });
 
-                weights.forEach((weight, index) => {
-                    const value = parseFloat(weight.value) || branches[index].families;
-                    totalWeight += value;
-                    if (weight.value) hasCustomWeights = true;
-                });
+            const totalWeight = weights.reduce((s,x)=>s + (isFinite(x)? x:0), 0);
 
-                branches.forEach((branch, index) => {
-                    const weight = parseFloat(weights[index].value) || branch.families;
-                    const share = Math.round((weight / totalWeight) * totalAid);
-                    results.push({
-                        name: branch.name,
-                        share: share,
-                        percentage: ((share / totalAid) * 100).toFixed(1)
-                    });
-                });
+            // raw shares (float)
+            const raw = weights.map(w => totalWeight > 0 ? (totalAid * (w/totalWeight)) : (totalAid / n));
+            const floorShares = raw.map(r => Math.floor(r));
+            let assigned = floorShares.reduce((s,x)=>s+x,0);
+            let remainder = totalAid - assigned;
+
+            // fractional parts for fair distribution
+            const fractional = raw.map((r,i)=> ({i, frac: r - Math.floor(r), families: branches[i].families}) );
+
+            // tie-breaker: prefer higher families, then higher fractional
+            fractional.sort((a,b)=> {
+                if (b.frac !== a.frac) return b.frac - a.frac;
+                return b.families - a.families;
+            });
+
+            const extras = new Array(n).fill(0);
+            for (let k=0;k<remainder;k++){
+                extras[fractional[k % fractional.length].i] += 1;
+            }
+
+            const results = branches.map((b, i)=>{
+                const share = floorShares[i] + extras[i];
+                return {
+                    id: b.id,
+                    name: b.name,
+                    share: share,
+                    percentage: totalAid>0 ? ((share/totalAid)*100).toFixed(1) : '0.0'
+                };
+            });
+
+            // final sanity: adjust if rounding drift
+            const sum = results.reduce((s,r)=>s + r.share,0);
+            if (sum !== totalAid){
+                // fix by adding/subtracting from largest/smallest shares
+                let diff = totalAid - sum;
+                if (diff > 0){ // add to largest fractional order
+                    for (let f of fractional){ if (diff<=0) break; results[f.i].share +=1; diff--; }
+                } else if (diff < 0){
+                    for (let f of fractional.reverse()){ if (diff>=0) break; if (results[f.i].share>0){ results[f.i].share -=1; diff++; } }
+                }
             }
 
             return results;
         }
 
-        // عرض النتائج
-        function displayResults(results) {
-            const resultsDiv = document.getElementById('distributionResults');
+        function renderResults(results){
+            const container = document.getElementById('distributionResults');
             const resultInputs = document.querySelectorAll('.branch-result');
+            container.innerHTML = '';
 
-            resultsDiv.innerHTML = '';
-            results.forEach((result, index) => {
+            results.forEach((r, i)=>{
                 const row = document.createElement('div');
                 row.className = 'd-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded';
-                row.innerHTML = `
-                    <span class="fw-bold">${result.name}</span>
-                    <span class="badge bg-primary">${result.share} مساعدة (${result.percentage}%)</span>
-                `;
-                resultsDiv.appendChild(row);
-
-                if (resultInputs[index]) {
-                    resultInputs[index].value = result.share;
-                }
+                row.innerHTML = `<div class="fw-bold">${escapeHtml(r.name)}</div><div class="text-end"><span class=\"badge bg-primary me-2\">${r.share} مساعدة</span><small class=\"text-muted\">${r.percentage}%</small></div>`;
+                container.appendChild(row);
+                if (resultInputs[i]) resultInputs[i].value = r.share;
             });
 
-            // إنشاء/تحديث الرسم البياني
-            createChart(results);
+            // add export button
+            const tools = document.createElement('div');
+            tools.className = 'mt-3 d-flex gap-2';
+            const exportBtn = document.createElement('button');
+            exportBtn.className = 'btn btn-outline-secondary btn-modern';
+            exportBtn.type = 'button';
+            exportBtn.innerHTML = '<i class="bi bi-download me-1"></i>تصدير CSV';
+            exportBtn.addEventListener('click', ()=> exportCsv(results));
+            tools.appendChild(exportBtn);
+            container.appendChild(tools);
 
-            const card = document.getElementById('resultsCard');
-            card.style.display = 'block';
-            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // chart
+            updateChart(results);
+            document.getElementById('resultsCard').style.display = 'block';
+            document.getElementById('resultsCard').scrollIntoView({behavior:'smooth', block:'start'});
         }
 
-        // إنشاء الرسم البياني مع تنظيف سابق
-        function createChart(results) {
-            const ctx = document.getElementById('distributionChart').getContext('2d');
-            const labels = results.map(r => r.name);
-            const data = results.map(r => r.share);
+        function updateChart(results){
+            const ctxEl = document.getElementById('distributionChart');
+            if (!ctxEl) return;
+            ctxEl.style.height = '300px';
+            const labels = results.map(r=>r.name);
+            const data = results.map(r=>r.share);
 
-            if (distributionChartInstance) {
-                try { distributionChartInstance.destroy(); } catch (e) { /* ignore */ }
-                distributionChartInstance = null;
-            }
-
-            distributionChartInstance = new Chart(ctx, {
+            if (chartInstance){ try{ chartInstance.destroy(); }catch(e){} chartInstance = null; }
+            chartInstance = new Chart(ctxEl.getContext('2d'), {
                 type: 'pie',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: [
-                            '#FF6384',
-                            '#36A2EB',
-                            '#FFCE56',
-                            '#4BC0C0',
-                            '#9b59b6',
-                            '#e67e22'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom' },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.parsed;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = total ? ((value / total) * 100).toFixed(1) : '0.0';
-                                    return `${label}: ${value} (${percentage}%)`;
-                                }
-                            }
-                        }
-                    }
-                }
+                data: { labels, datasets: [{ data, backgroundColor: generatePalette(data.length), borderWidth: 1 }] },
+                options: { responsive:true, maintainAspectRatio:false, plugins: { legend:{ position:'bottom' } } }
             });
         }
 
-        // تهيئة الصفحة
-        document.addEventListener('DOMContentLoaded', function() {
+        function generatePalette(n){
+            const base = ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9b59b6','#e67e22','#2ecc71','#e74c3c'];
+            const out = [];
+            for (let i=0;i<n;i++) out.push(base[i % base.length]);
+            return out;
+        }
+
+        function exportCsv(results){
+            const rows = [['الفرع','المساعدة','النسبة (%)']];
+            results.forEach(r=> rows.push([r.name, r.share, r.percentage]));
+            const csv = rows.map(r => r.map(v=> `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+            const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `distribution_${Date.now()}.csv`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+        }
+
+        // init
+        document.addEventListener('DOMContentLoaded', async ()=>{
+            await loadBranches();
             createBranchesForm();
 
             const form = document.getElementById('distributionForm');
@@ -277,25 +312,22 @@
             const typeEl = document.getElementById('distributionType');
             const submitBtn = form.querySelector('button[type="submit"]');
 
-            form.addEventListener('submit', function(e) {
+            form.addEventListener('submit', function(e){
                 e.preventDefault();
-                const totalAid = parseInt(totalAidEl.value);
-                const type = typeEl.value;
-
-                if (!totalAid || totalAid <= 0) {
-                    Toastify({ text: 'يرجى إدخال عدد صحيح للمساعدات', duration: 3000, gravity: 'top', position: 'center', backgroundColor: '#dc3545' }).showToast();
-                    return;
-                }
+                const totalAid = Number(totalAidEl.value);
+                const mode = typeEl.value;
+                if (!Number.isFinite(totalAid) || totalAid <= 0){ Toastify({text:'أدخل قيمة صحيحة للمساعدات',duration:2500,backgroundColor:'#dc3545'}).showToast(); return; }
 
                 submitBtn.disabled = true;
-                setTimeout(()=>{ submitBtn.disabled = false; }, 400);
+                setTimeout(()=> submitBtn.disabled = false, 600);
 
-                const results = calculateDistribution(totalAid, type);
-                displayResults(results);
-
-                Toastify({ text: 'تم حساب التوزيع بنجاح!', duration: 2500, gravity: 'top', position: 'center', backgroundColor: '#28a745' }).showToast();
+                const results = allocate(Math.floor(totalAid), mode);
+                renderResults(results);
+                Toastify({text:'تم حساب التوزيع',duration:2000,backgroundColor:'#28a745'}).showToast();
             });
         });
+
+    })();
     </script>
 </body>
 </html>
