@@ -1137,3 +1137,109 @@ function handleUpdateMartyrRequestStatus(payload) {
   }
   throw new Error('لم يتم العثور على الطلب المطلوب.');
 }
+
+/**
+ * =================================================================
+ * MEMBERS MANAGEMENT FUNCTIONS
+ * =================================================================
+ */
+
+/**
+ * إضافة عضو جديد
+ */
+function handleAddMember(payload) {
+  const { token, ...memberData } = payload;
+  authenticateToken(token);
+  
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(INDIVIDUALS_SHEET);
+  if (!sheet) throw new Error('لم يتم العثور على شيت الأفراد.');
+  
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  
+  // التحقق من عدم وجود رقم هوية مكرر
+  const idCol = headers.indexOf('رقم الهوية');
+  if (idCol === -1) throw new Error('لم يتم العثور على عمود "رقم الهوية".');
+  
+  const existingIds = sheet.getRange(2, idCol + 1, sheet.getLastRow() - 1, 1).getValues().flat();
+  if (existingIds.includes(memberData['رقم الهوية'])) {
+    throw new Error('رقم الهوية موجود بالفعل.');
+  }
+  
+  // إضافة الصف الجديد
+  const newRow = headers.map(header => memberData[header] || '');
+  sheet.appendRow(newRow);
+  
+  // تسجيل العملية
+  const admin = getAdminByToken(token);
+  logAdminAction(admin.username, 'إضافة عضو جديد', `تم إضافة العضو: ${memberData['الاسم الكامل']}`);
+  
+  return { success: true, message: 'تم إضافة العضو بنجاح.' };
+}
+
+/**
+ * حذف عضو
+ */
+function handleDeleteMember(payload) {
+  const { token, memberId } = payload;
+  authenticateToken(token);
+  
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(INDIVIDUALS_SHEET);
+  if (!sheet) throw new Error('لم يتم العثور على شيت الأفراد.');
+  
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const idCol = headers.indexOf('رقم الهوية');
+  
+  if (idCol === -1) throw new Error('لم يتم العثور على عمود "رقم الهوية".');
+  
+  // البحث عن العضو
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][idCol]).trim() === String(memberId).trim()) {
+      const memberName = data[i][headers.indexOf('الاسم الكامل')] || 'غير محدد';
+      sheet.deleteRow(i + 1);
+      
+      // تسجيل العملية
+      const admin = getAdminByToken(token);
+      logAdminAction(admin.username, 'حذف عضو', `تم حذف العضو: ${memberName}`);
+      
+      return { success: true, message: 'تم حذف العضو بنجاح.' };
+    }
+  }
+  
+  throw new Error('لم يتم العثور على العضو المطلوب.');
+}
+
+/**
+ * تحديث حالة العضو
+ */
+function handleUpdateMemberStatus(payload) {
+  const { token, memberId, status } = payload;
+  authenticateToken(token);
+  
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(INDIVIDUALS_SHEET);
+  if (!sheet) throw new Error('لم يتم العثور على شيت الأفراد.');
+  
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const idCol = headers.indexOf('رقم الهوية');
+  const statusCol = headers.indexOf('الحالة');
+  
+  if (idCol === -1) throw new Error('لم يتم العثور على عمود "رقم الهوية".');
+  if (statusCol === -1) throw new Error('لم يتم العثور على عمود "الحالة".');
+  
+  // البحث عن العضو وتحديث حالته
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][idCol]).trim() === String(memberId).trim()) {
+      const memberName = data[i][headers.indexOf('الاسم الكامل')] || 'غير محدد';
+      sheet.getRange(i + 1, statusCol + 1).setValue(status);
+      
+      // تسجيل العملية
+      const admin = getAdminByToken(token);
+      logAdminAction(admin.username, 'تحديث حالة عضو', `تم تحديث حالة العضو ${memberName} إلى: ${status}`);
+      
+      return { success: true, message: 'تم تحديث حالة العضو بنجاح.' };
+    }
+  }
+  
+  throw new Error('لم يتم العثور على العضو المطلوب.');
+}

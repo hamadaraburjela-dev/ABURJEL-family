@@ -6,7 +6,53 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const App = {
-        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbxM-_WhMzg1sMeofzUkoQLv_9nuVPBwDHu137IN6x5zYY7wuQWjnE4_ZXcC_OQ2qwJwXg/exec',
+        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbz43C2rTi8Om58bnxLA79Sz-OqcZFeUPbb6m74GwnGFymGyjZmwVPFavAQtdXffLxRdBA/exec', // سيتم تحديثه بالرابط الجديد من Google Apps Script
+        
+        async testNewUrl() {
+            const input = document.getElementById('newScriptUrl');
+            const newUrl = input?.value?.trim();
+            
+            if (!newUrl) {
+                this.showToast('يرجى إدخال رابط صحيح', false);
+                return;
+            }
+            
+            if (!newUrl.includes('script.google.com')) {
+                this.showToast('الرابط يجب أن يكون من script.google.com', false);
+                return;
+            }
+            
+            this.showToast('جاري اختبار الرابط الجديد...', true);
+            
+            try {
+                const response = await fetch(newUrl, { method: 'GET', mode: 'cors' });
+                if (response.ok) {
+                    const data = await response.json();
+                    this.showDialog({
+                        title: '✅ الرابط يعمل!',
+                        message: `
+                            <p>الرابط الجديد يعمل بشكل صحيح!</p>
+                            <p><strong>إصدار الخادم:</strong> ${data.version || 'غير محدد'}</p>
+                            <p>يمكنك الآن تحديث الرابط في ملف script.js</p>
+                            <code style="word-break: break-all;">${newUrl}</code>
+                        `,
+                        type: 'success'
+                    });
+                } else {
+                    throw new Error(`خطأ ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                this.showDialog({
+                    title: '❌ الرابط لا يعمل',
+                    message: `
+                        <p>فشل في الاتصال بالرابط الجديد:</p>
+                        <p class="text-danger">${error.message}</p>
+                        <p>تأكد من أن الرابط صحيح وأن المشروع منشور بشكل صحيح.</p>
+                    `,
+                    type: 'error'
+                });
+            }
+        },
         aidCategories: {
             "مساعدات مالية": ["نقد مباشر للعائلات المحتاجة", "دفع فواتير (كهرباء، ماء، إيجار)", "قروض حسنة أو صناديق دوارة"],
             "مساعدات غذائية": ["طرود غذائية أساسية", "وجبات جاهزة / مطبوخة", "توزيع مياه للشرب"],
@@ -79,14 +125,58 @@ document.addEventListener('DOMContentLoaded', () => {
             const activeSubmitButton = (document.activeElement?.tagName === 'BUTTON' && document.activeElement.type === 'submit') ? document.activeElement : document.querySelector('button[type="submit"]:not(:disabled)');
             const isButtonTriggered = activeSubmitButton !== null;
             if (isButtonTriggered) this.toggleButtonSpinner(true, activeSubmitButton);
+            
+            console.log('🚀 إرسال طلب API:', payload.action);
+            
             try {
-                const response = await fetch(this.WEB_APP_URL, { method: 'POST', mode: 'cors', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
-                if (!response.ok) throw new Error(`خطأ في الشبكة: ${response.statusText}`);
+                const response = await fetch(this.WEB_APP_URL, { 
+                    method: 'POST', 
+                    mode: 'cors', 
+                    redirect: 'follow', 
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                    body: JSON.stringify(payload) 
+                });
+                
+                console.log('📡 استجابة الخادم:', response.status, response.statusText);
+                
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('رابط Google Apps Script غير صحيح أو لا يعمل');
+                    } else if (response.status === 403) {
+                        throw new Error('ليس لديك صلاحية للوصول إلى هذا الخادم');
+                    } else if (response.status >= 500) {
+                        throw new Error('خطأ في خادم Google Apps Script');
+                    } else {
+                        throw new Error(`خطأ في الشبكة: ${response.status} - ${response.statusText}`);
+                    }
+                }
+                
                 const result = await response.json();
+                console.log('✅ نتيجة الطلب:', result);
+                
                 if (!result.success) throw new Error(result.message || 'حدث خطأ غير معروف في الخادم.');
                 if (showSuccessToast && result.message) this.showToast(result.message, true);
                 return result;
-            } catch (error) { console.error('API Call Failed:', error); this.showToast(error.message, false); return null; } finally { if (isButtonTriggered) this.toggleButtonSpinner(false, activeSubmitButton); }
+                
+            } catch (error) { 
+                console.error('❌ فشل في API Call:', error);
+                
+                // رسائل خطأ مفصلة
+                let errorMessage = error.message;
+                if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                    errorMessage = '⚠️ فشل الاتصال بالخادم';
+                    
+                    // إظهار نافذة مساعدة بعد ثانيتين
+                    setTimeout(() => {
+                        this.showScriptUrlHelp();
+                    }, 2000);
+                }
+                
+                this.showToast(errorMessage, false);
+                return null; 
+            } finally { 
+                if (isButtonTriggered) this.toggleButtonSpinner(false, activeSubmitButton); 
+            }
         },
         
                 showToast(message, isSuccess = true) { Toastify({ text: message, duration: 4000, gravity: "top", position: "center", style: { background: isSuccess ? "#28a745" : "#dc3545", boxShadow: "none" } }).showToast(); },
@@ -159,20 +249,54 @@ document.addEventListener('DOMContentLoaded', () => {
             const statusDiv = document.getElementById('server-status');
             if (!statusDiv) return;
             const statusText = statusDiv.querySelector('.status-text');
+            
+            console.log('جاري فحص حالة الخادم...', this.WEB_APP_URL);
+            
             try {
-                const response = await fetch(this.WEB_APP_URL, { method: 'GET' });
+                const response = await fetch(this.WEB_APP_URL, { 
+                    method: 'GET',
+                    mode: 'cors',
+                    cache: 'no-cache'
+                });
+                
+                console.log('استجابة الخادم:', response.status, response.statusText);
+                
                 if (response.ok) {
                     const data = await response.json();
                     statusDiv.classList.remove('offline');
                     statusDiv.classList.add('online');
                     statusText.textContent = `الخادم متصل (إصدار ${data.version})`;
+                    console.log('الخادم يعمل بشكل طبيعي');
                 } else {
-                    throw new Error('Server not reachable');
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
             } catch (error) {
+                console.error('خطأ في الاتصال بالخادم:', error);
                 statusDiv.classList.remove('online');
                 statusDiv.classList.add('offline');
-                statusText.textContent = 'الخادم غير متصل';
+                statusText.innerHTML = `
+                    <div>⚠️ فشل الاتصال بالخادم</div>
+                    <small class="text-muted d-block mt-1">
+                        الخطأ: ${error.message}<br>
+                        <button class="btn btn-sm btn-outline-warning mt-2" onclick="App.showScriptUrlHelp()">
+                            🔧 كيفية إصلاح المشكلة
+                        </button>
+                    </small>
+                `;
+                
+                // إظهار تنبيه للمستخدم
+                if (typeof Toastify !== 'undefined') {
+                    Toastify({
+                        text: `⚠️ تعذر الاتصال بالخادم\nيرجى التحقق من رابط Google Apps Script`,
+                        duration: 8000,
+                        gravity: "top",
+                        position: "center",
+                        backgroundColor: "linear-gradient(to right, #ff6b6b, #ee5a52)",
+                        style: {
+                            direction: 'rtl'
+                        }
+                    }).showToast();
+                }
             }
         },
 
