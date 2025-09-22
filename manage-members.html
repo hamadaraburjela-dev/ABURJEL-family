@@ -1531,8 +1531,8 @@
                                 <button class="btn btn-sm btn-outline-secondary btn-modern" title="تغيير الحالة" onclick="changeStatus(${startIndex + index})">
                                     <i class="bi bi-toggle-on"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger btn-modern" title="حذف" onclick="deleteMember(${startIndex + index})">
-                                    <i class="bi bi-trash"></i>
+                                <button class="btn btn-sm btn-outline-info btn-modern" title="طباعة تقرير" onclick="printMemberReport(${startIndex + index})">
+                                    <i class="bi bi-printer-fill"></i>
                                 </button>
                             </div>
                         </td>
@@ -1939,41 +1939,230 @@
             new bootstrap.Modal(document.getElementById('statusUpdateModal')).show();
         }
 
-        // حذف العضو
-        function deleteMember(index) {
+        // طباعة تقرير العضو - فتح صفحة الطباعة مباشرة
+        function printMemberReport(index) {
             const member = filteredMembers[index];
             if (!member) return;
             
-            document.getElementById('confirmationModalBody').textContent = 
-                `هل أنت متأكد من حذف العضو "${member['الاسم الكامل'] || 'غير محدد'}"؟`;
+            // إنشاء التقرير بنفس طريقة النظام الأصلي
+            const reportHTML = generateMemberReportHTML(member);
             
-            const confirmBtn = document.getElementById('confirmActionBtn');
-            confirmBtn.onclick = function() {
-                console.log('Deleting member in demo mode:', member);
-                
-                // حذف العضو من البيانات المحلية
-                const memberIdToDelete = member['رقم الهوية'];
-                membersData = membersData.filter(m => m['رقم الهوية'] !== memberIdToDelete);
-                filteredMembers = filteredMembers.filter(m => m['رقم الهوية'] !== memberIdToDelete);
-                
-                if (typeof Toastify !== 'undefined') {
-                    Toastify({
-                        text: "تم حذف العضو بنجاح (وضع تجريبي)",
-                        duration: 3000,
-                        gravity: "top",
-                        position: "center",
-                        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-                    }).showToast();
-                }
-                
-                // تحديث العرض
-                renderMembers();
-                updateStatistics();
-                
-                bootstrap.Modal.getInstance(document.getElementById('confirmationModal')).hide();
+            // حفظ البيانات في sessionStorage للطباعة
+            const printData = {
+                content: reportHTML,
+                title: 'تقرير بيانات عضو - عائلة أبو رجيلة'
             };
+            sessionStorage.setItem('printReportData', JSON.stringify(printData));
             
-            new bootstrap.Modal(document.getElementById('confirmationModal')).show();
+            // فتح صفحة الطباعة مباشرة
+            window.open('print-report.html', '_blank', 'width=800,height=600');
+            
+            if (typeof Toastify !== 'undefined') {
+                Toastify({
+                    text: "تم فتح صفحة الطباعة",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "center",
+                    backgroundColor: "linear-gradient(to right, #667eea, #764ba2)",
+                }).showToast();
+            }
+        }
+        
+        // إنشاء HTML للتقرير الشامل
+        function generateMemberReportHTML(member) {
+            const formatDate = (dateString) => {
+                if (!dateString) return '-';
+                try {
+                    const date = new Date(dateString);
+                    if (isNaN(date.getTime())) return dateString;
+                    return date.toLocaleDateString('ar-SA');
+                } catch (error) { 
+                    return dateString; 
+                }
+            };
+
+            // البيانات الشخصية الأساسية
+            const basicInfoHtml = `
+                <div class="row report-info-grid mb-4">
+                    <div class="col-6"><div class="info-box"><strong>الاسم الكامل:</strong><span>${member['الاسم الكامل'] || '-'}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>رقم الهوية:</strong><span>${member['رقم الهوية'] || '-'}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>رقم الهاتف:</strong><span>${member['رقم الهاتف'] || '-'}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>البريد الإلكتروني:</strong><span>${member['البريد الإلكتروني'] || '-'}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>تاريخ الميلاد:</strong><span>${formatDate(member['تاريخ الميلاد'])}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>العمر:</strong><span>${member['العمر'] || '-'}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>الجنس:</strong><span>${member['الجنس'] || '-'}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>الحالة الاجتماعية:</strong><span>${member['الحالة الاجتماعية'] || '-'}</span></div></div>
+                </div>
+            `;
+
+            // بيانات الاتصال والعنوان
+            const contactInfoHtml = `
+                <div class="row report-info-grid mb-4">
+                    <div class="col-6"><div class="info-box"><strong>العنوان:</strong><span>${member['العنوان'] || '-'}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>المدينة:</strong><span>${member['المدينة'] || '-'}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>المحافظة:</strong><span>${member['المحافظة'] || '-'}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>الفرع:</strong><span>${member['الفرع'] || '-'}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>رقم هاتف بديل:</strong><span>${member['رقم هاتف بديل'] || '-'}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>واتساب:</strong><span>${member['رقم الواتساب'] || '-'}</span></div></div>
+                </div>
+            `;
+
+            // بيانات العمل والتعليم
+            const workEducationHtml = `
+                <div class="row report-info-grid mb-4">
+                    <div class="col-6"><div class="info-box"><strong>المهنة:</strong><span>${member['المهنة'] || '-'}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>مكان العمل:</strong><span>${member['مكان العمل'] || '-'}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>المؤهل العلمي:</strong><span>${member['المؤهل العلمي'] || '-'}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>التخصص:</strong><span>${member['التخصص'] || '-'}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>الدخل الشهري:</strong><span>${member['الدخل الشهري'] || '-'}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>الحالة المهنية:</strong><span>${member['الحالة المهنية'] || '-'}</span></div></div>
+                </div>
+            `;
+
+            // بيانات العائلة
+            const familyInfoHtml = `
+                <div class="row report-info-grid mb-4">
+                    <div class="col-6"><div class="info-box"><strong>اسم الزوج/الزوجة:</strong><span>${member['اسم الزوج'] || member['اسم الزوجة'] || '-'}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>رقم هوية الزوج/الزوجة:</strong><span>${member['رقم هوية الزوج'] || member['رقم هوية الزوجة'] || '-'}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>عدد الأطفال:</strong><span>${member['عدد الأطفال'] || '-'}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>أطفال ذكور:</strong><span>${member['عدد الأطفال الذكور'] || '-'}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>أطفال إناث:</strong><span>${member['عدد الأطفال الإناث'] || '-'}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>اسم الأب:</strong><span>${member['اسم الأب'] || '-'}</span></div></div>
+                </div>
+            `;
+
+            // بيانات النظام
+            const systemInfoHtml = `
+                <div class="row report-info-grid mb-4">
+                    <div class="col-6"><div class="info-box"><strong>الحالة:</strong><span class="status-badge ${member['الحالة'] === 'نشط' ? 'active' : 'inactive'}">${member['الحالة'] || '-'}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>تاريخ التسجيل:</strong><span>${formatDate(member['تاريخ التسجيل'])}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>آخر تحديث:</strong><span>${formatDate(member['آخر تحديث'])}</span></div></div>
+                    <div class="col-6"><div class="info-box"><strong>مسجل بواسطة:</strong><span>${member['مسجل بواسطة'] || '-'}</span></div></div>
+                </div>
+            `;
+
+            // جدول المساعدات (تجريبي للآن)
+            const aidHistoryHtml = `
+                <table class="table table-bordered table-sm mb-4">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>نوع المساعدة</th>
+                            <th>التاريخ</th>
+                            <th>المبلغ/الكمية</th>
+                            <th>المصدر</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="demo-row">
+                            <td>مساعدة مالية</td>
+                            <td>2024-01-15</td>
+                            <td>500 ريال</td>
+                            <td>العائلة</td>
+                            <td><span class="badge bg-success">مكتملة</span></td>
+                        </tr>
+                        <tr class="demo-row">
+                            <td>كسوة عيد</td>
+                            <td>2024-04-10</td>
+                            <td>مجموعة ملابس</td>
+                            <td>تبرعات</td>
+                            <td><span class="badge bg-success">مكتملة</span></td>
+                        </tr>
+                        <tr class="demo-row">
+                            <td>مواد غذائية</td>
+                            <td>2024-06-20</td>
+                            <td>سلة رمضان</td>
+                            <td>العائلة</td>
+                            <td><span class="badge bg-success">مكتملة</span></td>
+                        </tr>
+                        <tr class="text-center text-muted">
+                            <td colspan="5">البيانات أعلاه تجريبية - سيتم ربطها بقاعدة البيانات الحقيقية</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+
+            return `
+                <div class="report-header">
+                    <img src="logo.webp" alt="شعار العائلة" style="width: 80px; height: 80px;">
+                    <div>
+                        <h1>تقرير شامل - بيانات العضو</h1>
+                        <p>عائلة أبو رجيلة (قديح)</p>
+                        <p class="member-name">${member['الاسم الكامل'] || 'غير محدد'}</p>
+                    </div>
+                </div>
+
+                <h5 class="report-section-title">
+                    <i class="bi bi-person-fill me-2"></i>البيانات الشخصية الأساسية
+                </h5>
+                ${basicInfoHtml}
+
+                <h5 class="report-section-title">
+                    <i class="bi bi-geo-alt-fill me-2"></i>بيانات الاتصال والعنوان
+                </h5>
+                ${contactInfoHtml}
+
+                <h5 class="report-section-title">
+                    <i class="bi bi-briefcase-fill me-2"></i>بيانات العمل والتعليم
+                </h5>
+                ${workEducationHtml}
+
+                <h5 class="report-section-title">
+                    <i class="bi bi-people-fill me-2"></i>بيانات العائلة
+                </h5>
+                ${familyInfoHtml}
+
+                <h5 class="report-section-title">
+                    <i class="bi bi-gift-fill me-2"></i>سجل المساعدات المستلمة
+                </h5>
+                ${aidHistoryHtml}
+
+                <h5 class="report-section-title">
+                    <i class="bi bi-gear-fill me-2"></i>بيانات النظام
+                </h5>
+                ${systemInfoHtml}
+
+                <div class="report-footer">
+                    <p><strong>تاريخ الطباعة:</strong> ${new Date().toLocaleDateString('ar-SA')} - ${new Date().toLocaleTimeString('ar-SA')}</p>
+                    <p><strong>نظام إدارة عائلة أبو رجيلة © 2025</strong></p>
+                    <p class="small text-muted">هذا التقرير سري ومخصص للاستخدام الداخلي فقط</p>
+                </div>
+
+                <style>
+                    .status-badge {
+                        padding: 4px 12px;
+                        border-radius: 15px;
+                        font-size: 12px;
+                        font-weight: bold;
+                    }
+                    .status-badge.active {
+                        background: #d4edda;
+                        color: #155724;
+                        border: 1px solid #c3e6cb;
+                    }
+                    .status-badge.inactive {
+                        background: #f8d7da;
+                        color: #721c24;
+                        border: 1px solid #f1b0b7;
+                    }
+                    .member-name {
+                        font-size: 18px;
+                        font-weight: bold;
+                        color: #667eea;
+                        margin: 0;
+                    }
+                    .demo-row {
+                        background: #f8f9fa;
+                    }
+                    .report-section-title {
+                        background: linear-gradient(135deg, #667eea, #764ba2);
+                        color: white;
+                        padding: 10px 15px;
+                        border-radius: 8px;
+                        margin: 20px 0 15px 0;
+                    }
+                </style>
+            `;
         }
 
         // إضافة عضو جديد
@@ -2072,53 +2261,45 @@
             
             if (!member) return;
             
-            try {
-                console.log('Updating member status to:', newStatus);
-                
-                // إرسال التحديث للخادم
-                const result = await App.callServerFunction('updateMemberStatus', {
-                    memberId: member['رقم الهوية'] || member.id,
-                    status: newStatus
-                });
-                
-                if (result && result.success) {
-                    // إشعار مؤقت مع تنبيه حول الوصول
-                    if (typeof Toastify !== 'undefined') {
-                        const statusText = newStatus === 'نشط' ? 'نشط' : 'غير نشط';
-                        const accessNote = newStatus === 'غير نشط' 
-                            ? ' - لن يتمكن من الوصول للموقع' 
-                            : ' - يمكنه الوصول للموقع';
-                            
-                        const backgroundColor = newStatus === 'نشط' 
-                            ? "linear-gradient(to right, #00b09b, #96c93d)"
-                            : "linear-gradient(to right, #ff9a9e, #fad0c4)";
-                        
-                        Toastify({
-                            text: `تم تغيير حالة العضو إلى "${statusText}"${accessNote}`,
-                            duration: 5000,
-                            gravity: "top",
-                            position: "center",
-                            backgroundColor: backgroundColor,
-                        }).showToast();
-                    }
-                    
-                    // إعادة تحميل البيانات
-                    loadMembersData();
-                } else {
-                    throw new Error(result.error || 'فشل في تحديث حالة العضو');
-                }
-            } catch (error) {
-                console.error('Error updating member status:', error);
-                if (typeof Toastify !== 'undefined') {
-                    Toastify({
-                        text: "خطأ في تحديث حالة العضو: " + error.message,
-                        duration: 5000,
-                        gravity: "top",
-                        position: "center",
-                        backgroundColor: "linear-gradient(to right, #f44336, #d32f2f)",
-                    }).showToast();
-                }
+            // تحديث حالة العضو في الوضع التجريبي
+            console.log('Updating member status in demo mode to:', newStatus);
+            
+            // تحديث الحالة في البيانات المحلية
+            const memberId = member['رقم الهوية'];
+            const memberIndexInData = membersData.findIndex(m => m['رقم الهوية'] === memberId);
+            const memberIndexInFiltered = filteredMembers.findIndex(m => m['رقم الهوية'] === memberId);
+            
+            if (memberIndexInData !== -1) {
+                membersData[memberIndexInData]['الحالة'] = newStatus;
             }
+            
+            if (memberIndexInFiltered !== -1) {
+                filteredMembers[memberIndexInFiltered]['الحالة'] = newStatus;
+            }
+            
+            // إشعار مؤقت مع تنبيه حول الوصول
+            if (typeof Toastify !== 'undefined') {
+                const statusText = newStatus === 'نشط' ? 'نشط' : 'غير نشط';
+                const accessNote = newStatus === 'غير نشط' 
+                    ? ' - لن يتمكن من الوصول للموقع' 
+                    : ' - يمكنه الوصول للموقع';
+                    
+                const backgroundColor = newStatus === 'نشط' 
+                    ? "linear-gradient(to right, #00b09b, #96c93d)"
+                    : "linear-gradient(to right, #ff9a9e, #fad0c4)";
+                
+                Toastify({
+                    text: `تم تغيير حالة العضو إلى "${statusText}"${accessNote} (وضع تجريبي)`,
+                    duration: 5000,
+                    gravity: "top",
+                    position: "center",
+                    backgroundColor: backgroundColor,
+                }).showToast();
+            }
+            
+            // تحديث العرض
+            renderMembers();
+            updateStatistics();
             
             bootstrap.Modal.getInstance(document.getElementById('statusUpdateModal')).hide();
         }
@@ -2214,6 +2395,8 @@
             bootstrap.Modal.getInstance(document.getElementById('addMemberModal')).hide();
             document.getElementById('addMemberForm').reset();
         }
+
+
     </script>
 </body>
 </html>

@@ -51,30 +51,36 @@
                 const reportData = JSON.parse(reportDataString);
                 const reportWrapper = document.getElementById('report-content-wrapper');
                 
-                // Use the generateReportHTML structure from the main script
-                // We recreate a simplified version of necessary functions here
-                const formatDate = (dateString) => {
-                    if (!dateString) return '-';
-                    try {
-                        const date = new Date(dateString);
-                        if (isNaN(date.getTime())) return 'Invalid Date';
-                        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                    } catch (error) { return dateString; }
-                };
+                // Check if it's the new format (just content) or old format (userData, aidHistory, futureAid)
+                if (reportData.content) {
+                    // New format - just display the content directly
+                    const fullHtml = `<div class="print-container">${reportData.content}</div>`;
+                    reportWrapper.innerHTML = fullHtml;
+                } else {
+                    // Old format - recreate from userData, aidHistory, futureAid
+                    const formatDate = (dateString) => {
+                        if (!dateString) return '-';
+                        try {
+                            const date = new Date(dateString);
+                            if (isNaN(date.getTime())) return 'Invalid Date';
+                            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                        } catch (error) { return dateString; }
+                    };
 
-                const createTable = (title, icon, data, headers) => {
-                    let rows = data.length > 0 ? data.map(item => `<tr>${headers.map(h => `<td>${item[h.key] ? (h.isDate ? formatDate(item[h.key]) : item[h.key]) : '-'}</td>`).join('')}</tr>`).join('') : `<tr><td colspan="${headers.length}" class="text-center text-muted">لا توجد بيانات</td></tr>`;
-                    return `<h5 class="report-section-title"><i class="bi bi-${icon} me-2"></i>${title}</h5><table class="table table-bordered table-sm mb-4"><thead><tr>${headers.map(h => `<th>${h.label}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>`;
-                };
+                    const createTable = (title, icon, data, headers) => {
+                        let rows = data.length > 0 ? data.map(item => `<tr>${headers.map(h => `<td>${item[h.key] ? (h.isDate ? formatDate(item[h.key]) : item[h.key]) : '-'}</td>`).join('')}</tr>`).join('') : `<tr><td colspan="${headers.length}" class="text-center text-muted">لا توجد بيانات</td></tr>`;
+                        return `<h5 class="report-section-title"><i class="bi bi-${icon} me-2"></i>${title}</h5><table class="table table-bordered table-sm mb-4"><thead><tr>${headers.map(h => `<th>${h.label}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>`;
+                    };
 
-                const { userData, aidHistory, futureAid } = reportData;
-                const userInfoHtml = `<div class="row report-info-grid">${Object.entries({'الاسم الكامل': userData['الاسم الكامل'], 'رقم الهوية': userData['رقم الهوية'], 'رقم الجوال': userData['رقم الجوال'], 'مكان الإقامة': userData['مكان الإقامة'], 'اسم الزوجة': userData['اسم الزوجة رباعي'], 'رقم هوية الزوجة': userData['رقم هوية الزوجة']}).map(([label, value]) => `<div class="col-6"><div class="info-box"><strong>${label}:</strong><span>${value || '-'}</span></div></div>`).join('')}</div>`;
-                const aidHistoryHtml = createTable('سجل المساعدات المكتملة', 'card-list', aidHistory, [{label: 'نوع المساعدة', key: 'نوع المساعدة'}, {label: 'تاريخ الاستلام', key: 'تاريخ الاستلام', isDate: true}, {label: 'المصدر', key: 'مصدر المساعدة'}]);
-                const futureAidHtml = createTable('المساعدات المستقبلية المجدولة', 'calendar-check', futureAid, [{label: 'نوع المساعدة', key: 'نوع المساعدة'}, {label: 'تاريخ الاستلام', key: 'تاريخ الاستلام', isDate: true}, {label: 'المصدر', key: 'مصدر المساعدة'}]);
+                    const { userData, aidHistory, futureAid } = reportData;
+                    const userInfoHtml = `<div class="row report-info-grid">${Object.entries({'الاسم الكامل': userData['الاسم الكامل'], 'رقم الهوية': userData['رقم الهوية'], 'رقم الجوال': userData['رقم الجوال'], 'مكان الإقامة': userData['مكان الإقامة'], 'اسم الزوجة': userData['اسم الزوجة رباعي'], 'رقم هوية الزوجة': userData['رقم هوية الزوجة']}).map(([label, value]) => `<div class="col-6"><div class="info-box"><strong>${label}:</strong><span>${value || '-'}</span></div></div>`).join('')}</div>`;
+                    const aidHistoryHtml = createTable('سجل المساعدات المكتملة', 'card-list', aidHistory || [], [{label: 'نوع المساعدة', key: 'نوع المساعدة'}, {label: 'تاريخ الاستلام', key: 'تاريخ الاستلام', isDate: true}, {label: 'المصدر', key: 'مصدر المساعدة'}]);
+                    const futureAidHtml = createTable('المساعدات المستقبلية المجدولة', 'calendar-check', futureAid || [], [{label: 'نوع المساعدة', key: 'نوع المساعدة'}, {label: 'تاريخ الاستلام', key: 'تاريخ الاستلام', isDate: true}, {label: 'المصدر', key: 'مصدر المساعدة'}]);
 
-                const fullHtml = `<div class="print-container"><div class="report-header"><img src="logo.webp" alt="شعار"><div><h1>تقرير بيانات فرد</h1><p>عائلة أبو رجيلة (قديح)</p></div></div><h5 class="report-section-title"><i class="bi bi-person-fill me-2"></i>البيانات الشخصية</h5>${userInfoHtml}${aidHistoryHtml}${futureAidHtml}<div class="report-footer"><p>تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')}</p><p>نظام عائلة أبو رجيلة © 2025</p></div></div>`;
-                
-                reportWrapper.innerHTML = fullHtml;
+                    const fullHtml = `<div class="print-container"><div class="report-header"><img src="logo.webp" alt="شعار"><div><h1>تقرير بيانات فرد</h1><p>عائلة أبو رجيلة (قديح)</p></div></div><h5 class="report-section-title"><i class="bi bi-person-fill me-2"></i>البيانات الشخصية</h5>${userInfoHtml}${aidHistoryHtml}${futureAidHtml}<div class="report-footer"><p>تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')}</p><p>نظام عائلة أبو رجيلة © 2025</p></div></div>`;
+                    
+                    reportWrapper.innerHTML = fullHtml;
+                }
 
                 // Automatically trigger print dialog
                 setTimeout(() => {
