@@ -523,22 +523,46 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         
         renderInfoSection(fields, data) {
-            return fields.map(field => {
-                let value = data[field.key] || '-';
-                if (field.key === 'تاريخ الميلاد' && value !== '-') { 
-                    value = this.formatDateToEnglish(value); 
-                }
-                
-                return `
-                    <div class="col-md-6 col-lg-4 mb-3">
-                        <div class="info-item">
-                            <i class="bi bi-${field.icon} info-icon"></i>
-                            <span class="info-label">${field.label}</span>
-                            <div class="info-value">${value}</div>
+                const getFieldValue = (dataObj, key) => {
+                    if (!dataObj) return '-';
+                    const val = (dataObj[key] !== undefined && dataObj[key] !== null && String(dataObj[key]).toString().trim() !== '') ? dataObj[key] : null;
+                    if (val) return val;
+
+                    // synonyms mapping
+                    const synonyms = {
+                        'تاريخ الميلاد': ['تاريخ الميلاد', 'birth_date', 'birthdate', 'DOB'],
+                        'العمر': ['العمر', 'age'],
+                        'الجنس': ['الجنس', 'النوع', 'gender'],
+                        'رقم الجوال': ['رقم الجوال', 'رقم الهاتف', 'رقم الهاتف المحمول', 'الهاتف'],
+                        'رقم هاتف بديل': ['رقم هاتف بديل', 'رقم جوال بديل', 'الهاتف البديل'],
+                        'رقم جوال بديل': ['رقم جوال بديل', 'رقم هاتف بديل', 'الهاتف البديل'],
+                        'العنوان': ['العنوان', 'مكان الإقامة', 'address'],
+                        'مكان الإقامة': ['مكان الإقامة', 'العنوان', 'residence']
+                    };
+
+                    const keysToTry = synonyms[key] || [key];
+                    for (const k of keysToTry) {
+                        if (dataObj[k] !== undefined && dataObj[k] !== null && String(dataObj[k]).toString().trim() !== '') return dataObj[k];
+                    }
+                    return '-';
+                };
+
+                return fields.map(field => {
+                    let value = getFieldValue(data, field.key);
+                    if ((field.key === 'تاريخ الميلاد' || field.key === 'تاريخ الميلاد') && value !== '-') {
+                        try { value = this.formatDateToEnglish(value); } catch (e) { /* ignore */ }
+                    }
+
+                    return `
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="info-item">
+                                <i class="bi bi-${field.icon} info-icon"></i>
+                                <span class="info-label">${field.label}</span>
+                                <div class="info-value">${value}</div>
+                            </div>
                         </div>
-                    </div>
-                `;
-            }).join('');
+                    `;
+                }).join('');
         },
         
         populateEditForm(data) {
