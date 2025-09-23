@@ -18,6 +18,7 @@ const SPECIAL_CASES_SHEET = 'حالات خاصة';
 const BIRTHS_SHEET = 'مواليد اطفال';
 const CHILDREN_CLOTHES_SHEET = 'بنزط اطفال';
 const MARTYRS_SHEET = 'الشهداء';
+const DEATHS_SHEET = 'الوفيات';
 
 // --- MAIN ENTRY POINTS ---
 function doGet(e) {
@@ -53,6 +54,7 @@ function doPost(e) {
   case 'submitMartyrRegistration': response = handleSubmitMartyrRegistration(payload); break;
   case 'getMartyrRequests': response = handleGetMartyrRequests(payload.token); break;
   case 'updateMartyrRequestStatus': response = handleUpdateMartyrRequestStatus(payload); break;
+  case 'submitDeathRegistration': response = handleSubmitDeathRegistration(payload); break;
       case 'bulkAddAidFromXLSX': response = handleBulkAddAidFromXLSX(payload); break;
       case 'createAdmin': response = handleCreateAdmin(payload); break;
       case 'updateAdminStatus': response = handleUpdateAdminStatus(payload); break;
@@ -1195,6 +1197,177 @@ function handleUpdateMartyrRequestStatus(payload) {
     }
   }
   throw new Error('لم يتم العثور على الطلب المطلوب.');
+}
+
+/**
+ * إرجاع طلبات الوفيات للإدارة
+ */
+function handleGetDeathRequests(token) {
+  try {
+    authenticateToken(token);
+    Logger.log('Getting death requests for sheet: ' + DEATHS_SHEET);
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    let sheet = ss.getSheetByName(DEATHS_SHEET);
+    if (!sheet) {
+      Logger.log('Deaths sheet not found, creating new sheet: ' + DEATHS_SHEET);
+      sheet = ss.insertSheet(DEATHS_SHEET);
+      sheet.appendRow([
+        'معرف الطلب',
+        'تاريخ التسجيل',
+        'رقم هوية المتوفى',
+        'اسم المتوفى',
+        'تاريخ الوفاة',
+        'مكان الوفاة',
+        'سبب الوفاة',
+        'تفاصيل إضافية',
+        'حالة الطلب',
+        'رابط شهادة الوفاة'
+      ]);
+      return { success: true, data: [] };
+    }
+
+    const rows = sheetToJSON(DEATHS_SHEET);
+    const sorted = rows.sort((a, b) => new Date(b['تاريخ التسجيل']) - new Date(a['تاريخ التسجيل']));
+    return { success: true, data: sorted };
+  } catch (error) {
+    Logger.log('Error in handleGetDeathRequests: ' + error.toString());
+    return { success: false, message: 'خطأ في جلب بيانات الوفيات: ' + error.message };
+  }
+}
+
+/**
+ * تحديث حالة طلب وفاة
+ * payload: { token, requestId, newStatus }
+ */
+function handleUpdateDeathRequestStatus(payload) {
+  const admin = authenticateToken(payload.token);
+  const { requestId, newStatus } = payload;
+  if (!requestId || !newStatus) throw new Error('بيانات غير مكتملة لتحديث حالة الطلب.');
+
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(DEATHS_SHEET);
+  if (!sheet) throw new Error('ورقة "الوفيات" غير موجودة.');
+  const data = sheet.getDataRange().getValues();
+  if (data.length < 2) throw new Error('لا توجد طلبات.');
+  const headers = data[0];
+  const idCol = headers.indexOf('معرف الطلب');
+  const statusCol = headers.indexOf('حالة الطلب');
+  if (idCol === -1 || statusCol === -1) throw new Error('أعمدة الطلب غير صحيحة.');
+
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][idCol]).trim() === String(requestId).trim()) {
+      sheet.getRange(i + 1, statusCol + 1).setValue(newStatus);
+      logAdminAction(admin.username, 'تحديث حالة طلب وفاة', `تم تحديث ${requestId} إلى ${newStatus}`);
+      return { success: true, message: 'تم تحديث حالة الطلب.' };
+    }
+  }
+  throw new Error('لم يتم العثور على الطلب المطلوب.');
+}
+
+/**
+ * تسجيل وفاة جديدة
+ * payload: { deceasedID, deceasedName, deathDate, deathPlace, deathCause, additionalDetails, fatherID, deathCertificate }
+ */
+function handleSubmitDeathRegistration(payload) {
+  const { deceasedID, deceasedName, deathDate, deathPlace, deathCause, additionalDetails, fatherID, deathCertificate } = payload;
+  if (!deceasedID || !deceasedName || !deathDate || !deathPlace || !deathCause) {
+    throw new Error('جميع الحقول مطلوبة: رقم الهوية، اسم المتوفى، تاريخ الوفاة، مكان الوفاة، سبب الوفاة');
+  }
+
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(DEATHS_SHEET) || ss.insertSheet(DEATHS_SHEET);
+
+  // Ensure headers exist
+  const rangeValues = sheet.getDataRange().getValues();
+  if (!rangeValues || rangeValues.length === 0) {
+    sheet.appendRow([
+      'معرف الطلب',
+      'تاريخ التسجيل',
+      'رقم هوية المتوفى',
+      'اسم المتوفى',
+      'تاريخ الوفاة',
+      'مكان الوفاة',
+      'سبب الوفاة',
+      'تفاصيل إضافية',
+      'حالة الطلب',
+      'رابط شهادة الوفاة'
+    ]);
+  }
+
+  // Verify existence in family DB
+  let deceasedExists = false;
+  try {
+    const v = handleGetUserData && typeof handleGetUserData === 'function' ? handleGetUserData(deceasedID) : null;
+    if (v && v.success && v.data) deceasedExists = true;
+  } catch (e) {
+    deceasedExists = false;
+  }
+
+  // Check father identity if provided
+  let fatherExists = false;
+  let fatherName = '';
+  if (fatherID && fatherID.length === 9) {
+    try {
+      const fv = handleGetUserData(fatherID);
+      if (fv && fv.success && fv.data) {
+        fatherExists = true;
+        fatherName = fv.data['الاسم الكامل'] || '';
+      }
+    } catch (e) {
+      fatherExists = false;
+    }
+  }
+
+  // Upload death certificate if present
+  let fileUrl = '';
+  try {
+    if (deathCertificate && deathCertificate.data) {
+      const bytes = Utilities.base64Decode(deathCertificate.data);
+      const blob = Utilities.newBlob(bytes, deathCertificate.mimeType || MimeType.JPEG, deathCertificate.name || `DeathCertificate_${deceasedID || ''}.bin`);
+      const folderName = 'شهادات الوفاة - الوفيات';
+      let folder;
+      const it = DriveApp.getFoldersByName(folderName);
+      folder = it.hasNext() ? it.next() : DriveApp.createFolder(folderName);
+      const file = folder.createFile(blob);
+      file.setName(`شهادة_وفاة_${deceasedID || ''}_${new Date().getTime()}`);
+      fileUrl = file.getUrl();
+    }
+  } catch (fileErr) {
+    Logger.log('Death certificate upload failed: ' + fileErr);
+  }
+
+  const requestId = 'DEATH' + new Date().getTime();
+  let status;
+  if (deceasedExists) {
+    status = 'جديد';
+  } else if (fatherID && fatherExists) {
+    status = 'جديد';
+  } else {
+    status = 'قيد المراجعة';
+  }
+
+  sheet.appendRow([
+    requestId,
+    new Date(),
+    deceasedID,
+    deceasedName,
+    new Date(deathDate),
+    deathPlace,
+    deathCause,
+    additionalDetails || '',
+    status,
+    fileUrl
+  ]);
+
+  let message;
+  if (deceasedExists) {
+    message = 'تم تسجيل الوفاة بنجاح.';
+  } else if (fatherID && fatherExists) {
+    message = `تم تسجيل الوفاة بنجاح باستخدام بيانات الأب (${fatherName}).`;
+  } else {
+    message = 'تم إرسال الطلب للمراجعة الإدارية. سيتم التواصل معكم قريباً.';
+  }
+
+  return { success: true, message };
 }
 
 /**

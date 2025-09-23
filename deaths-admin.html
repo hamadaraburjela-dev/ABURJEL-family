@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الوفيات - عائلة أبو رجيلة</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* استخدمت نفس أنماط martyrs-admin.html */
+        * { font-family: 'Cairo', sans-serif; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; margin:0; padding:0 }
+        .container-fluid { max-width:1600px; margin:0 auto; padding:15px 15px 0 15px }
+        .main-content { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius:20px; padding:30px; margin:20px auto; border:1px solid rgba(255,255,255,0.2); max-width:1400px }
+        .data-table-card { background: rgba(255,255,255,0.95); border-radius:20px; overflow:hidden }
+        .card-header-modern { background: linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; padding:20px 30px }
+        .table-modern thead th { background: linear-gradient(135deg,#2c3e50 0%,#34495e 100%); color:white }
+        .status-badge { padding:8px 16px; border-radius:20px; font-weight:600 }
+        .status-new { background: linear-gradient(135deg,#3498db,#2980b9); color:white }
+        .status-pending { background: linear-gradient(135deg,#f39c12,#e67e22); color:white }
+        .status-approved { background: linear-gradient(135deg,#27ae60,#229954); color:white }
+        .status-rejected { background: linear-gradient(135deg,#e74c3c,#c0392b); color:white }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <header class="d-flex justify-content-between align-items-center py-3">
+            <div class="d-flex align-items-center">
+                <img src="logo.webp" alt="logo" style="width:60px;height:60px;margin-left:10px;border-radius:50%">
+                <div>
+                    <h3 class="text-white mb-0">إدارة الوفيات</h3>
+                    <small class="text-white-50">نظام إدارة طلبات تسجيل الوفيات</small>
+                </div>
+            </div>
+            <div>
+                <button class="btn btn-outline-light" onclick="location.href='admin.html'">العودة للوحة التحكم</button>
+                <button class="btn btn-danger" onclick="sessionStorage.clear(); localStorage.clear(); location.href='index.html'">تسجيل الخروج</button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="p-3 text-center bg-white rounded">
+                        <h4 id="totalDeaths">0</h4>
+                        <p class="mb-0">إجمالي الوفيات</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 text-center bg-white rounded">
+                        <h4 id="pendingDeaths">0</h4>
+                        <p class="mb-0">طلبات قيد المراجعة</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 text-center bg-white rounded">
+                        <h4 id="approvedDeaths">0</h4>
+                        <p class="mb-0">طلبات موافق عليها</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 text-center bg-white rounded">
+                        <h4 id="thisMonthDeaths">0</h4>
+                        <p class="mb-0">وفيات هذا الشهر</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-table-card">
+                <div class="card-header-modern d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">طلبات تسجيل الوفيات</h5>
+                    <div>
+                        <button class="btn btn-outline-light" onclick="refreshRequests()">تحديث</button>
+                        <button class="btn btn-success" onclick="exportToExcel()">تصدير Excel</button>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-3 d-flex gap-2">
+                        <input id="searchInput" class="form-control" placeholder="ابحث بالاسم أو رقم الهوية...">
+                        <select id="statusFilter" class="form-control">
+                            <option value="">جميع الحالات</option>
+                            <option value="جديد">جديد</option>
+                            <option value="قيد المراجعة">قيد المراجعة</option>
+                            <option value="موافق عليه">موافق عليه</option>
+                            <option value="مرفوض">مرفوض</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="applyFilters()">فلترة</button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-modern">
+                            <thead>
+                                <tr>
+                                    <th>معرف الطلب</th>
+                                    <th>تاريخ التسجيل</th>
+                                    <th>اسم المتوفى</th>
+                                    <th>رقم الهوية</th>
+                                    <th>تاريخ الوفاة</th>
+                                    <th>مكان الوفاة</th>
+                                    <th>سبب الوفاة</th>
+                                    <th>الحالة</th>
+                                    <th>إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="requestsTableBody"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="loadingSpinner" style="display:block;text-align:center;padding:40px">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="mt-2">جاري تحميل البيانات...</p>
+                    </div>
+
+n                    <div id="noData" style="display:none;text-align:center;padding:40px">
+                        <p>لا توجد طلبات لعرضها</p>
+                    </div>
+
+n                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal fade" id="requestDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">تفاصيل طلب الوفاة</h5>
+                    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="requestDetailsBody"></div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="statusUpdateModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">تغيير حالة الطلب</h5>
+                    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">الحالة الجديدة:</label>
+                        <select id="newStatus" class="form-control">
+                            <option value="جديد">جديد</option>
+                            <option value="قيد المراجعة">قيد المراجعة</option>
+                            <option value="موافق عليه">موافق عليه</option>
+                            <option value="مرفوض">مرفوض</option>
+                        </select>
+                    </div>
+                    <input type="hidden" id="currentRequestId">
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button class="btn btn-primary" onclick="updateStatus()">تحديث الحالة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="script.js"></script>
+
+    <script>
+        let deathRequests = [];
+        let filteredRequests = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const adminToken = sessionStorage.getItem('adminToken');
+            if (!adminToken && (!App || !App.isAdminLoggedIn())) {
+                window.location.href = 'index.html';
+                return;
+            }
+            loadDeathRequests();
+        });
+
+        async function loadDeathRequests() {
+            const loadingElement = document.getElementById('loadingSpinner');
+            const tableBody = document.getElementById('requestsTableBody');
+            if (tableBody) { tableBody.style.opacity = '0'; tableBody.style.transition='opacity 0.3s'; }
+            loadingElement.style.display = 'block';
+            try {
+                const token = sessionStorage.getItem('adminToken');
+                let response;
+                if (App && App.postToAPI) {
+                    response = await App.postToAPI({ action: 'getDeathRequests', token });
+                } else {
+                    const res = await fetch(App.WEB_APP_URL, { method:'POST', mode:'cors', redirect:'follow', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'getDeathRequests', token }) });
+                    const text = await res.text(); response = JSON.parse(text);
+                }
+                if (response.success) {
+                    deathRequests = response.data || [];
+                    deathRequests.sort((a,b)=> new Date(b['تاريخ التسجيل']) - new Date(a['تاريخ التسجيل']));
+                    filteredRequests = [...deathRequests]; currentPage=1; renderRequests(); updateStatistics();
+                    loadingElement.style.display='none';
+                } else throw new Error(response.message || 'فشل تحميل البيانات');
+            } catch (err) {
+                console.error(err); loadingElement.style.display='none'; document.getElementById('noData').style.display='block';
+            }
+        }
+
+        function renderRequests() {
+            const tbody = document.getElementById('requestsTableBody');
+            const noData = document.getElementById('noData');
+            if (!filteredRequests || !filteredRequests.length) { tbody.innerHTML=''; noData.style.display='block'; return; }
+            noData.style.display='none';
+            const startIndex = (currentPage-1)*itemsPerPage; const endIndex = startIndex+itemsPerPage; const pageData = filteredRequests.slice(startIndex,endIndex);
+            tbody.innerHTML = pageData.map(r=>{
+                const statusBadge = getStatusBadge(r['حالة الطلب']);
+                const deathDate = new Date(r['تاريخ الوفاة']).toLocaleDateString('ar-EG');
+                const regDate = new Date(r['تاريخ التسجيل']).toLocaleDateString('ar-EG');
+                return `
+                    <tr>
+                        <td><span class="badge bg-primary">#${r['معرف الطلب']}</span></td>
+                        <td>${regDate}</td>
+                        <td><strong>${r['اسم المتوفى']}</strong></td>
+                        <td><code>${r['رقم هوية المتوفى']}</code></td>
+                        <td class="text-danger">${deathDate}</td>
+                        <td>${r['مكان الوفاة']}</td>
+                        <td><span class="badge bg-dark">${r['سبب الوفاة']}</span></td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-info" onclick="viewDetails('${r['معرف الطلب']}')"><i class="bi bi-eye"></i></button>
+                                <button class="btn btn-sm btn-outline-warning" onclick="openStatusModal('${r['معرف الطلب']}','${r['حالة الطلب']}')"><i class="bi bi-gear"></i></button>
+                                ${r['رابط شهادة الوفاة'] ? `<button class="btn btn-sm btn-outline-success" onclick="window.open('${r['رابط شهادة الوفاة']}','_blank')"><i class="bi bi-file-earmark-pdf"></i></button>` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateStatistics() {
+            const total = deathRequests.length; const pending = deathRequests.filter(d=>d['حالة الطلب']==='قيد المراجعة').length; const approved = deathRequests.filter(d=>d['حالة الطلب']==='موافق عليه').length;
+            const thisMonth = new Date(); const thisMonthCount = deathRequests.filter(d=>{ const dt = new Date(d['تاريخ الوفاة']); return dt.getMonth()===thisMonth.getMonth() && dt.getFullYear()===thisMonth.getFullYear(); }).length;
+            document.getElementById('totalDeaths').textContent = total; document.getElementById('pendingDeaths').textContent = pending; document.getElementById('approvedDeaths').textContent = approved; document.getElementById('thisMonthDeaths').textContent = thisMonthCount;
+        }
+
+        function getStatusBadge(status){ switch(status){ case 'جديد': return '<span class="status-badge status-new">جديد</span>'; case 'قيد المراجعة': return '<span class="status-badge status-pending">قيد المراجعة</span>'; case 'موافق عليه': return '<span class="status-badge status-approved">موافق عليه</span>'; case 'مرفوض': return '<span class="status-badge status-rejected">مرفوض</span>'; default: return '<span class="status-badge bg-secondary">غير محدد</span>'; } }
+
+        document.getElementById('searchInput').addEventListener('input', function(){ clearTimeout(window.searchTimeout); window.searchTimeout=setTimeout(applyFilters,300); });
+        document.getElementById('statusFilter').addEventListener('change', applyFilters);
+
+        function applyFilters(){ const term = document.getElementById('searchInput').value.toLowerCase(); const status = document.getElementById('statusFilter').value; filteredRequests = deathRequests.filter(r=>{ const matches = !term || r['اسم المتوفى'].toLowerCase().includes(term) || r['رقم هوية المتوفى'].includes(term); const matchesStatus = !status || r['حالة الطلب']===status; return matches && matchesStatus; }); currentPage=1; renderRequests(); }
+
+        function refreshRequests(){ currentPage=1; loadDeathRequests(); }
+
+        function exportToExcel(){ if (!filteredRequests.length) { if (App && App.showToast) App.showToast('لا توجد بيانات للتصدير', false); else alert('لا توجد بيانات للتصدير'); return; } const ws = XLSX.utils.json_to_sheet(filteredRequests); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'الوفيات'); XLSX.writeFile(wb, `وفيات-عائلة-أبو-رجيلة-${new Date().toLocaleDateString('ar-EG')}.xlsx`); if (App && App.showToast) App.showToast('تم تصدير البيانات بنجاح', true); }
+
+        function viewDetails(requestId){ const r = deathRequests.find(x=>x['معرف الطلب']===requestId); if(!r) return; const regDate = new Date(r['تاريخ التسجيل']).toLocaleDateString('ar-EG'); const deathDate = new Date(r['تاريخ الوفاة']).toLocaleDateString('ar-EG'); const html = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>بيانات المتوفى</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>الاسم:</strong> ${r['اسم المتوفى']}</li>
+                        <li><strong>رقم الهوية:</strong> ${r['رقم هوية المتوفى']}</li>
+                        <li><strong>تاريخ الوفاة:</strong> ${deathDate}</li>
+                        <li><strong>مكان الوفاة:</strong> ${r['مكان الوفاة']}</li>
+                        <li><strong>سبب الوفاة:</strong> ${r['سبب الوفاة']}</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>معلومات الطلب</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>معرف الطلب:</strong> <code>${r['معرف الطلب']}</code></li>
+                        <li><strong>تاريخ التسجيل:</strong> ${regDate}</li>
+                        <li><strong>الحالة:</strong> <span class="badge ${getStatusClass(r['حالة الطلب'])}">${r['حالة الطلب']}</span></li>
+                    </ul>
+                </div>
+            </div>
+            ${r['تفاصيل إضافية']?`<hr><h6>تفاصيل إضافية</h6><p class="bg-light p-3 rounded">${r['تفاصيل إضافية']}</p>`:''}
+            ${r['رابط شهادة الوفاة']?`<hr><a href="${r['رابط شهادة الوفاة']}" target="_blank" class="btn btn-outline-success">عرض الشهادة</a>`:''}
+        `; document.getElementById('requestDetailsBody').innerHTML = html; new bootstrap.Modal(document.getElementById('requestDetailsModal')).show(); }
+
+        function openStatusModal(requestId,currentStatus){ document.getElementById('currentRequestId').value=requestId; document.getElementById('newStatus').value=currentStatus; new bootstrap.Modal(document.getElementById('statusUpdateModal')).show(); }
+
+        async function updateStatus(){ try{ const requestId = document.getElementById('currentRequestId').value; const newStatus = document.getElementById('newStatus').value; const token = sessionStorage.getItem('adminToken'); let response; if (App && App.postToAPI) { response = await App.postToAPI({ action:'updateDeathRequestStatus', token, requestId, newStatus }); } else { const res = await fetch(App.WEB_APP_URL, { method:'POST', mode:'cors', redirect:'follow', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({ action:'updateDeathRequestStatus', token, requestId, newStatus }) }); const text = await res.text(); response = JSON.parse(text); } if (response.success) { if (App && App.showToast) App.showToast('تم تحديث الحالة بنجاح', true); bootstrap.Modal.getInstance(document.getElementById('statusUpdateModal')).hide(); await loadDeathRequests(); } else throw new Error(response.message||'فشل'); } catch(err){ if (App && App.showToast) App.showToast('خطأ: '+err.message,false); else alert('خطأ: '+err.message); } }
+
+        function getStatusClass(status){ switch(status){ case 'جديد': return 'bg-primary'; case 'قيد المراجعة': return 'bg-warning'; case 'موافق عليه': return 'bg-success'; case 'مرفوض': return 'bg-danger'; default: return 'bg-secondary'; } }
+    </script>
+</body>
+</html>

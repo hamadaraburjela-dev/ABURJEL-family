@@ -178,6 +178,63 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (isButtonTriggered) this.toggleButtonSpinner(false, activeSubmitButton); 
             }
         },
+
+        // Tolerant POST helper used by pages (preserves behavior from inline scripts)
+        async postToServer(payload) {
+            try {
+                const response = await fetch(this.WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    redirect: 'follow',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
+
+                const raw = await response.text();
+                let data = null;
+                try { data = raw ? JSON.parse(raw) : null; } catch { data = null; }
+
+                if (!response.ok) {
+                    const snippet = raw ? raw.substring(0, 200) : '';
+                    const msg = (data && data.message) ? data.message : (snippet || `HTTP ${response.status}`);
+                    console.error('postToServer error', { status: response.status, snippet, payload });
+                    throw new Error(msg);
+                }
+
+                if (!data) {
+                    const snippet = raw ? raw.substring(0, 200) : '';
+                    const looksHtml = /^\s*<!DOCTYPE|^\s*<html|^\s*<HTML/i.test(snippet);
+                    const authHint = /Authorization|login|Sign in|requires authentication|OAuth/i.test(snippet);
+                    const hint = looksHtml && authHint
+                        ? 'يبدو أن تطبيق Google Apps Script يحتاج إلى إعادة نشر مع منح الصلاحيات الجديدة (Drive). افتح Code.gs > Deploy > Manage deployments ثم Update مع Execute as: Me و Access: Anyone، ووافق على الصلاحيات.'
+                        : '';
+                    console.error('postToServer empty/non-JSON', { snippet, payload });
+                    throw new Error(`رد الخادم غير صالح (فارغ أو ليس JSON). الحالة ${response.status}${hint ? `\n\n${hint}` : (snippet ? ` | المعاينة: ${snippet}` : '')}`);
+                }
+
+                return data;
+            } catch (err) {
+                // bubble up to caller to handle UI messages
+                throw err;
+            }
+        },
+
+        // Verify a person id against the family DB. Returns { exists: boolean, name: string }
+        async verifyPersonById(id) {
+            if (!id) return { exists: false, name: '' };
+            try {
+                // Primary: query general getUserData which is available
+                const fbData = await this.postToServer({ action: 'getUserData', userId: id });
+                if (fbData && fbData.success && fbData.data) {
+                    return { exists: true, name: fbData.data['الاسم الكامل'] || '' };
+                }
+                return { exists: false, name: '' };
+            } catch (err) {
+                // On any error, return not found (caller may show messages)
+                console.warn('verifyPersonById failed', err);
+                return { exists: false, name: '' };
+            }
+        },
         
                 showToast(message, isSuccess = true) { Toastify({ text: message, duration: 4000, gravity: "top", position: "center", style: { background: isSuccess ? "#28a745" : "#dc3545", boxShadow: "none" } }).showToast(); },
         
