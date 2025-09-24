@@ -6,7 +6,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const App = {
-        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbwYaSyuw6RyCxqbOJl0nU-rK2wpViJVUV_9_UdOQoW0GDAr_6BnyxemDOu2MaSLj-n_nQ/exec', // سيتم تحديثه بالرابط الجديد من Google Apps Script
+        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbzn-4hXO5rVYVQS7eiIHYaW4TIHaamGWBNllTvt9U3IeFV2HZ9SjNNR6IyijKmlq_TAyA/exec', // سيتم تحديثه بالرابط الجديد من Google Apps Script
         
         async testNewUrl() {
             const input = document.getElementById('newScriptUrl');

@@ -53,6 +53,8 @@ function doPost(e) {
   case 'verifyMartyrId': response = handleVerifyMartyrId(payload.martyrId); break;
   case 'submitMartyrRegistration': response = handleSubmitMartyrRegistration(payload); break;
   case 'getMartyrRequests': response = handleGetMartyrRequests(payload.token); break;
+  case 'getDeathRequests': response = handleGetDeathRequests(payload.token); break;
+  case 'updateDeathRequestStatus': response = handleUpdateDeathRequestStatus(payload); break;
   case 'updateMartyrRequestStatus': response = handleUpdateMartyrRequestStatus(payload); break;
   case 'submitDeathRegistration': response = handleSubmitDeathRegistration(payload); break;
       case 'bulkAddAidFromXLSX': response = handleBulkAddAidFromXLSX(payload); break;
