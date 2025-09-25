@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إدارة الحالات الخاصة - عائلة أبو رجيلة</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3>إدارة الحالات الخاصة</h3>
+      <div>
+        <button class="btn btn-outline-secondary" onclick="location.href='admin.html'">العودة للوحة التحكم</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-striped table-modern" id="specialCasesTable">
+            <thead>
+              <tr>
+                <th>معرف الطلب</th>
+                <th>تاريخ الإرسال</th>
+                <th>رقم مقدم الطلب</th>
+                <th>الاسم</th>
+                <th>نوع الحالة</th>
+                <th>حالة</th>
+                <th>مرفق</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script src="script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async function(){
+      const token = sessionStorage.getItem('adminToken');
+      if(!token){ location.href='index.html'; return; }
+      const tableBody = document.querySelector('#specialCasesTable tbody');
+      tableBody.innerHTML = '<tr><td colspan="8">جاري تحميل البيانات...</td></tr>';
+      try {
+        const res = await App.postToServer({ action: 'getSpecialCaseRequests', token });
+        if(!res || !res.success){ throw new Error(res?.message || 'فشل جلب البيانات'); }
+        const rows = res.data || [];
+        if(rows.length === 0){ tableBody.innerHTML = '<tr><td colspan="8">لا توجد طلبات</td></tr>'; return; }
+        tableBody.innerHTML = rows.map(r => {
+          return `<tr>
+            <td>${r['معرف الطلب'] || ''}</td>
+            <td>${r['تاريخ الإرسال'] || ''}</td>
+            <td>${r['رقم مقدم الطلب'] || ''}</td>
+            <td>${r['اسم مقدم الطلب'] || ''}</td>
+            <td>${r['نوع الحالة'] || ''}</td>
+            <td>${r['حالة'] || ''}</td>
+            <td>${r['رابط المرفق'] ? `<a href="${r['رابط المرفق']}" target="_blank">عرض</a>` : ''}</td>
+            <td>
+              <button class="btn btn-sm btn-success" onclick="updateStatus('${r['معرف الطلب']}', 'مقبول')">مقبول</button>
+              <button class="btn btn-sm btn-warning" onclick="updateStatus('${r['معرف الطلب']}', 'قيد المراجعة')">قيد المراجعة</button>
+              <button class="btn btn-sm btn-danger" onclick="updateStatus('${r['معرف الطلب']}', 'مرفوض')">رفض</button>
+            </td>
+          </tr>`;
+        }).join('');
+      } catch (err){
+        tableBody.innerHTML = '<tr><td colspan="8">خطأ في تحميل البيانات</td></tr>';
+        console.error(err);
+      }
+    });
+
+    async function updateStatus(requestId, newStatus){
+      const token = sessionStorage.getItem('adminToken');
+      if(!token) return App.showToast('غير مسموح');
+      try{
+        const res = await App.postToServer({ action: 'updateSpecialCaseStatus', token, requestId, newStatus });
+        if(res && res.success){ Toastify({ text: 'تم التحديث', duration:3000 }).showToast(); location.reload(); }
+        else throw new Error(res?.message||'فشل التحديث');
+      }catch(err){ Toastify({ text: 'خطأ: '+(err.message||err), duration:4000 }).showToast(); }
+    }
+  </script>
+</body>
+</html>

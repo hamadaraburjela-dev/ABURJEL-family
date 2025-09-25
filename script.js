@@ -6,7 +6,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const App = {
-        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbyW02-rfe6emOCTH8iERMnyXlpT2bSZAb1cQ8_-QFCy2LmurVBaCEDtmJprvSnL6cMaoA/exec', // سيتم تحديثه بالرابط الجديد من Google Apps Script
+        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbzS0u5i2ujroAoXrn5-C9T3cOUmJb4_JFOqusUgrl5cx483BPTMLScuQm9El7WWlou-Rg/exec', // سيتم تحديثه بالرابط الجديد من Google Apps Script
         
         async testNewUrl() {
             const input = document.getElementById('newScriptUrl');
@@ -114,11 +114,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 'superadmin.html': () => this.initSuperAdminPage(token),
                 'wounded-form.html': () => this.initWoundedFormPage(),
                 'special-cases.html': () => this.initSpecialCasesPage(),
+                'manage-special-cases.html': () => this.initManageSpecialCasesPage(),
             };
             
             if (pageInitializers[path]) {
                 await pageInitializers[path]();
             }
+        },
+
+        initManageSpecialCasesPage() {
+            const token = sessionStorage.getItem('adminToken');
+            if (!token) { window.location.href = 'index.html'; return; }
+            // nothing else here - the page has its own script that calls App.postToServer
         },
         
         async apiCall(payload, showSuccessToast = false) {

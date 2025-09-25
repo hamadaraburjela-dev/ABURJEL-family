@@ -54,6 +54,8 @@ function doPost(e) {
   case 'verifyMartyrId': response = handleVerifyMartyrId(payload.martyrId); break;
   case 'submitMartyrRegistration': response = handleSubmitMartyrRegistration(payload); break;
   case 'getMartyrRequests': response = handleGetMartyrRequests(payload.token); break;
+  case 'getSpecialCaseRequests': response = handleGetSpecialCaseRequests(payload.token); break;
+  case 'updateSpecialCaseStatus': response = handleUpdateSpecialCaseStatus(payload); break;
   case 'getDeathRequests': response = handleGetDeathRequests(payload.token); break;
   case 'updateDeathRequestStatus': response = handleUpdateDeathRequestStatus(payload); break;
   case 'updateMartyrRequestStatus': response = handleUpdateMartyrRequestStatus(payload); break;
@@ -1350,6 +1352,56 @@ function handleGetMartyrRequests(token) {
     Logger.log('Error in handleGetMartyrRequests: ' + error.toString());
     return { success: false, message: 'خطأ في جلب بيانات الشهداء: ' + error.message };
   }
+}
+
+/**
+ * Return special-case requests for admin pages
+ */
+function handleGetSpecialCaseRequests(token) {
+  try {
+    authenticateToken(token);
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    let sheet = ss.getSheetByName(SPECIAL_CASES_SHEET);
+    if (!sheet) {
+      sheet = ss.insertSheet(SPECIAL_CASES_SHEET);
+      sheet.appendRow(['معرف الطلب','تاريخ الإرسال','رقم مقدم الطلب','اسم مقدم الطلب','هوية الزوج/الزوجة','هوية رب الأسرة (للتحقق)','نوع الحالة','وصف الحالة','تاريخ الحالة','رابط المرفق','حالة']);
+      return { success: true, data: [] };
+    }
+    const rows = sheetToJSON(SPECIAL_CASES_SHEET);
+    const sorted = rows.sort((a,b) => new Date(b['تاريخ الإرسال']) - new Date(a['تاريخ الإرسال']));
+    return { success: true, data: sorted };
+  } catch (err) {
+    Logger.log('Error in handleGetSpecialCaseRequests: ' + err);
+    return { success: false, message: err.message };
+  }
+}
+
+/**
+ * Update special case status (admin)
+ * payload: { token, requestId, newStatus }
+ */
+function handleUpdateSpecialCaseStatus(payload) {
+  const admin = authenticateToken(payload.token);
+  const { requestId, newStatus } = payload;
+  if (!requestId || !newStatus) throw new Error('بيانات غير مكتملة لتحديث حالة الطلب.');
+
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SPECIAL_CASES_SHEET);
+  if (!sheet) throw new Error('ورقة حالات خاصة غير موجودة.');
+  const data = sheet.getDataRange().getValues();
+  if (data.length < 2) throw new Error('لا توجد طلبات.');
+  const headers = data[0];
+  const idCol = headers.indexOf('معرف الطلب');
+  const statusCol = headers.indexOf('حالة');
+  if (idCol === -1 || statusCol === -1) throw new Error('أعمدة الطلب غير صحيحة.');
+
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][idCol]).trim() === String(requestId).trim()) {
+      sheet.getRange(i + 1, statusCol + 1).setValue(newStatus);
+      logAdminAction(admin.username, 'تحديث حالة حالات خاصة', `تم تحديث ${requestId} إلى ${newStatus}`);
+      return { success: true, message: 'تم تحديث حالة الطلب.' };
+    }
+  }
+  throw new Error('لم يتم العثور على الطلب المطلوب.');
 }
 
 /**
