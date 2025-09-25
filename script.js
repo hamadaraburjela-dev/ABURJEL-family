@@ -493,6 +493,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const form = e.target;
             const userId = form.querySelector('#userId').value;
             const spouseId = form.querySelector('#spouseId').value;
+            // show spinner + disable button to improve perceived performance
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const spinner = submitBtn?.querySelector('.spinner-border');
+            const btnText = submitBtn?.querySelector('.button-text');
+            if (submitBtn) { submitBtn.disabled = true; if (spinner) spinner.classList.remove('d-none'); if (btnText) btnText.textContent = 'جاري التحقق...'; }
+
             // Do not hide the login modal immediately. Keep it open if the API fails or returns no action.
             const result = await this.apiCall({ action: 'checkPasswordStatus', id: userId, spouse_id: spouseId });
             if (!result) return;
@@ -507,6 +513,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('loginModalSpouseId').value = spouseId;
                 this.loginPasswordModal.show();
             }
+            // restore button state (in case modal stays open or on quick transitions)
+            if (submitBtn) { submitBtn.disabled = false; if (spinner) spinner.classList.add('d-none'); if (btnText) btnText.textContent = 'تحقق ودخول'; }
         },
         async handleModalSetPassword(e) { e.preventDefault(); const userId = document.getElementById('modalUserId').value; const newPassword = document.getElementById('modalNewPassword').value; const confirmPassword = document.getElementById('modalConfirmPassword').value; if (newPassword !== confirmPassword) { this.showToast('كلمة المرور وتأكيدها غير متطابقين.', false); return; } if (newPassword.length < 6) { this.showToast('كلمة المرور يجب أن لا تقل عن 6 أحرف.', false); return; } const result = await this.apiCall({ action: 'setMemberPassword', userId: userId, password: newPassword }, true); if (result) { this.setPasswordModal.hide(); localStorage.setItem('loggedInUserId', userId); localStorage.setItem('loggedInUserName', result.userName); window.location.href = 'dashboard.html'; } },
         async handleModalLogin(e) { e.preventDefault(); const userId = document.getElementById('loginModalUserId').value; const spouseId = document.getElementById('loginModalSpouseId').value; const password = document.getElementById('loginModalPassword').value; this.loginPasswordModal.hide(); const result = await this.apiCall({ action: 'userLoginWithPassword', id: userId, spouse_id: spouseId, password: password }); if (result) { this.showToast(`أهلاً بك، ${result.user_name}`, true); localStorage.setItem('loggedInUserId', result.user_id); localStorage.setItem('loggedInUserName', result.user_name); setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000); } },
