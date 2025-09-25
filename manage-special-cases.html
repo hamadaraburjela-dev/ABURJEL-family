@@ -1,90 +1,293 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>إدارة الحالات الخاصة - عائلة أبو رجيلة</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الحالات الخاصة - عائلة أبو رجيلة</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+  <style>
+    * { font-family: 'Cairo', sans-serif; }
+    body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height:100vh; margin:0; }
+    .container-fluid { max-width:1400px; margin:0 auto; padding:15px; }
+    .header-title { color: white; }
+    .main-content { background: rgba(255,255,255,0.06); border-radius:12px; padding:20px; }
+    .table-modern th, .table-modern td { vertical-align: middle; }
+    .status-badge { padding:6px 12px; border-radius:16px; color:#fff; font-weight:600; display:inline-block; }
+    .status-new{ background:linear-gradient(135deg,#3498db,#2980b9);} .status-pending{background:linear-gradient(135deg,#f39c12,#e67e22);} .status-approved{background:linear-gradient(135deg,#27ae60,#229954);} .status-rejected{background:linear-gradient(135deg,#e74c3c,#c0392b);}    
+
+    /* Stats cards (copied styling ideas from martyrs-admin) */
+    .stats-card { background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85)); border-radius:16px; padding:18px; box-shadow:0 8px 24px rgba(0,0,0,0.08); text-align:center; }
+    .stats-icon { width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; font-size:1.6rem; color:white; }
+    .stats-icon.danger { background: linear-gradient(135deg,#ff6b6b,#ff5252); }
+    .stats-icon.warning { background: linear-gradient(135deg,#ffa726,#ff9800); }
+    .stats-icon.success { background: linear-gradient(135deg,#66bb6a,#4caf50); }
+    .stats-icon.info { background: linear-gradient(135deg,#42a5f5,#2196f3); }
+
+    /* Table header modern look */
+    .table-modern thead th { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; border: none; padding: 12px; }
+    .table-modern { background: white; border-radius:12px; overflow:hidden; }
+
+    /* Modal modern */
+    .modal-modern .modal-content { border-radius: 14px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+    .modal-modern .modal-header { background: linear-gradient(135deg, #667eea, #764ba2); color: white; border:none; }
+  </style>
 </head>
 <body>
-  <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h3>إدارة الحالات الخاصة</h3>
-      <div>
-        <button class="btn btn-outline-secondary" onclick="location.href='admin.html'">العودة للوحة التحكم</button>
+    <div class="container-fluid">
+        <header class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <img src="logo.webp" alt="logo" style="width:70px;height:70px;border-radius:12px;" />
+                <h1 class="h4 header-title d-inline-block ms-3">إدارة الحالات الخاصة</h1>
+                <p class="text-white-50 small mb-0">عرض ومراجعة طلبات الحالات الخاصة المقدمة من الأفراد</p>
+            </div>
+            <div>
+                <button class="btn btn-outline-light me-2" onclick="location.href='admin.html'">العودة للوحة التحكم</button>
+                <button class="btn btn-danger" onclick="sessionStorage.clear(); localStorage.clear(); location.href='index.html'">تسجيل الخروج</button>
+            </div>
+        </header>
+
+    <main class="main-content">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">طلبات الحالات الخاصة</h5>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-light" id="refreshBtn"><i class="bi bi-arrow-clockwise"></i> تحديث</button>
+                    <button class="btn btn-success" id="exportBtn"><i class="bi bi-file-earmark-excel"></i> تصدير Excel</button>
+                </div>
+            </div>
+
+      <!-- Stats cards -->
+      <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="stats-card">
+            <div class="stats-icon danger"><i class="bi bi-flag-fill"></i></div>
+            <h3 id="cntNew" class="mb-0">0</h3>
+            <p class="text-muted small">جديد</p>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="stats-card">
+            <div class="stats-icon warning"><i class="bi bi-clock-history"></i></div>
+            <h3 id="cntPending" class="mb-0">0</h3>
+            <p class="text-muted small">قيد المراجعة</p>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="stats-card">
+            <div class="stats-icon success"><i class="bi bi-check-circle-fill"></i></div>
+            <h3 id="cntApproved" class="mb-0">0</h3>
+            <p class="text-muted small">موافق عليه</p>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="stats-card">
+            <div class="stats-icon info"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <h3 id="cntRejected" class="mb-0">0</h3>
+            <p class="text-muted small">مرفوض</p>
+          </div>
+        </div>
       </div>
+
+      <div class="card mb-3">
+                <div class="card-body">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-6">
+                            <div class="position-relative">
+                                <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                                <input id="searchInput" class="form-control ps-5" placeholder="البحث برقم الهوية أو الاسم...">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <select id="statusFilter" class="form-control">
+                                <option value="">جميع الحالات</option>
+                                <option value="جديد">جديد</option>
+                                <option value="قيد المراجعة">قيد المراجعة</option>
+                                <option value="موافق عليه">موافق عليه</option>
+                                <option value="مرفوض">مرفوض</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-primary w-100" id="applyFiltersBtn">فلترة</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card data-table-card">
+                <div class="card-body p-3">
+          <div class="table-responsive">
+            <table class="table table-modern table-striped">
+              <thead>
+                <tr>
+                  <th><i class="bi bi-hash me-2"></i>معرف الطلب</th>
+                  <th><i class="bi bi-calendar me-2"></i>تاريخ الإرسال</th>
+                  <th><i class="bi bi-person me-2"></i>الاسم</th>
+                  <th><i class="bi bi-card-text me-2"></i>رقم مقدم الطلب</th>
+                  <th><i class="bi bi-activity me-2"></i>نوع الحالة</th>
+                  <th><i class="bi bi-card-text me-2"></i>الوصف</th>
+                  <th><i class="bi bi-exclamation-triangle me-2"></i>الحالة</th>
+                  <th><i class="bi bi-paperclip me-2"></i>مرفق</th>
+                  <th><i class="bi bi-gear me-2"></i>الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="requestsTableBody"></tbody>
+            </table>
+          </div>
+
+          <div id="loadingSpinner" class="loading-container" style="display:none;">
+            <div class="spinner-modern mx-auto mb-3"></div>
+            <h5 class="text-primary fw-600">جاري تحميل البيانات...</h5>
+            <p class="text-muted mb-0">يرجى الانتظار لحظات قليلة</p>
+          </div>
+
+          <div id="noData" class="no-data-container" style="display: none;">
+            <div class="mb-4">
+              <i class="bi bi-inbox-fill display-1 text-muted opacity-50"></i>
+            </div>
+            <h4 class="text-muted fw-600 mb-2">لا توجد طلبات لعرضها</h4>
+            <p class="text-muted mb-0">لم يتم العثور على أي طلبات بالحالة أو الفلاتر المحددة</p>
+          </div>
+
+          <div id="paginationContainer" class="d-flex justify-content-between align-items-center mt-4 pt-3" style="display: none !important;">
+            <div class="pagination-info">
+              <span class="text-muted">
+                <i class="bi bi-info-circle me-1"></i>
+                عرض <strong id="startItem">1</strong> - <strong id="endItem">10</strong> من أصل <strong id="totalItems">0</strong> عنصر
+              </span>
+            </div>
+            <nav aria-label="التنقل بين الصفحات">
+              <ul class="pagination pagination-modern mb-0" id="paginationList">
+                <!-- سيتم إنشاؤها بواسطة JavaScript -->
+              </ul>
+            </nav>
+          </div>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <div class="card">
-      <div class="card-body">
-        <div class="table-responsive">
-          <table class="table table-striped table-modern" id="specialCasesTable">
-            <thead>
-              <tr>
-                <th>معرف الطلب</th>
-                <th>تاريخ الإرسال</th>
-                <th>رقم مقدم الطلب</th>
-                <th>الاسم</th>
-                <th>نوع الحالة</th>
-                <th>حالة</th>
-                <th>مرفق</th>
-                <th>إجراءات</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
+    <!-- Detail Modal -->
+    <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title">تفاصيل الطلب</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div id="detailContent"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-  <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="script.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', async function(){
-      const token = sessionStorage.getItem('adminToken');
-      if(!token){ location.href='index.html'; return; }
-      const tableBody = document.querySelector('#specialCasesTable tbody');
-      tableBody.innerHTML = '<tr><td colspan="8">جاري تحميل البيانات...</td></tr>';
-      try {
-        const res = await App.postToServer({ action: 'getSpecialCaseRequests', token });
-        if(!res || !res.success){ throw new Error(res?.message || 'فشل جلب البيانات'); }
-        const rows = res.data || [];
-        if(rows.length === 0){ tableBody.innerHTML = '<tr><td colspan="8">لا توجد طلبات</td></tr>'; return; }
-        tableBody.innerHTML = rows.map(r => {
-          return `<tr>
-            <td>${r['معرف الطلب'] || ''}</td>
-            <td>${r['تاريخ الإرسال'] || ''}</td>
-            <td>${r['رقم مقدم الطلب'] || ''}</td>
-            <td>${r['اسم مقدم الطلب'] || ''}</td>
-            <td>${r['نوع الحالة'] || ''}</td>
-            <td>${r['حالة'] || ''}</td>
-            <td>${r['رابط المرفق'] ? `<a href="${r['رابط المرفق']}" target="_blank">عرض</a>` : ''}</td>
-            <td>
-              <button class="btn btn-sm btn-success" onclick="updateStatus('${r['معرف الطلب']}', 'مقبول')">مقبول</button>
-              <button class="btn btn-sm btn-warning" onclick="updateStatus('${r['معرف الطلب']}', 'قيد المراجعة')">قيد المراجعة</button>
-              <button class="btn btn-sm btn-danger" onclick="updateStatus('${r['معرف الطلب']}', 'مرفوض')">رفض</button>
-            </td>
-          </tr>`;
-        }).join('');
-      } catch (err){
-        tableBody.innerHTML = '<tr><td colspan="8">خطأ في تحميل البيانات</td></tr>';
-        console.error(err);
-      }
-    });
+    // adapted martyrs-admin style client script
+    let cases = [];
+    let filtered = [];
+    let currentPage = 1;
+    const pageSize = 10;
 
-    async function updateStatus(requestId, newStatus){
-      const token = sessionStorage.getItem('adminToken');
-      if(!token) return App.showToast('غير مسموح');
-      try{
-        const res = await App.postToServer({ action: 'updateSpecialCaseStatus', token, requestId, newStatus });
-        if(res && res.success){ Toastify({ text: 'تم التحديث', duration:3000 }).showToast(); location.reload(); }
-        else throw new Error(res?.message||'فشل التحديث');
-      }catch(err){ Toastify({ text: 'خطأ: '+(err.message||err), duration:4000 }).showToast(); }
+    function mapStatusClass(status){
+      if(!status) return 'status-new';
+      const s = String(status).trim();
+      if(s === 'جديد') return 'status-new';
+      if(s === 'قيد المراجعة') return 'status-pending';
+      if(s === 'موافق عليه' || s === 'مقبول') return 'status-approved';
+      if(s === 'مرفوض' || s === 'رفض') return 'status-rejected';
+      return 'status-new';
     }
+
+    function showLoading(show){ document.getElementById('loadingSpinner').style.display = show ? 'block' : 'none'; }
+    function showNoData(show){ document.getElementById('noData').style.display = show ? 'block' : 'none'; }
+    function showPagination(show){ document.getElementById('paginationContainer').style.display = show ? 'flex' : 'none'; }
+
+    async function loadCases(){
+      const token = sessionStorage.getItem('adminToken'); if(!token) return location.href='index.html';
+      showLoading(true); showNoData(false); showPagination(false);
+      try{
+        const res = await App.postToServer({ action: 'getSpecialCaseRequests', token });
+        if(!res || !res.success) throw new Error(res?.message||'فشل جلب البيانات');
+        cases = res.data || [];
+        filtered = [...cases];
+        updateStats();
+        renderPage(1);
+      }catch(err){ console.error(err); Toastify({ text: 'خطأ في تحميل البيانات', duration:3000 }).showToast(); }
+      finally{ showLoading(false); }
+    }
+
+    function updateStats(){
+      const counts = cases.reduce((acc, r)=>{ const s = (r['حالة']||'').toString().trim(); if(s==='جديد') acc.new++; else if(s==='قيد المراجعة') acc.pending++; else if(s==='موافق عليه' || s==='مقبول') acc.approved++; else if(s==='مرفوض' || s==='رفض') acc.rejected++; return acc; }, {new:0,pending:0,approved:0,rejected:0});
+      document.getElementById('cntNew').textContent = counts.new; document.getElementById('cntPending').textContent = counts.pending; document.getElementById('cntApproved').textContent = counts.approved; document.getElementById('cntRejected').textContent = counts.rejected;
+    }
+
+    function renderPage(page){
+      currentPage = page;
+      const start = (page-1)*pageSize;
+      const pageItems = filtered.slice(start, start+pageSize);
+      const tbody = document.getElementById('requestsTableBody');
+      if(pageItems.length === 0){ tbody.innerHTML = ''; showNoData(true); showPagination(false); return; }
+      showNoData(false);
+      tbody.innerHTML = pageItems.map(r=>{
+        const status = r['حالة']||''; const cls = mapStatusClass(status);
+        const fileLink = r['رابط المرفق'] || '';
+        return `<tr>
+          <td>${r['معرف الطلب']||''}</td>
+          <td>${r['تاريخ الإرسال']? new Date(r['تاريخ الإرسال']).toLocaleString() : ''}</td>
+          <td>${r['اسم مقدم الطلب']||''}</td>
+          <td>${r['رقم مقدم الطلب']||''}</td>
+          <td>${r['نوع الحالة']||''}</td>
+          <td style="max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r['وصف الحالة']||r['ملاحظات']||''}</td>
+          <td><span class="status-badge ${cls}">${status}</span></td>
+          <td>${fileLink? `<a href="${fileLink}" target="_blank">عرض</a>`: ''}</td>
+          <td>
+            <div class="btn-group">
+              <button class="btn btn-outline-primary btn-sm" onclick="openDetails('${r['معرف الطلب']}')">عرض</button>
+              <button class="btn btn-success btn-sm" onclick="openStatusModal('${r['معرف الطلب']}')">تغيير حالة</button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+
+      // pagination UI
+      const total = filtered.length; const startItem = start+1; const endItem = Math.min(start+pageSize, total);
+      document.getElementById('startItem').textContent = startItem; document.getElementById('endItem').textContent = endItem; document.getElementById('totalItems').textContent = total;
+      renderPagination(total, page);
+      showPagination(total > pageSize);
+    }
+
+    function renderPagination(total, current){
+      const pages = Math.ceil(total / pageSize); const list = document.getElementById('paginationList'); list.innerHTML = '';
+      if(pages <= 1) return;
+      for(let i=1;i<=pages;i++){ const active = i===current ? 'active' : ''; const li = `<li class="page-item ${active}"><a class="page-link" href="#" onclick="renderPage(${i});return false;">${i}</a></li>`; list.insertAdjacentHTML('beforeend', li); }
+    }
+
+    function applyFilters(){
+      const term = (document.getElementById('searchInput').value||'').trim().toLowerCase();
+      const status = document.getElementById('statusFilter').value;
+      filtered = cases.filter(r=>{ const name = (r['اسم مقدم الطلب']||'').toString().toLowerCase(); const id = (r['رقم مقدم الطلب']||'').toString().toLowerCase(); const matchesTerm = !term || name.includes(term) || id.includes(term) || (r['معرف الطلب']||'').toString().toLowerCase().includes(term); const st = (r['حالة']||''); const matchesStatus = !status || st === status; return matchesTerm && matchesStatus; });
+      renderPage(1);
+    }
+
+    function openDetails(requestId){ const record = cases.find(r=>String(r['معرف الطلب'])===String(requestId)); if(!record) return Toastify({ text:'لم يتم العثور على الطلب', duration:2000 }).showToast(); const body = document.getElementById('requestDetailsBody'); body.innerHTML = `<dl class="row"> <dt class="col-sm-4">معرف الطلب</dt><dd class="col-sm-8">${record['معرف الطلب']||''}</dd> <dt class="col-sm-4">تاريخ الإرسال</dt><dd class="col-sm-8">${record['تاريخ الإرسال']||''}</dd> <dt class="col-sm-4">الاسم</dt><dd class="col-sm-8">${record['اسم مقدم الطلب']||''}</dd> <dt class="col-sm-4">رقم مقدم الطلب</dt><dd class="col-sm-8">${record['رقم مقدم الطلب']||''}</dd> <dt class="col-sm-4">نوع الحالة</dt><dd class="col-sm-8">${record['نوع الحالة']||''}</dd> <dt class="col-sm-4">وصف</dt><dd class="col-sm-8">${record['وصف الحالة']||record['ملاحظات']||''}</dd> <dt class="col-sm-4">حالة</dt><dd class="col-sm-8">${record['حالة']||''}</dd> <dt class="col-sm-4">مرفق</dt><dd class="col-sm-8">${record['رابط المرفق']? `<a href="${record['رابط المرفق']}" target="_blank">عرض المرفق</a>`: 'لا يوجد'}</dd> </dl>`; const modal = new bootstrap.Modal(document.getElementById('requestDetailsModal')); modal.show(); }
+
+    function openStatusModal(requestId){ document.getElementById('currentRequestId').value = requestId; const modal = new bootstrap.Modal(document.getElementById('statusUpdateModal')); modal.show(); }
+
+    async function updateStatus(){ const requestId = document.getElementById('currentRequestId').value; const newStatus = document.getElementById('newStatus').value; const token = sessionStorage.getItem('adminToken'); try{ const res = await App.postToServer({ action:'updateSpecialCaseStatus', token, requestId, newStatus }); if(res && res.success){ Toastify({ text:'تم تحديث الحالة', duration:2000 }).showToast(); loadCases(); const modalEl = document.getElementById('statusUpdateModal'); const m = bootstrap.Modal.getInstance(modalEl); m.hide(); } else throw new Error(res?.message||'فشل التحديث'); } catch(err){ Toastify({ text:'خطأ: '+(err.message||err), duration:3000 }).showToast(); } }
+
+    function exportToExcel(){ if(!cases || cases.length===0) return Toastify({ text:'لا توجد بيانات للتصدير', duration:2000 }).showToast(); const headers = Object.keys(cases[0]); const wsData = [headers].concat(cases.map(r=> headers.map(h=> r[h]||''))); const ws = XLSX.utils.aoa_to_sheet(wsData); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'حالات خاصة'); const wbout = XLSX.write(wb, { bookType:'xlsx', type:'array' }); const blob = new Blob([wbout], { type: 'application/octet-stream' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'special_cases.xlsx'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
+
+    document.addEventListener('DOMContentLoaded', function(){ document.getElementById('refreshBtn').addEventListener('click', loadCases); document.getElementById('applyFiltersBtn').addEventListener('click', applyFilters); document.getElementById('exportBtn').addEventListener('click', exportToExcel); loadCases(); });
   </script>
 </body>
 </html>
