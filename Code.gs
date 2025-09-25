@@ -846,10 +846,10 @@ function handleSubmitSpecialCaseRequest(payload) {
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     const sheet = ss.getSheetByName(SPECIAL_CASES_SHEET) || ss.insertSheet(SPECIAL_CASES_SHEET);
 
-    // Ensure header exists
+    // Ensure header exists (use the exact headers provided by admin)
     const rangeValues = sheet.getDataRange().getValues();
     if (!rangeValues || rangeValues.length === 0) {
-      sheet.appendRow(['معرف الطلب','تاريخ الإرسال','رقم مقدم الطلب','اسم مقدم الطلب','هوية الزوج/الزوجة','هوية رب الأسرة (للتحقق)','نوع الحالة','وصف الحالة','تاريخ الحالة','رابط المرفق','حالة']);
+      sheet.appendRow(['معرف الطلب','تاريخ التسجيل','رقم مقدم الطلب','اسم مقدم الطلب','معرف رب الأسرة','نوع الحالة','تاريخ الحالة','وصف الحالة','رابط المرفق','حالة','ملاحظات الإدارة','مُدخل الطلب','آخر تحديث بواسطة','تاريخ آخر تحديث']);
     }
 
     // Try to upload attachment if provided
@@ -870,7 +870,7 @@ function handleSubmitSpecialCaseRequest(payload) {
     }
 
     const requestId = 'SC' + new Date().getTime();
-    // If head_id provided, try to verify existence in individuals and set status accordingly
+    // Determine initial status based on head verification
     let status = 'جديد';
     if (payload.head_id) {
       try {
@@ -882,18 +882,28 @@ function handleSubmitSpecialCaseRequest(payload) {
       }
     }
 
+    // Compose description: include spouse id if provided (no dedicated column in sheet)
+    let description = payload.description || '';
+    if (payload.spouse_id) {
+      description = (description ? description + ' | ' : '') + `هوية الزوج/الزوجة: ${payload.spouse_id}`;
+    }
+
+    // Append row following the exact header order provided by admin
     sheet.appendRow([
       requestId,
       new Date(),
       payload.user_id || '',
       payload.user_name || '',
-      payload.spouse_id || '',
       payload.head_id || '',
       payload.case_type || '',
-      payload.description || '',
-      payload.case_date ? new Date(payload.case_date) : new Date(),
+      payload.case_date ? new Date(payload.case_date) : '',
+      description || '',
       fileUrl || '',
-      status
+      status,
+      '', // ملاحظات الإدارة
+      payload.user_id || '', // مُدخل الطلب
+      '', // آخر تحديث بواسطة
+      ''  // تاريخ آخر تحديث
     ]);
 
     return { success: true, message: 'تم استلام طلب الحالة الخاصة وسيتم متابعته.' };
@@ -1395,8 +1405,16 @@ function handleUpdateSpecialCaseStatus(payload) {
   if (idCol === -1 || statusCol === -1) throw new Error('أعمدة الطلب غير صحيحة.');
 
   for (let i = 1; i < data.length; i++) {
-    if (String(data[i][idCol]).trim() === String(requestId).trim()) {
+      if (String(data[i][idCol]).trim() === String(requestId).trim()) {
+      // update status
       sheet.getRange(i + 1, statusCol + 1).setValue(newStatus);
+      // update updater columns if present
+      const notesCol = headers.indexOf('ملاحظات الإدارة');
+      const updaterCol = headers.indexOf('آخر تحديث بواسطة');
+      const updateDateCol = headers.indexOf('تاريخ آخر تحديث');
+      if (typeof payload.adminNotes !== 'undefined' && notesCol !== -1) sheet.getRange(i + 1, notesCol + 1).setValue(payload.adminNotes || '');
+      if (updaterCol !== -1) sheet.getRange(i + 1, updaterCol + 1).setValue(admin.username || '');
+      if (updateDateCol !== -1) sheet.getRange(i + 1, updateDateCol + 1).setValue(new Date());
       logAdminAction(admin.username, 'تحديث حالة حالات خاصة', `تم تحديث ${requestId} إلى ${newStatus}`);
       return { success: true, message: 'تم تحديث حالة الطلب.' };
     }
