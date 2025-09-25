@@ -798,7 +798,7 @@ document.addEventListener('DOMContentLoaded', () => {
         generateReportHTML(userData, aidHistory, futureAid) {
             const createTable = (title, icon, data, headers) => `<h5 class="report-section-title"><i class="bi bi-${icon} me-2"></i>${title}</h5><table class="table table-bordered table-sm mb-4"><thead><tr>${headers.map(h => `<th>${h.label}</th>`).join('')}</tr></thead><tbody>${data.length > 0 ? data.map(item => `<tr>${headers.map(h => `<td>${item[h.key] ? (h.isDate ? this.formatDateToEnglish(item[h.key]) : item[h.key]) : '-'}</td>`).join('')}</tr>`).join('') : `<tr><td colspan="${headers.length}" class="text-center text-muted">لا توجد بيانات</td></tr>`}</tbody></table>`;
             const userInfoHtml = `<div class="row report-info-grid">${Object.entries({'الاسم الكامل': userData['الاسم الكامل'], 'رقم الهوية': userData['رقم الهوية'], 'رقم الجوال': userData['رقم الجوال'], 'مكان الإقامة': userData['مكان الإقامة'], 'اسم الزوجة': userData['اسم الزوجة رباعي'], 'رقم هوية الزوجة': userData['رقم هوية الزوجة']}).map(([label, value]) => `<div class="col-6"><div class="info-box"><strong>${label}:</strong><span>${value || '-'}</span></div></div>`).join('')}</div>`;
-            return `<div class="report-header"><img src="logo.webp" alt="شعار"><div><h1>تقرير بيانات فرد</h1><p>عائلة أبو رجيلة (قديح)</p></div></div><h5 class="report-section-title"><i class="bi bi-person-fill me-2"></i>البيانات الشخصية</h5>${userInfoHtml}${createTable('سجل المساعدات المكتملة', 'card-list', aidHistory, [{label: 'نوع المساعدة', key: 'نوع المساعدة'}, {label: 'تاريخ الاستلام', key: 'تاريخ الاستلام', isDate: true}, {label: 'المصدر', key: 'مصدر المساعدة'}])}${createTable('المساعدات المستقبلية المجدولة', 'calendar-check', futureAid, [{label: 'نوع المساعدة', key: 'نوع المساعدة'}, {label: 'تاريخ الاستلام', key: 'تاريخ الاستلام', isDate: true}, {label: 'المصدر', key: 'مصدر المساعدة'}])}<div class="report-footer"><p>تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')}</p><p>نظام عائلة أبو رجيلة © 2025</p></div>`;
+            return `<div class="report-header"><img src="logo.webp" alt="شعار"><div><h1>تقرير بيانات فرد</h1><p>عائلة أبو رجيلة (قديح)</p></div></div><h5 class="report-section-title"><i class="bi bi-person-fill me-2"></i>البيانات الشخصية</h5>${userInfoHtml}${createTable('سجل المساعدات المكتملة', 'card-list', aidHistory, [{label: 'نوع المساعدة', key: 'نوع المساعدة'}, {label: 'تاريخ الاستلام', key: 'تاريخ الاستلام', isDate: true}, {label: 'المصدر', key: 'مصدر المساعدة'}])}${createTable('المساعدات المستقبلية المجدولة', 'calendar-check', futureAid, [{label: 'نوع المساعدة', key: 'نوع المساعدة'}, {label: 'تاريخ الاستلام', key: 'تاريخ الاستلام', isDate: true}, {label: 'المصدر', key: 'مصدر المساعدة'}])}<div class="report-footer"><p>تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')}</p><p>نظام عائلة أبو رجيلة (قديح) © 2025</p></div>`;
         },
         async handleResetPassword(e, token) { const userId = e.target.closest('.reset-password-btn').dataset.id; const confirmed = await this.showConfirmationModal(`هل أنت متأكد من مسح كلمة مرور المستخدم ${userId}؟`); if (confirmed) await this.apiCall({ action: 'clearMemberPassword', token, userId }, true); },
 
@@ -1197,8 +1197,16 @@ if (_injuryForm) {
                 if (submitBtn) submitBtn.disabled = false;
                 if (buttonText) buttonText.textContent = 'حفظ بيانات الإصابة';
 
-                // Show success message
-                alert('تم تسجيل الإصابة بنجاح!');
+                // Show success message using app toast and dialog
+                if (typeof App !== 'undefined' && App && typeof App.showToast === 'function') {
+                    App.showToast('تم تسجيل الإصابة بنجاح!', true);
+                } else {
+                    console.log('تم تسجيل الإصابة بنجاح!');
+                }
+                // Optionally show a confirmation dialog for more details
+                if (typeof App !== 'undefined' && App && typeof App.showDialog === 'function') {
+                    App.showDialog({ title: 'تم الحفظ', message: 'تم تسجيل الإصابة بنجاح ويمكنك مشاهدة السجل أو إضافة حالة جديدة.', type: 'success', confirmText: 'حسناً', autoCloseMs: 3000 });
+                }
             }, 1500);
         }, 2000);
     });

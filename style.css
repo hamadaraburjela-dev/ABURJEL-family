@@ -1266,8 +1266,6 @@ h1,h2,h3,h4 { line-height: 1.2; }
 .selection-card .card-body { padding: 12px 6px; }
 .card-title { font-size: 1.05rem; }
 
-/* ---------------- end global professional reset ---------------- */
-
 /* Overrides for homepage layout that matches provided screenshot */
 .top-logo {
     /* logo kept inside header container to avoid overlap with browser chrome */
@@ -1646,130 +1644,105 @@ body {
     margin-left: 5px;
 }
 
-/* General & Body Styles */
-:root {
-    --primary-color: #0d6efd;
-    --background-start: #f5f7fa;
-    --background-end: #c3cfe2;
-    --card-shadow-initial: rgba(0,0,0,0.15);
-    --card-shadow-hover: rgba(0,0,0,0.2);
-    --icon-pink: #ff6b9d;
-    --icon-gray: #6c757d;
-    --icon-gold: #ffd700;
-    --icon-teal: #17a2b8;
-    --icon-orange: #fd7e14;
-    --icon-yellow: #ffc107;
+/* --- Service banner / announcement visual --- */
+.service-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(90deg, rgba(13,110,253,0.06), rgba(0,128,0,0.04));
+    border-left: 6px solid var(--primary-green);
+    border-radius: 12px;
 }
-
-.index-body {
-    background: linear-gradient(135deg, var(--background-start) 0%, var(--background-end) 100%);
-    min-height: 100vh;
-}
-
-.logo {
-    width: 80px;
-    height: 80px;
-}
-
-/* Card Styles */
-.selection-card {
-    border-radius: 15px;
-    box-shadow: 0 8px 25px var(--card-shadow-initial);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.selection-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 35px var(--card-shadow-hover);
-}
-
-.card-icon {
-    font-size: 3.5rem;
-}
-
-.card-icon.pink {
-    color: var(--icon-pink);
-}
-
-.card-icon.gray {
-    color: var(--icon-gray);
-}
-
-.card-icon.gold {
-    color: var(--icon-gold);
-}
-
-.card-icon.teal {
-    color: var(--icon-teal);
-}
-
-.card-icon.orange {
-    color: var(--icon-orange);
-}
-
-.card-icon.yellow {
-    color: var(--icon-yellow);
-}
-
-/* Footer & Status Indicator */
-.footer {
-    text-align: center;
-    padding: 2rem 0;
-    background: rgba(255, 255, 255, 0.7);
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.status-indicator {
+.service-banner .banner-icon {
+    width: 72px;
+    height: 72px;
+    min-width: 72px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    font-weight: bold;
+    background: linear-gradient(180deg, #ffffff, #f1fbf3);
+    color: var(--primary-green);
+    box-shadow: 0 8px 22px rgba(2, 48, 32, 0.06);
+    font-size: 1.6rem;
+}
+.service-banner .banner-body { flex: 1 1 auto; }
+.service-banner h4 { margin: 0 0 0.25rem 0; font-size: 1.25rem; font-weight: 800; }
+.service-banner p { margin: 0; color: #234; opacity: 0.85; }
+.service-banner .banner-actions { display:flex; gap:0.5rem; align-items:center; }
+.service-banner .btn-cta { box-shadow: 0 8px 20px rgba(13,110,253,0.12); border-radius: 10px; }
+
+@media (max-width: 767px) {
+    .service-banner { flex-direction: column; align-items: stretch; }
+    .service-banner .banner-icon { margin-inline-start: 0; }
+    .service-banner .banner-actions { justify-content: flex-start; }
 }
 
-.status-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    animation: pulse 2s infinite;
+/* --- Final visual polish for the whole page --- */
+/* Body overlay to make content pop against background */
+.index-body {
+    background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.55));
 }
 
-.status-text {
-    font-size: 0.9rem;
-    color: #6c757d;
+/* Header: centered, subtle card look */
+.header {
+    background: rgba(255,255,255,0.95);
+    padding: 1.25rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(2,48,32,0.04);
+    text-align: center;
+}
+.header img.logo { max-width:120px; height:auto; }
+.header .btn-outline-primary { border-radius: 10px; padding: 0.45rem 0.9rem; }
+
+/* Main content tighter width on large screens for focus */
+.main-content { max-width: 1100px; }
+
+/* Hero / selection cards layout */
+.selection-hero { padding: 2rem 0; }
+.feature-icon { box-shadow: 0 8px 26px rgba(2,48,32,0.06); }
+.card-title { font-size: 1.1rem; font-weight: 800; color: #163b16; }
+.card-text { color: #495b4a; margin-bottom: 1rem; }
+.selection-card { padding: 0; overflow: hidden; }
+.selection-card .card-body { padding: 1.5rem; }
+.selection-card .btn { text-transform: none; }
+
+/* CTAs */
+.btn-primary { background: linear-gradient(180deg, var(--primary-green), #006400); border-color: #006400; }
+.btn-primary:focus, .btn-primary:hover { transform: translateY(-2px); }
+.btn-outline-primary { border-color: rgba(13,110,253,0.15); color: var(--accent-blue); }
+
+/* Forms */
+.form-control:focus { box-shadow: 0 0 0 0.15rem rgba(0,128,0,0.12); border-color: #228b22; }
+.form-label { font-weight: 600; }
+
+/* Modal */
+.modal-content { border-radius: 14px; }
+.modal-header { border-bottom: none; padding-top: 1.25rem; padding-bottom: 0.75rem; }
+.modal-body { padding: 1.25rem 1.5rem; }
+.modal .btn { min-width: 120px; }
+
+/* Footer */
+.footer { padding: 2rem 1rem; background: transparent; color: #5a6a5a; }
+.footer .whatsapp-link { font-weight: 700; }
+
+/* Accessibility / small polish */
+a.btn, button.btn { transition: transform 0.12s ease, box-shadow 0.12s ease; }
+.card { transition: transform 0.18s ease, box-shadow 0.18s ease; }
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+    .service-banner { padding: 1rem; }
+    .banner-actions { margin-top: 0.5rem; }
+    .selection-hero { padding: 1rem 0; }
+    .banner-icon { width:56px; height:56px; }
 }
 
-.status-dot.online {
-    background-color: green;
-}
+/* Small print: ensure form submit spinner spacing */
+.spinner-border { margin-inline-start: 0.6rem; }
 
-.status-dot.offline {
-    background-color: red;
-}
-
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(1.1);
-        opacity: 0.7;
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-.whatsapp-link {
-    text-decoration: none;
-    color: #25D366;
-    font-weight: bold;
-    font-size: 1rem;
-    transition: color 0.3s ease;
-}
-
-.whatsapp-link:hover {
-    color: #128C7E;
-}
+/* Make the modal title area slightly emphasised */
+.modal-title { display:flex; align-items:center; gap:0.5rem; }
+.modal-title .modal-title-icon { font-size: 1.05rem; }
