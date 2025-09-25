@@ -442,22 +442,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const searchInput = document.getElementById('searchInput');
             const grid = document.getElementById('cardsGrid');
 
-            const showInjuryForm = () => {
-                if (injuryFormSection) {
-                    injuryFormSection.style.display = 'block';
-                    injuryFormSection.scrollIntoView({ behavior: 'smooth' });
-                    const injName = document.getElementById('injName');
-                    if (injName) injName.focus();
-                }
-            };
+            // Local injury form handling removed; use the dedicated injuries.html page and global handler.
 
             if (location.hash === '#injury-form') {
-                showInjuryForm();
+                window.location.href = 'injuries.html';
             }
 
             document.querySelectorAll('a[href="#injury-form"]').forEach(a => a.addEventListener('click', function(e) {
                 e.preventDefault();
-                showInjuryForm();
+                window.location.href = 'injuries.html';
             }));
 
             const closeInjury = document.getElementById('closeInjury');
@@ -1149,10 +1142,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 // Function to show the injury modal
 function showInjuryForm() {
-    const el = document.getElementById('injuryModal');
-    if (!el) return; // modal not present on this page
-    const modal = new bootstrap.Modal(el);
-    modal.show();
+    // The injury modal was removed; navigate to the dedicated injuries page.
+    window.location.href = 'injuries.html';
 }
 
 // Handle injury form submission

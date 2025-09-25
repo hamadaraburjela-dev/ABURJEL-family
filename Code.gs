@@ -19,6 +19,7 @@ const BIRTHS_SHEET = 'مواليد اطفال';
 const CHILDREN_CLOTHES_SHEET = 'بنزط اطفال';
 const MARTYRS_SHEET = 'الشهداء';
 const DEATHS_SHEET = 'الوفيات';
+const INJURIES_SHEET = 'اصابات';
 
 // --- MAIN ENTRY POINTS ---
 function doGet(e) {
@@ -52,6 +53,7 @@ function doPost(e) {
   case 'updateBirthRequestStatus': response = handleUpdateBirthRequestStatus(payload); break;
   case 'verifyMartyrId': response = handleVerifyMartyrId(payload.martyrId); break;
   case 'submitMartyrRegistration': response = handleSubmitMartyrRegistration(payload); break;
+  case 'submitInjuryRegistration': response = handleSubmitInjuryRegistration(payload); break;
   case 'getMartyrRequests': response = handleGetMartyrRequests(payload.token); break;
   case 'getDeathRequests': response = handleGetDeathRequests(payload.token); break;
   case 'updateDeathRequestStatus': response = handleUpdateDeathRequestStatus(payload); break;
@@ -289,6 +291,57 @@ function handleGetUserData(userId) {
   const memberData = members.find(m => String(m['رقم الهوية']).trim() == String(userId).trim());
   if (!memberData) throw new Error('لم يتم العثور على بيانات المستخدم.');
   return { success: true, data: memberData };
+}
+
+/**
+ * Handle injury registration from frontend; saves a row in the sheet named in INJURIES_SHEET
+ * Expected payload fields: injuredID, injuryDate, injuryPlace, injuryCause, additionalDetails, fatherID, injuryFile
+ */
+function handleSubmitInjuryRegistration(payload) {
+  try {
+    if (!payload || !payload.injuredID || !payload.injuryDate || !payload.injuryPlace || !payload.injuryCause) {
+      throw new Error('الرجاء ملء الحقول المطلوبة لتسجيل الإصابة.');
+    }
+
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = ss.getSheetByName(INJURIES_SHEET) || ss.insertSheet(INJURIES_SHEET);
+
+    // Ensure header exists
+    const headers = sheet.getDataRange().getValues()[0] || [];
+    const expectedHeaders = ['timestamp','injuredID','injuredName','fatherID','injuryDate','injuryPlace','injuryCause','additionalDetails','fileUrl'];
+    if (!headers || headers.length === 0) {
+      sheet.appendRow(expectedHeaders);
+    }
+
+    // If file was provided as base64 object, save to Drive and capture URL
+    let fileUrl = '';
+    if (payload.injuryFile && payload.injuryFile.data) {
+      try {
+        const blob = Utilities.newBlob(Utilities.base64Decode(payload.injuryFile.data), payload.injuryFile.mimeType, payload.injuryFile.name);
+        const file = DriveApp.createFile(blob);
+        file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+        fileUrl = file.getUrl();
+      } catch (err) {
+        // continue without file url
+        fileUrl = '';
+      }
+    }
+
+    // Optionally try to lookup injured name from individuals sheet
+    let injuredName = '';
+    try {
+      const individuals = sheetToJSON(INDIVIDUALS_SHEET);
+      const found = individuals.find(i => String(i['رقم الهوية']).trim() === String(payload.injuredID).trim());
+      injuredName = found ? (found['الاسم الكامل'] || '') : '';
+    } catch (e) { injuredName = ''; }
+
+    const row = [new Date(), payload.injuredID, injuredName, payload.fatherID || '', payload.injuryDate, payload.injuryPlace, payload.injuryCause, payload.additionalDetails || '', fileUrl];
+    sheet.appendRow(row);
+
+    return { success: true, message: 'تم تسجيل الإصابة بنجاح.' };
+  } catch (error) {
+    return { success: false, message: error.message || 'فشل تسجيل الإصابة.' };
+  }
 }
 
 function handleUpdateUserProfile(userId, profileData) {

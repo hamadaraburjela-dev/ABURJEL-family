@@ -62,7 +62,7 @@
                                 <i class="bi bi-bandaid-fill card-icon teal"></i>
                                 <h3 class="card-title mt-3">🩹 الإصابات</h3>
                                 <p class="card-text">تسجيل الإصابات والاحتياجات الطبية</p>
-                                <button class="btn btn-primary w-100" onclick="showInjuryForm()">تسجيل الإصابات</button>
+                                <a class="btn btn-primary w-100" href="injuries.html">تسجيل الإصابات</a>
                             </div>
                         </div>
                     </div>
@@ -70,7 +70,6 @@
                     <div class="col-12 col-md-6 col-lg-4">
                         <div class="card h-100 text-center selection-card" role="button">
                             <div class="card-body py-4">
-                                <i class="bi bi-life-preserver card-icon orange"></i>
                                 <h3 class="card-title mt-3">🚨 طلب مساعدة</h3>
                                 <p class="card-text">فتح طلب مساعدة عام للحصول على دعم فوري</p>
                                 <a class="btn btn-primary w-100" href="life-requests.html">طلب مساعدة</a>
@@ -94,82 +93,16 @@
         </section>
     </main>
 
-    <div class="modal fade" id="injuryModal" tabindex="-1" aria-labelledby="injuryModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="injuryModalLabel">تسجيل إصابة جديدة</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="injuryForm">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="injuredName" class="form-label">اسم المصاب</label>
-                                <input type="text" class="form-control" id="injuredName" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="injuredId" class="form-label">رقم الهوية</label>
-                                <input type="text" class="form-control" id="injuredId">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="injuryDate" class="form-label">تاريخ الإصابة</label>
-                                <input type="date" class="form-control" id="injuryDate" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="injuryType" class="form-label">نوع الإصابة</label>
-                                <select class="form-select" id="injuryType" required>
-                                    <option value="">اختر نوع الإصابة</option>
-                                    <option value="إصابة خفيفة">إصابة خفيفة</option>
-                                    <option value="إصابة متوسطة">إصابة متوسطة</option>
-                                    <option value="إصابة خطيرة">إصابة خطيرة</option>
-                                    <option value="إعاقة">إعاقة</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="injuryDescription" class="form-label">وصف الإصابة</label>
-                            <textarea class="form-control" id="injuryDescription" rows="3" required></textarea>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="medicalNeeds" class="form-label">الاحتياجات الطبية</label>
-                                <textarea class="form-control" id="medicalNeeds" rows="2"></textarea>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="currentTreatment" class="form-label">العلاج الحالي</label>
-                                <textarea class="form-control" id="currentTreatment" rows="2"></textarea>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="injuryNotes" class="form-label">ملاحظات إضافية</label>
-                            <textarea class="form-control" id="injuryNotes" rows="2"></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary">
-                            <span class="spinner-border spinner-border-sm d-none" role="status"></span>
-                            <span class="button-text">حفظ بيانات الإصابة</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <footer class="footer">
         <div id="server-status" class="status-indicator mb-2">
             <span class="status-dot"></span>
             <span class="status-text">جاري التحقق من حالة الخادم...</span>
         </div>
-        <p class="copyright-text mb-2">
-            جميع الحقوق محفوظة &copy; 2025 | م. حماده أبو رجيلة
-        </p>
+        <p class="copyright-text mb-2">جميع الحقوق محفوظة © 2025 | م. حمادھ أبو رجیلة</p>
         <a href="https://wa.me/972569210941" target="_blank" class="whatsapp-link">
             <i class="bi bi-whatsapp"></i> تواصل عبر الواتساب
         </a>
     </footer>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>
 </body>

@@ -130,7 +130,7 @@
                 </label>
                 <input type="text" class="form-control form-control-lg" id="martyrdomPlace" 
                        placeholder="أدخل مكان الاستشهاد" required>
-                <div class="invalid-feedback">
+  // JavaScript for form validation, martyr verification, API submit, and image preview
                   يرجى إدخال مكان الاستشهاد
                 </div>
               </div>
@@ -214,6 +214,45 @@
                 </div>
               </div>
             </form>
+
+            <!-- Injuries registration (embedded into martyrs page design) -->
+            <hr>
+            <h5 class="mt-4 mb-3">🩺 تسجيل إصابة (يُحفظ في شيت: إصابات)</h5>
+            <form id="embeddedInjuryForm" class="needs-validation" novalidate>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">رقم هوية المصاب</label>
+                  <input type="text" id="inj_injuredID" class="form-control" pattern="[0-9]{9}" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">رقم هوية ولي الأمر (إن وجد)</label>
+                  <input type="text" id="inj_fatherID" class="form-control" pattern="[0-9]{9}">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">تاريخ الإصابة</label>
+                  <input type="date" id="inj_injuryDate" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">مكان الإصابة</label>
+                  <input type="text" id="inj_injuryPlace" class="form-control" required>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">سبب الإصابة</label>
+                  <input type="text" id="inj_injuryCause" class="form-control" required>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">تفاصيل إضافية</label>
+                  <textarea id="inj_additionalDetails" class="form-control" rows="2"></textarea>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">رفع تقرير أو صورة (اختياري)</label>
+                  <input type="file" id="inj_file" class="form-control" accept="image/*,.pdf">
+                </div>
+                <div class="col-12 text-end">
+                  <button type="submit" class="btn btn-warning">حفظ كإصابة</button>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
       </div>
@@ -240,6 +279,68 @@
   <script src="script.js"></script>
   
   <script>
+    // Embedded injury form handling
+    (function(){
+      // Ensure postToServer helper exists (some pages define it locally)
+      if (typeof postToServer === 'undefined' && window.App && typeof window.App.postToServer === 'function') {
+        window.postToServer = function(payload) { return window.App.postToServer(payload); };
+      }
+      const form = document.getElementById('embeddedInjuryForm');
+      if (!form) return;
+
+      const fileInput = document.getElementById('inj_file');
+
+      const toBase64 = (file) => new Promise((resolve, reject) => {
+        if (!file) return resolve(null);
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = reader.result.substring(reader.result.indexOf(',') + 1);
+          resolve({ name: file.name, mimeType: file.type, data: base64 });
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        if (!form.checkValidity()) { form.classList.add('was-validated'); return; }
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const origText = submitBtn.textContent;
+        submitBtn.disabled = true; submitBtn.textContent = 'جاري الحفظ...';
+
+        (async () => {
+          try {
+            const file = fileInput.files[0];
+            const fileObj = await toBase64(file);
+
+            const payload = {
+              action: 'submitInjuryRegistration',
+              injuredID: document.getElementById('inj_injuredID').value.trim(),
+              fatherID: document.getElementById('inj_fatherID').value.trim() || null,
+              injuryDate: document.getElementById('inj_injuryDate').value,
+              injuryPlace: document.getElementById('inj_injuryPlace').value.trim(),
+              injuryCause: document.getElementById('inj_injuryCause').value.trim(),
+              additionalDetails: document.getElementById('inj_additionalDetails').value.trim(),
+              injuryFile: fileObj
+            };
+
+            const res = await postToServer(payload);
+            if (!res || !res.success) throw new Error(res?.message || 'فشل الحفظ');
+
+            if (window.App && App.showToast) App.showToast(res.message || 'تمت إضافة الإصابة بنجاح', true);
+            else alert(res.message || 'تمت إضافة الإصابة بنجاح');
+
+            form.reset(); form.classList.remove('was-validated');
+          } catch (err) {
+            if (window.App && App.showToast) App.showToast(err.message || 'فشل الإرسال', false);
+            else alert(err.message || 'فشل الإرسال');
+          } finally {
+            submitBtn.disabled = false; submitBtn.textContent = origText;
+          }
+        })();
+      });
+    })();
+  </script>
     // JavaScript for form validation, martyr verification, API submit, and image preview
     document.addEventListener('DOMContentLoaded', function() {
       const form = document.getElementById('martyrForm');
