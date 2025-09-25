@@ -491,29 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
         async handleUserLogin(e) { e.preventDefault(); const form = e.target; const userId = form.querySelector('#userId').value; const spouseId = form.querySelector('#spouseId').value; this.userLoginModal.hide(); const result = await this.apiCall({ action: 'checkPasswordStatus', id: userId, spouse_id: spouseId }); if (!result) return; if (result.message === 'password_required') { document.getElementById('modalUserId').value = userId; this.setPasswordModal.show(); } else if (result.message === 'password_exists') { document.getElementById('loginModalUserId').value = userId; document.getElementById('loginModalSpouseId').value = spouseId; this.loginPasswordModal.show(); } },
         async handleModalSetPassword(e) { e.preventDefault(); const userId = document.getElementById('modalUserId').value; const newPassword = document.getElementById('modalNewPassword').value; const confirmPassword = document.getElementById('modalConfirmPassword').value; if (newPassword !== confirmPassword) { this.showToast('كلمة المرور وتأكيدها غير متطابقين.', false); return; } if (newPassword.length < 6) { this.showToast('كلمة المرور يجب أن لا تقل عن 6 أحرف.', false); return; } const result = await this.apiCall({ action: 'setMemberPassword', userId: userId, password: newPassword }, true); if (result) { this.setPasswordModal.hide(); localStorage.setItem('loggedInUserId', userId); localStorage.setItem('loggedInUserName', result.userName); window.location.href = 'dashboard.html'; } },
         async handleModalLogin(e) { e.preventDefault(); const userId = document.getElementById('loginModalUserId').value; const spouseId = document.getElementById('loginModalSpouseId').value; const password = document.getElementById('loginModalPassword').value; this.loginPasswordModal.hide(); const result = await this.apiCall({ action: 'userLoginWithPassword', id: userId, spouse_id: spouseId, password: password }); if (result) { this.showToast(`أهلاً بك، ${result.user_name}`, true); localStorage.setItem('loggedInUserId', result.user_id); localStorage.setItem('loggedInUserName', result.user_name); setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000); } },
-    async handleAdminLogin(e) {
-        e.preventDefault();
-        if (this.adminLoginModal) try { this.adminLoginModal.hide(); } catch(_){}
-
-        const username = document.getElementById('username')?.value;
-        const password = document.getElementById('password')?.value;
-
-        const result = await this.apiCall({ action: 'adminLogin', username, password });
-        if (result) {
-            this.showToast("تم تسجيل الدخول بنجاح.", true);
-            sessionStorage.setItem('adminToken', result.token);
-            sessionStorage.setItem('adminRole', result.role);
-
-            // Redirect based on role. Accept common English/Arabic variants for super users.
-            const role = (result.role || '').toString().toLowerCase();
-            const isSuper = role.includes('super') || role.includes('superadmin') || role.includes('سوبر') || role.includes('مشرف');
-            if (isSuper) {
-                window.location.href = 'superadmin.html';
-            } else {
-                window.location.href = 'admin.html';
-            }
-        }
-    },
+    async handleAdminLogin(e) { e.preventDefault(); if (this.adminLoginModal) try { this.adminLoginModal.hide(); } catch(_){} const result = await this.apiCall({ action: 'adminLogin', username: document.getElementById('username').value, password: document.getElementById('password').value }); if (result) { this.showToast("تم تسجيل الدخول بنجاح.", true); sessionStorage.setItem('adminToken', result.token); sessionStorage.setItem('adminRole', result.role); window.location.href = 'admin.html'; } },
         async handleForgotPassword(e) { e.preventDefault(); this.loginPasswordModal.hide(); this.forgotPasswordModal.show(); },
         
         async loadUserData(userId) {
