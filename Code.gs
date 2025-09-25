@@ -35,7 +35,7 @@ function doPost(e) {
       case 'checkPasswordStatus': response = handleCheckPasswordStatus(payload.id, payload.spouse_id); break;
       case 'userLoginWithPassword': response = handleUserLoginWithPassword(payload.id, payload.spouse_id, payload.password); break;
       case 'setMemberPassword': response = handleSetMemberPassword(payload.userId, payload.password); break;
-  // adminLogin action removed
+      case 'adminLogin': response = handleAdminLogin(payload.username, payload.password); break;
       case 'getUserData': response = handleGetUserData(payload.userId); break;
       case 'getUserAidHistory': response = handleGetUserAidHistory(payload.userId); break;
       case 'getUserFutureAid': response = handleGetUserFutureAid(payload.userId, payload.token); break;
@@ -352,7 +352,37 @@ function handleUpdateUserProfile(userId, profileData) {
       message: 'حدث خطأ في تحديث البيانات: ' + error.message 
     };
   }
- 
+}function handleAdminLogin(username, password) {
+  const logSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(ADMINS_LOGIN_LOG_SHEET);
+  let logStatus = 'فاشل';
+  let logReason = '';
+
+  try {
+    if (!username || !password) {
+      logReason = 'بيانات غير مكتملة';
+      throw new Error('يجب إدخال اسم المستخدم وكلمة المرور.');
+    }
+    const admins = sheetToJSON(ADMINS_SHEET);
+    const adminUser = admins.find(u => u['اسم المستخدم'] == username && u['كلمة المرور (SHA-256)'] == password);
+    if (!adminUser) {
+      logReason = 'بيانات الدخول غير صحيحة';
+      throw new Error('اسم المستخدم أو كلمة المرور غير صحيحة.');
+    }
+    if (adminUser['الحالة'] !== 'Active') {
+      logReason = 'الحساب غير نشط';
+      throw new Error('هذا الحساب غير نشط.');
+    }
+    const token = generateToken();
+    const tokenData = { username: adminUser['اسم المستخدم'], role: adminUser['الصلاحية'] };
+    CacheService.getScriptCache().put(token, JSON.stringify(tokenData), 1800);
+    logStatus = 'ناجح';
+    return { success: true, token: token, role: adminUser['الصلاحية'] };
+  } catch (error) {
+    throw error;
+  } finally {
+    logSheet.appendRow([new Date(), username, logStatus, logReason]);
+  }
+}
 // في ملف Code.gs
 function handleGetStats(token) {
   authenticateToken(token);
