@@ -39,27 +39,38 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>
     <script>
-        // Attach listener immediately (works even if DOMContentLoaded already fired)
-        (function attachAdminLoginHandler() {
-            const attach = () => {
-                const form = document.getElementById('adminLoginForm');
-                if (!form) return;
-                // If App is ready, use its handler; otherwise provide fallback notifying user
-                if (window.App && typeof App.handleAdminLogin === 'function') {
-                    form.addEventListener('submit', (e) => App.handleAdminLogin(e));
-                } else {
-                    form.addEventListener('submit', function(e) {
-                        e.preventDefault();
-                        alert('التطبيق غير جاهز بعد - الرجاء إعادة تحميل الصفحة.');
-                    });
-                }
-            };
+        // Attach a submit handler that defers calling App until it's ready.
+        (function attachDeferredAdminLogin() {
+            const form = document.getElementById('adminLoginForm');
+            if (!form) return;
 
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', attach);
-            } else {
-                attach();
-            }
+            form.addEventListener('submit', function submitHandler(e) {
+                e.preventDefault();
+
+                // wait for App to be available, then call the real handler
+                const tryCall = () => {
+                    if (window.App && typeof App.handleAdminLogin === 'function') {
+                        try {
+                            App.handleAdminLogin(e);
+                        } catch (err) {
+                            // fallback: show an error if handler fails
+                            alert('حدث خطأ أثناء محاولة تسجيل الدخول.');
+                            console.error('Admin login handler error:', err);
+                        }
+                    } else {
+                        // poll until App is ready (max ~2s)
+                        if (!submitHandler._tries) submitHandler._tries = 0;
+                        submitHandler._tries += 1;
+                        if (submitHandler._tries > 40) {
+                            alert('التطبيق غير جاهز - الرجاء إعادة تحميل الصفحة والمحاولة مجدداً.');
+                            return;
+                        }
+                        setTimeout(tryCall, 50);
+                    }
+                };
+
+                tryCall();
+            });
         })();
     </script>
 </body>
