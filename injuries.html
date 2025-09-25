@@ -12,110 +12,159 @@
     <header class="text-center py-4">
         <div class="container">
             <img src="logo.webp" alt="شعار عائلة أبو رجيلة" class="mb-3" style="width:80px;height:80px;" />
-            <h1 class="h3 mb-2">عائلة أبو رجيلة</h1>
-            <p class="text-muted">تسجيل الإصابات والاحتياجات الطبية</p>
-        </div>
-    </header>
-
-    <main class="container" style="max-width:800px;">
-        <div class="row justify-content-center">
-            <div class="col-12">
-                <div class="card shadow-lg" style="border-radius:15px; border:none;">
-                    <div class="card-header text-center" style="background: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%); color: white; border-radius: 15px 15px 0 0;">
-                        <h2 class="mb-0">🩹 تسجيل إصابة جديدة</h2>
-                        <p class="mb-0 mt-2 opacity-75">املأ بيانات الإصابة لتسجيلها في سجلات العائلة (شيت: إصابات)</p>
+            <!DOCTYPE html>
+            <html lang="ar" dir="rtl">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>تسجيل إصابة - عائلة أبو رجيلى</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+                <link rel="stylesheet" href="style.css">
+                <style>
+                    body { background: linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%); min-height:100vh }
+                    .card-header { background: linear-gradient(135deg,#0d6efd 0%,#6f42c1 100%); color: white }
+                </style>
+            </head>
+            <body>
+                <header class="text-center py-4">
+                    <div class="container">
+                        <img src="logo.webp" alt="logo" style="width:80px;height:80px;border-radius:12px;"/>
+                        <h1 class="h3 mt-2">تسجيل إصابة</h1>
+                        <p class="text-muted">املأ بيانات الإصابة ليتم إرسال البلاغ إلى إدارة العائلة</p>
                     </div>
-                    <div class="card-body p-4">
-                        <form id="injuryForm" class="needs-validation" novalidate>
-                            <div class="mb-4">
-                                <label for="injuredID" class="form-label fw-bold">رقم هوية المصاب <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control form-control-lg" id="injuredID" pattern="[0-9]{9}" maxlength="9" required>
-                                <div class="invalid-feedback">يرجى إدخال رقم هوية صالح (9 أرقام).</div>
-                                <div id="injuredName" class="form-text mt-2 text-success"></div>
-                            </div>
+                </header>
 
-                            <div class="mb-4" id="fatherIdSection" style="display:none;">
-                                <label for="fatherID" class="form-label fw-bold">رقم هوية ولي الأمر (إن وجد)</label>
-                                <input type="text" class="form-control form-control-lg" id="fatherID" pattern="[0-9]{9}" maxlength="9">
-                                <div id="fatherName" class="form-text mt-2 text-info"></div>
-                            </div>
-
-                            <div class="row g-3 mb-3">
-                                <div class="col-md-6">
-                                    <label for="injuryDate" class="form-label fw-bold">تاريخ الإصابة <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control form-control-lg" id="injuryDate" required>
+                <main class="container" style="max-width:800px;">
+                    <div class="row justify-content-center">
+                        <div class="col-12">
+                            <div class="card shadow-lg" style="border-radius:15px;border:none;">
+                                <div class="card-header text-center">
+                                    <h2 class="mb-0">� بلاغ إصابة جديد</h2>
+                                    <p class="mb-0 mt-2 opacity-75">ادخل معلومات المصاب وتفاصيل الإصابة لعرضها على الفريق الإداري</p>
                                 </div>
-                                <div class="col-md-6">
-                                    <label for="injuryPlace" class="form-label fw-bold">مكان الإصابة <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control form-control-lg" id="injuryPlace" required>
+                                <div class="card-body p-4">
+                                    <form id="injuryForm" class="needs-validation" novalidate>
+                                        <div class="mb-4">
+                                            <label for="injuredID" class="form-label fw-bold">رقم الهوية <span class="text-danger">*</span></label>
+                                            <input id="injuredID" type="text" class="form-control form-control-lg" pattern="[0-9]{9}" maxlength="9" required placeholder="أدخل رقم الهوية (9 أرقام)">
+                                            <div class="invalid-feedback">يرجى إدخال رقم هوية صالح (9 أرقام)</div>
+                                            <div id="injuredNote" class="form-text mt-2"></div>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label for="injuredName" class="form-label fw-bold">اسم المصاب <span class="text-danger">*</span></label>
+                                            <input id="injuredName" type="text" class="form-control form-control-lg" required placeholder="الاسم الكامل للمصاب">
+                                            <div class="invalid-feedback">يرجى إدخال اسم المصاب</div>
+                                        </div>
+
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-6">
+                                                <label for="injuryDate" class="form-label fw-bold">تاريخ الإصابة <span class="text-danger">*</span></label>
+                                                <input id="injuryDate" type="date" class="form-control form-control-lg" required>
+                                                <div class="invalid-feedback">يرجى إدخال تاريخ الإصابة</div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="injuryPlace" class="form-label fw-bold">مكان الإصابة <span class="text-danger">*</span></label>
+                                                <input id="injuryPlace" type="text" class="form-control form-control-lg" required placeholder="مكان الإصابة">
+                                                <div class="invalid-feedback">يرجى إدخال مكان الإصابة</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label for="injuryCause" class="form-label fw-bold">سبب الإصابة <span class="text-danger">*</span></label>
+                                            <input id="injuryCause" type="text" class="form-control form-control-lg" required placeholder="سبب الإصابة">
+                                            <div class="invalid-feedback">يرجى ذكر سبب الإصابة</div>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label for="additionalDetails" class="form-label fw-bold">تفاصيل إضافية</label>
+                                            <textarea id="additionalDetails" class="form-control form-control-lg" rows="3" placeholder="أكتب أي تفاصيل إضافية عن الحالة أو المطلوب"></textarea>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label for="injuryFile" class="form-label fw-bold">مرفق (صورة أو تقرير طبي)</label>
+                                            <input id="injuryFile" type="file" class="form-control form-control-lg" accept="image/*,.pdf">
+                                            <div id="filePreview" class="mt-3" style="display:none;"><img id="previewImg" src="" alt="معاينة" class="img-fluid rounded" style="max-height:260px;"/></div>
+                                        </div>
+
+                                        <div class="row g-3 mt-4">
+                                            <div class="col-md-6">
+                                                <button type="button" class="btn btn-outline-secondary btn-lg w-100" onclick="window.location.href='wounded-form.html'">عودة للنماذج</button>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <button type="submit" class="btn btn-primary btn-lg w-100">إرسال البلاغ</button>
+                                            </div>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
-
-                            <div class="mb-3">
-                                <label for="injuryCause" class="form-label fw-bold">سبب الإصابة <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control form-control-lg" id="injuryCause" required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="additionalDetails" class="form-label fw-bold">تفاصيل إضافية</label>
-                                <textarea id="additionalDetails" class="form-control form-control-lg" rows="3"></textarea>
-                            </div>
-
-                            <div class="mb-4">
-                                <label for="injuryFile" class="form-label fw-bold">رفع تقرير طبي أو صورة (اختياري)</label>
-                                <input type="file" id="injuryFile" class="form-control form-control-lg" accept="image/*,.pdf">
-                                <div id="filePreviewContainer" class="mt-2" style="display:none;"><img id="filePreview" src="" alt="معاينة" class="img-fluid" style="max-height:220px; border-radius:8px;"/></div>
-                            </div>
-
-                            <div class="text-end">
-                                <button type="submit" class="btn btn-primary btn-lg">حفظ كإصابة</button>
-                            </div>
-                        </form>
+                        </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </main>
+                </main>
 
-    <footer class="footer mt-4 text-center">
-        <div id="server-status" class="status-indicator mb-2">
-            <span class="status-dot"></span>
-            <span class="status-text">جاري التحقق من حالة الخادم...</span>
-        </div>
-        <p class="copyright-text mb-2">جميع الحقوق محفوظة © 2025 | م. حماده أبو رجيلة</p>
-        <a href="https://wa.me/972569210941" target="_blank" class="whatsapp-link"><i class="bi bi-whatsapp"></i> تواصل عبر الواتساب</a>
-    </footer>
+                <footer class="footer text-center mt-4">
+                    <div id="server-status" class="status-indicator mb-2"><span class="status-dot"></span> <span class="status-text">جارِ التحقق من حالة الخادم...</span></div>
+                    <p class="text-muted">© 2025 عائلة أبو رجيلى</p>
+                </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-    <script src="script.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function(){
+                        const form = document.getElementById('injuryForm');
+                        const injuryFile = document.getElementById('injuryFile');
+                        const previewImg = document.getElementById('previewImg');
+                        const filePreview = document.getElementById('filePreview');
 
-    <script>
-        // Ensure a compatible postToServer exists
-        if (typeof postToServer === 'undefined' && window.App && typeof window.App.postToServer === 'function') {
-            window.postToServer = function(payload) { return window.App.postToServer(payload); };
-        }
+                        injuryFile.addEventListener('change', function(e){
+                            const f = e.target.files[0];
+                            if(f && f.type.startsWith('image')){
+                                const r = new FileReader(); r.onload = (ev)=>{ previewImg.src = ev.target.result; filePreview.style.display='block'; };
+                                r.readAsDataURL(f);
+                            } else { filePreview.style.display='none'; }
+                        });
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('injuryForm');
-            const injuredID = document.getElementById('injuredID');
-            const injuredName = document.getElementById('injuredName');
-            const fatherID = document.getElementById('fatherID');
-            const fatherName = document.getElementById('fatherName');
-            const fatherIdSection = document.getElementById('fatherIdSection');
-            const injuryFile = document.getElementById('injuryFile');
-            const filePreview = document.getElementById('filePreview');
-            const filePreviewContainer = document.getElementById('filePreviewContainer');
+                        const toBase64 = (file) => new Promise((resolve, reject)=>{
+                            if(!file) return resolve(null);
+                            const reader = new FileReader(); reader.onload = ()=>{ const raw = reader.result; resolve({ name: file.name, mimeType: file.type, data: raw.substring(raw.indexOf(',')+1) }); };
+                            reader.onerror = reject; reader.readAsDataURL(file);
+                        });
 
-            // Verify injured ID and autofill name
-            injuredID.addEventListener('input', function(e) {
-                this.value = this.value.replace(/[^0-9]/g, '');
-            });
-            injuredID.addEventListener('blur', async function() {
-                const id = this.value.trim();
-                if (id.length === 9 && window.App && App.verifyPersonById) {
-                    const res = await App.verifyPersonById(id);
-                    if (res.exists) { injuredName.textContent = 'الاسم: ' + (res.name || ''); fatherIdSection.style.display = 'none'; }
+                        form.addEventListener('submit', function(e){
+                            e.preventDefault();
+                            if (!form.checkValidity()){ form.classList.add('was-validated'); return; }
+
+                            (async ()=>{
+                                const submitBtn = form.querySelector('button[type="submit"]');
+                                const orig = submitBtn.textContent; submitBtn.disabled = true; submitBtn.textContent = 'جارٍ الإرسال...';
+                                try{
+                                    const fileObj = await toBase64(injuryFile.files[0]);
+                                    const payload = {
+                                        action: 'submitInjuryRegistration',
+                                        injuredID: document.getElementById('injuredID').value.trim(),
+                                        injuredName: document.getElementById('injuredName').value.trim(),
+                                        injuryDate: document.getElementById('injuryDate').value,
+                                        injuryPlace: document.getElementById('injuryPlace').value.trim(),
+                                        injuryCause: document.getElementById('injuryCause').value.trim(),
+                                        additionalDetails: document.getElementById('additionalDetails').value.trim(),
+                                        injuryFile: fileObj
+                                    };
+
+                                    // use App.postToAPI when available
+                                    const res = window.App && App.postToAPI ? await App.postToAPI(payload, true) : await fetch(App.WEB_APP_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }).then(r=>r.json());
+                                    if (!res || !res.success) throw new Error(res?.message || 'فشل الإرسال');
+                                    if (window.App && App.showDialog) App.showDialog({ type: 'success', title: 'تم الإرسال', message: res.message || 'تم إرسال البلاغ بنجاح', confirmText: 'حسناً' });
+                                    form.reset(); filePreview.style.display='none'; form.classList.remove('was-validated');
+                                }catch(err){
+                                    if (window.App && App.showToast) App.showToast(err.message || 'خطأ في الإرسال', false); else alert(err.message||'خطأ');
+                                }finally{ submitBtn.disabled = false; submitBtn.textContent = orig; }
+                            })();
+                        });
+                    });
+                </script>
+            </body>
+            </html>
                     else { injuredName.textContent = ''; fatherIdSection.style.display = 'block'; }
                 }
             });

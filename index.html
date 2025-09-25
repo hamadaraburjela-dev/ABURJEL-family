@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="modern-theme.css">
+    <link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
     <div class="main-container">
@@ -47,13 +48,13 @@
                                 </div>
                             </div>
                             <div class="col-12 col-md-6">
-                                <div class="card h-100 text-center selection-card" data-bs-toggle="modal" data-bs-target="#adminLoginModal" role="button" aria-label="تسجيل دخول المدير">
+                                <a href="admin-register.html" class="card h-100 text-center selection-card text-decoration-none" role="button" aria-label="تسجيل دخول المدير">
                                     <div class="card-body">
                                         <i class="bi bi-shield-lock-fill card-icon" aria-hidden="true"></i>
                                         <h3 class="card-title">تسجيل دخول المدير</h3>
                                         <p class="card-text">لإدارة بيانات النظام وإضافة المساعدات.</p>
                                     </div>
-                                </div>
+                                </a>
                             </div>
 
                             <div class="col-12">
@@ -99,32 +100,7 @@
         </div>
     </div>
     
-    <div class="modal fade" id="adminLoginModal" tabindex="-1" aria-labelledby="adminLoginModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content auth-form">
-                <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title" id="adminLoginModalLabel">تسجيل دخول المدير</h5>
-                    <button type="button" class="btn-close m-0" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body pt-0">
-                    <form id="adminLoginForm">
-                        <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="username" placeholder="اسم المستخدم" required>
-                            <label for="username">اسم المستخدم</label>
-                        </div>
-                        <div class="form-floating mb-3">
-                            <input type="password" class="form-control" id="password" placeholder="كلمة المرور" required>
-                            <label for="password">كلمة المرور</label>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">
-                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                            <span class="button-text">دخول</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- adminLoginModal removed: admin actions moved to admin-register.html / admin.html -->
     
     <div class="modal fade" id="setPasswordModal" tabindex="-1" aria-labelledby="setPasswordModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
@@ -260,6 +236,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="assets/site.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

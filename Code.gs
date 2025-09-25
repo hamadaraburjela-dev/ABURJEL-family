@@ -56,7 +56,10 @@ function doPost(e) {
   case 'getDeathRequests': response = handleGetDeathRequests(payload.token); break;
   case 'updateDeathRequestStatus': response = handleUpdateDeathRequestStatus(payload); break;
   case 'updateMartyrRequestStatus': response = handleUpdateMartyrRequestStatus(payload); break;
-  case 'submitDeathRegistration': response = handleSubmitDeathRegistration(payload); break;
+            case 'submitDeathRegistration': response = handleSubmitDeathRegistration(payload); break;
+            case 'submitInjuryRegistration': response = handleSubmitInjuryRegistration(payload); break;
+            case 'getInjuryRequests': response = handleGetInjuryRequests(payload.token); break;
+            case 'updateInjuryRequestStatus': response = handleUpdateInjuryRequestStatus(payload); break;
       case 'bulkAddAidFromXLSX': response = handleBulkAddAidFromXLSX(payload); break;
       case 'createAdmin': response = handleCreateAdmin(payload); break;
       case 'updateAdminStatus': response = handleUpdateAdminStatus(payload); break;
@@ -1125,6 +1128,112 @@ function handleSubmitMartyrRegistration(payload) {
     success: true, 
     message: message
   };
+}
+
+/**
+ * Submit injury registration (public form)
+ * payload: { injuredID, fatherID, injuryDate, injuryPlace, injuryCause, additionalDetails, injuryFile: { name, mimeType, data } }
+ */
+function handleSubmitInjuryRegistration(payload) {
+  try {
+    const { injuredID, fatherID, injuryDate, injuryPlace, injuryCause, additionalDetails, injuryFile } = payload;
+    if (!injuredID || !injuryDate || !injuryPlace || !injuryCause) {
+      throw new Error('\u062c\u0645\u064a\u0639 \u0627\u0644\u062d\u0642\u0648\u0644 \u0645\u0637\u0644\u0648\u0628\u0629: \u0631\u0642\u0645 \u0627\u0644\u0645\u0635\u0627\u0628 \u0648\u0645\u0643\u0627\u0646 \u0627\u0644\u0625\u0635\u0627\u0628\u0629 \u0648\u0639\u0646\u0648\u0627\u0646 \u0627\u0644\u062d\u0627\u0644\u0629');
+    }
+
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = ss.getSheetByName(INJURIES_SHEET) || ss.insertSheet(INJURIES_SHEET);
+
+    // ensure headers
+    const existing = sheet.getDataRange().getValues();
+    if (!existing || existing.length === 0) {
+      sheet.appendRow([
+        '\u0645\u0639\u0631\u0641 \u0627\u0644\u0637\u0644\u0628',
+        '\u062a\u0627\u0631\u064a\u062e \u0627\u0644\u062a\u0633\u062c\u064a\u0644',
+        '\u0631\u0642\u0645 \u0627\u0644\u0645\u0635\u0627\u0628',
+        '\u0631\u0642\u0645 \u0627\u0644\u0623\u0628',
+        '\u0645\u0643\u0627\u0646 \u0627\u0644\u0625\u0635\u0627\u0628\u0629',
+        '\u0633\u0628\u0628 \u0627\u0644\u0625\u0635\u0627\u0628\u0629',
+        '\u062a\u0641\u0627\u0635\u064a\u0644',
+        '\u062d\u0627\u0644\u0629',
+        '\u0631\u0627\u0628\u0637 \u0627\u0644\u0645\u0644\u0641'
+      ]);
+    }
+
+    // upload file to Drive if provided
+    let fileUrl = '';
+    try {
+      if (injuryFile && injuryFile.data) {
+        const bytes = Utilities.base64Decode(injuryFile.data);
+        const blob = Utilities.newBlob(bytes, injuryFile.mimeType || MimeType.JPEG, injuryFile.name || ('injury_' + injuredID));
+        const folderName = '\u0627\u0635\u0627\u0628\u0627\u062a - \u0627\u0644\u0625\u0635\u0627\u0628\u0627\u062a';
+        let folderIter = DriveApp.getFoldersByName(folderName);
+        let folder = folderIter.hasNext() ? folderIter.next() : DriveApp.createFolder(folderName);
+        const file = folder.createFile(blob);
+        file.setName(`injury_${injuredID}_${new Date().getTime()}`);
+        fileUrl = file.getUrl();
+      }
+    } catch (fileErr) {
+      Logger.log('Injury file upload failed: ' + fileErr);
+    }
+
+    const requestId = 'INJ' + new Date().getTime();
+    const status = '\u062c\u062f\u064a\u062f';
+    sheet.appendRow([
+      requestId,
+      new Date(),
+      injuredID,
+      fatherID || '',
+      new Date(injuryDate),
+      injuryPlace || '',
+      injuryCause || '',
+      additionalDetails || '',
+      status,
+      fileUrl
+    ]);
+
+    return { success: true, message: '\u062a\u0645 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u0625\u0635\u0627\u0628\u0629 \u0628\u0646\u062c\u0627\u062d' };
+  } catch (err) {
+    return { success: false, message: err.message };
+  }
+}
+
+/**
+ * Return injury requests for admin pages
+ */
+function handleGetInjuryRequests(token) {
+  authenticateToken(token);
+  const rows = sheetToJSON(INJURIES_SHEET);
+  const sorted = rows.sort((a, b) => new Date(b['\u062a\u0627\u0631\u064a\u062e \u0627\u0644\u062a\u0633\u062c\u064a\u0644']) - new Date(a['\u062a\u0627\u0631\u064a\u062e \u0627\u0644\u062a\u0633\u062c\u064a\u0644']));
+  return { success: true, data: sorted };
+}
+
+/**
+ * Update injury request status (admin)
+ * payload: { token, requestId, newStatus }
+ */
+function handleUpdateInjuryRequestStatus(payload) {
+  const admin = authenticateToken(payload.token);
+  const { requestId, newStatus } = payload;
+  if (!requestId || !newStatus) throw new Error('\u0628\u064a\u0627\u0646\u0627\u062a \u063a\u064a\u0631 \u0645\u0643\u062a\u0645\u0644\u0629 \u0644\u062a\u062d\u062f\u064a\u062b \u062d\u0627\u0644\u0629');
+
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(INJURIES_SHEET);
+  if (!sheet) throw new Error('\u0648\u0631\u0642\u0629 \u0627\u0635\u0627\u0628\u0627\u062a \u063a\u064a\u0631 \u0645\u0648\u062c\u0648\u062f\u0629');
+  const data = sheet.getDataRange().getValues();
+  if (data.length < 2) throw new Error('\u0644\u0627 \u062a\u0648\u062c\u062f \u0637\u0644\u0628\u0627\u062a');
+  const headers = data[0];
+  const idCol = headers.indexOf('\u0645\u0639\u0631\u0641 \u0627\u0644\u0637\u0644\u0628');
+  const statusCol = headers.indexOf('\u062d\u0627\u0644\u0629');
+  if (idCol === -1 || statusCol === -1) throw new Error('\u0623\u0639\u0645\u062f\u0629 \u0627\u0644\u0637\u0644\u0628 \u063a\u064a\u0631 \u0635\u062d\u064a\u062d\u0629');
+
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][idCol]).trim() === String(requestId).trim()) {
+      sheet.getRange(i + 1, statusCol + 1).setValue(newStatus);
+      logAdminAction(admin.username, '\u062a\u062d\u062f\u064a\u062b \u062d\u0627\u0644\u0629 \u0627\u0644\u0625\u0635\u0627\u0628\u0629', `\u062a\u0645 \u062a\u062d\u062f\u064a\u062b ${requestId} \u0625\u0644\u0649 ${newStatus}`);
+      return { success: true, message: '\u062a\u0645 \u062a\u062d\u062f\u064a\u062b \u0627\u0644\u062d\u0627\u0644\u0629' };
+    }
+  }
+  throw new Error('\u0644\u0645 \u064a\u062a\u0645 \u0627\u0644\u0639\u062b\u0648\u0631 \u0639\u0644\u0649 \u0627\u0644\u0637\u0644\u0628');
 }
 
 /**
