@@ -70,6 +70,21 @@
 				Toastify({ text: 'اطلب إعادة تعيين كلمة المرور من المشرف الرئيسي', duration: 4000, gravity: 'top', position: 'center' }).showToast();
 			}
 		});
+
+		// Attach submit handler that delegates to App.handleAdminLogin when App is initialized
+		document.addEventListener('DOMContentLoaded', function attachAdminForm() {
+			const form = document.getElementById('adminLoginForm');
+			if (!form) return;
+			form.addEventListener('submit', function(e) {
+				e.preventDefault();
+				if (window.App && typeof App.handleAdminLogin === 'function') {
+					App.handleAdminLogin(e);
+				} else {
+					// Fallback: simple client-side notification
+					Toastify({ text: 'جاري تهيئة النظام، يرجى المحاولة بعد لحظات', duration: 3000, gravity: 'top', position: 'center' }).showToast();
+				}
+			});
+		});
 	</script>
 </body>
 </html>
