@@ -175,6 +175,39 @@
             font-style: italic;
             padding: 20px;
         }
+
+        /* Standout styling for the Edit Profile button */
+        #editProfileBtn.btn-modern {
+            background: linear-gradient(90deg, #ff7a18 0%, #ff4e50 50%, #ff6b81 100%);
+            color: #ffffff;
+            border: none;
+            padding: 0.45rem 0.9rem;
+            border-radius: 20px;
+            box-shadow: 0 6px 18px rgba(255,77,77,0.18), 0 2px 6px rgba(0,0,0,0.06);
+            transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+        }
+
+        #editProfileBtn.btn-modern i {
+            transform: translateY(0);
+            transition: transform 180ms ease;
+        }
+
+        #editProfileBtn.btn-modern:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255,77,77,0.22), 0 4px 10px rgba(0,0,0,0.08);
+            filter: brightness(1.03);
+        }
+
+        #editProfileBtn.btn-modern:active {
+            transform: translateY(-1px) scale(0.995);
+            box-shadow: 0 6px 18px rgba(255,77,77,0.16);
+        }
+
+        /* subtle glowing ring on focus for accessibility */
+        #editProfileBtn.btn-modern:focus {
+            outline: none;
+            box-shadow: 0 0 0 6px rgba(255,110,110,0.12), 0 6px 18px rgba(255,77,77,0.18);
+        }
     </style>
 </head>
 <body>
@@ -198,8 +231,8 @@
                     <p class="text-muted mb-0" id="userTitle">رقم الهوية: ---</p>
                 </div>
             </div>
-            <button class="btn btn-outline-primary btn-sm" id="editProfileBtn">
-                <i class="bi bi-pencil-square"></i> تعديل البيانات
+            <button class="btn btn-outline-primary btn-sm btn-modern" id="editProfileBtn">
+                <i class="bi bi-pencil-square me-1"></i> تعديل البيانات
             </button>
         </div>
         <div class="card-body">
@@ -448,27 +481,28 @@
                 };
 
                 try {
+                    // Instead of updating directly, submit an edit request for admin approval
                     const response = await App.apiCall({
-                        action: 'updateUserProfile',
+                        action: 'submitEditRequest',
                         userId: userId,
+                        requestType: 'profile_update',
                         profileData: updatedData
                     });
 
                     if (response && response.success) {
                         bootstrap.Modal.getInstance(document.getElementById('editProfileModal')).hide();
-                        App.loadUserData(userId); // إعادة تحميل البيانات
-                        
+                        // Do not reload user data: changes will be applied after admin approval
                         Toastify({
-                            text: "تم تحديث البيانات بنجاح",
-                            duration: 3000,
+                            text: "تم إرسال طلب التعديل بنجاح؛ سينتظر الموافقة من المشرف.",
+                            duration: 4000,
                             gravity: "top",
                             position: "center",
-                            backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                            backgroundColor: "linear-gradient(to right, #4e73df, #6f42c1)",
                         }).showToast();
                     }
                 } catch (error) {
                     Toastify({
-                        text: "حدث خطأ في تحديث البيانات",
+                        text: "حدث خطأ أثناء إرسال طلب التعديل",
                         duration: 5000,
                         gravity: "top",
                         position: "center",
