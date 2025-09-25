@@ -1,0 +1,104 @@
+/* Shared site header + common layout styles (RTL) */
+/* Designed for a professional, NGO-style clean header */
+:root{
+    --site-bg: #ffffff;
+    --accent: #007a3d; /* deep green */
+    --muted: #6c757d;
+    --header-height: 72px;
+}
+
+html[dir="rtl"] .site-header { direction: rtl; }
+.site-header{
+    width:100%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(250,250,250,0.95));
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+    position: sticky;
+    top:0;
+    z-index:1050;
+}
+.site-header .container{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    height: var(--header-height);
+}
+.site-brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+.site-brand img{ width:56px; height:auto; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.08); }
+.site-title{ font-weight:800; font-size:1.05rem; color:var(--accent); margin:0; }
+.site-tagline{ font-size:0.85rem; color:var(--muted); margin:0; opacity:0.95 }
+
+.site-nav{ display:flex; gap:8px; align-items:center; }
+.site-nav a{ color:#222; text-decoration:none; padding:8px 12px; border-radius:8px; font-weight:600 }
+.site-nav a:hover{ background:rgba(0,0,0,0.04); color:var(--accent) }
+
+.site-cta{ display:flex; gap:8px; align-items:center }
+.btn-site{ background:var(--accent); color:#fff; border-radius:10px; padding:8px 14px; font-weight:700; border:0 }
+.btn-outline-site{ border:1px solid var(--accent); color:var(--accent); background:transparent; padding:7px 12px; border-radius:10px }
+
+/* responsive */
+@media (max-width:768px){
+    .site-header .container{ padding:0 12px; }
+    .site-nav{ display:none; }
+}
+
+/* Small helper for page content spacing so header doesn't cover sticky content */
+.site-header-spacer{ height: var(--header-height); width:100%; }
+
+/* Provide a consistent H1 style for SEO pages */
+.page-h1{ font-size:1.4rem; font-weight:800; color:#0a3a22; margin:0 }
+
+/* Accessibility focus */
+.site-nav a:focus, .btn-site:focus, .btn-outline-site:focus{ outline:3px solid rgba(0,122,61,0.2); outline-offset:2px }
+
+/* ===== Typography ===== */
+h1, .page-h1 { font-family: 'Cairo', sans-serif; font-size:1.6rem; line-height:1.15; color:#0b3f28; margin:0 0 0.6rem 0 }
+h2 { font-family: 'Cairo', sans-serif; font-size:1.25rem; color:#0b3f28; margin:0 0 0.5rem 0; font-weight:800 }
+h3 { font-family: 'Cairo', sans-serif; font-size:1.05rem; color:#153b2e; margin:0 0 0.4rem 0; font-weight:700 }
+
+.lead { font-size:1rem; color:var(--muted); margin-bottom:0.75rem }
+
+/* ===== Sections & Containers ===== */
+.site-section{ background:var(--site-bg); border-radius:12px; padding:20px; margin-bottom:18px; box-shadow:0 8px 24px rgba(0,0,0,0.04) }
+.site-section .section-title{ margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; gap:12px }
+
+/* ===== Cards (unified) ===== */
+.card-shared{ border-radius:12px; background:#fff; padding:16px; box-shadow:0 6px 18px rgba(0,0,0,0.06); border:1px solid rgba(0,0,0,0.04) }
+.card-shared .card-title{ font-size:1.05rem; font-weight:800; color:#08381f; margin-bottom:8px }
+.card-shared .card-body{ color:#333; font-size:0.98rem }
+
+/* small card variants */
+.card-small{ padding:12px }
+.card-inline{ display:flex; align-items:center; gap:12px }
+
+/* ===== Tables (unified modern) ===== */
+.table-shared{ width:100%; border-collapse:collapse; background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 6px 18px rgba(0,0,0,0.06) }
+.table-shared thead th{ background:linear-gradient(90deg, rgba(0,122,61,0.12), rgba(0,122,61,0.06)); color:#06391f; padding:12px 14px; text-align:right; font-weight:700; font-size:0.95rem }
+.table-shared tbody td{ padding:12px 14px; border-top:1px solid rgba(0,0,0,0.04); vertical-align:middle; font-size:0.95rem }
+.table-shared tbody tr:hover{ background:linear-gradient(90deg, rgba(0,122,61,0.03), rgba(0,122,61,0.02)) }
+.table-responsive-shared{ overflow-x:auto; -webkit-overflow-scrolling:touch }
+
+/* ===== Lists and misc ===== */
+.list-clean{ list-style:none; padding:0; margin:0 }
+.list-clean li{ padding:8px 0; border-bottom:1px dashed rgba(0,0,0,0.03) }
+
+.muted-small{ color:var(--muted); font-size:0.9rem }
+
+/* ===== Utilities ===== */
+.text-accent{ color:var(--accent) }
+.mb-1{ margin-bottom:0.25rem }
+.mb-2{ margin-bottom:0.5rem }
+.mb-3{ margin-bottom:1rem }
+.mt-1{ margin-top:0.25rem }
+.mt-2{ margin-top:0.5rem }
+
+@media (max-width:768px){
+    h1, .page-h1 { font-size:1.25rem }
+    h2 { font-size:1.05rem }
+    .site-brand img { width:48px }
+}

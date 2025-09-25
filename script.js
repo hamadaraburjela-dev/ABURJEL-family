@@ -78,6 +78,89 @@ document.addEventListener('DOMContentLoaded', () => {
             this.initModals();
             this.initPageBasedOnURL();
             this.checkServerStatus();
+            this.ensureGlobalHeader();
+        },
+
+        ensureGlobalHeader() {
+            try {
+                // Prevent double-insert
+                if (document.getElementById('global-site-header')) return;
+
+                // Load shared CSS
+                const cssHref = 'assets/shared.css';
+                if (!document.querySelector(`link[href="${cssHref}"]`)) {
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = cssHref;
+                    document.head.appendChild(link);
+                }
+
+                // Add SEO-friendly canonical if missing
+                const canonicalHref = window.location.href.split('#')[0];
+                if (!document.querySelector('link[rel="canonical"]')) {
+                    const c = document.createElement('link');
+                    c.rel = 'canonical';
+                    c.href = canonicalHref;
+                    document.head.appendChild(c);
+                }
+
+                // Add simple JSON-LD organization metadata (Arabic) if missing
+                if (!document.getElementById('org-json-ld')) {
+                    const ld = document.createElement('script');
+                    ld.type = 'application/ld+json';
+                    ld.id = 'org-json-ld';
+                    const org = {
+                        "@context": "https://schema.org",
+                        "@type": "Organization",
+                        "name": "نظام إدارة بيانات العائلة",
+                        "url": window.location.origin + '/',
+                        "logo": window.location.origin + '/logo.webp',
+                        "description": "بوابة موحدة لإدارة مدد الأسرة والمساعدات والخدمات بتصميم احترافي ومتوافق مع معايير السيو",
+                        "sameAs": []
+                    };
+                    ld.textContent = JSON.stringify(org);
+                    document.head.appendChild(ld);
+                }
+
+                // Build header markup
+                const header = document.createElement('header');
+                header.id = 'global-site-header';
+                header.className = 'site-header';
+                header.innerHTML = `
+                    <div class="container">
+                        <div class="site-brand">
+                            <img src="logo.webp" alt="شعار الموقع">
+                            <div>
+                                <h1 class="site-title">نظام إدارة بيانات العائلة</h1>
+                                <div class="site-tagline">بوابة المساعدة والتوزيع - تصميم منسق وموحد</div>
+                            </div>
+                        </div>
+                        <nav class="site-nav" aria-label="الرئيسية">
+                            <a href="index.html">الرئيسية</a>
+                            <a href="manage-members.html">الأفراد</a>
+                            <a href="manage-aid.html">المساعدات</a>
+                            <a href="reports.html">التقارير</a>
+                        </nav>
+                        <div class="site-cta">
+                            <a class="btn-outline-site" href="index.html#contact">تواصل</a>
+                            <a class="btn-site" href="admin.html">دخول المشرف</a>
+                        </div>
+                    </div>
+                `;
+
+                // Insert at top of body
+                document.body.insertBefore(header, document.body.firstChild);
+
+                // Add spacer so existing pages with sticky headers don't get covered
+                const spacer = document.createElement('div');
+                spacer.className = 'site-header-spacer';
+                spacer.id = 'site-header-spacer';
+                // If a top main wrapper exists, insert after header; otherwise append at top
+                document.body.insertBefore(spacer, header.nextSibling);
+
+            } catch (err) {
+                console.warn('ensureGlobalHeader failed', err);
+            }
         },
         
         initModals() {
