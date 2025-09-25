@@ -45,6 +45,7 @@ function doPost(e) {
       case 'getAllAidRecords': response = handleGetAllAidRecords(payload.token); break;
   case 'addAid': response = handleAddAid(payload); break;
   case 'addSpecialCase': response = handleAddSpecialCase(payload); break;
+  case 'submitSpecialCaseRequest': response = handleSubmitSpecialCaseRequest(payload); break;
   case 'verifyFatherId': response = handleVerifyFatherId(payload.fatherId); break;
   case 'submitBirthRegistration': response = handleSubmitBirthRegistration(payload); break;
   case 'submitChildrenClothes': response = handleSubmitChildrenClothes(payload); break;
@@ -825,6 +826,75 @@ function handleAddSpecialCase(payload) {
     const row = [ new Date(), payload.name || '', payload.idNumber || '', payload.phone || '', payload.caseType || '', payload.priority || '', payload.date || '', payload.notes || '', 'Open' ];
     sheet.appendRow(row);
     return { success: true, message: 'تم استلام الحالة الخاصة وسيتم متابعتها.' };
+  } catch (err) {
+    return { success: false, message: err.message };
+  }
+}
+
+/**
+ * Handle public submission of a special case (from special-cases-form.html)
+ * payload expected: { user_id, user_name, spouse_id, head_id, case_type, description, case_date, attachment?: { name, mime, data(Base64) } }
+ */
+function handleSubmitSpecialCaseRequest(payload) {
+  try {
+    if (!payload || !payload.user_id) {
+      throw new Error('رقم الهوية مطلوب لإرسال طلب الحالة الخاصة.');
+    }
+
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = ss.getSheetByName(SPECIAL_CASES_SHEET) || ss.insertSheet(SPECIAL_CASES_SHEET);
+
+    // Ensure header exists
+    const rangeValues = sheet.getDataRange().getValues();
+    if (!rangeValues || rangeValues.length === 0) {
+      sheet.appendRow(['معرف الطلب','تاريخ الإرسال','رقم مقدم الطلب','اسم مقدم الطلب','هوية الزوج/الزوجة','هوية رب الأسرة (للتحقق)','نوع الحالة','وصف الحالة','تاريخ الحالة','رابط المرفق','حالة']);
+    }
+
+    // Try to upload attachment if provided
+    let fileUrl = '';
+    try {
+      if (payload.attachment && payload.attachment.data) {
+        const bytes = Utilities.base64Decode(payload.attachment.data);
+        const blob = Utilities.newBlob(bytes, payload.attachment.mime || payload.attachment.mimeType || MimeType.PLAIN_TEXT, payload.attachment.name || ('attachment_' + new Date().getTime()));
+        const folderName = 'مرفقات الحالات الخاصة';
+        let folderIter = DriveApp.getFoldersByName(folderName);
+        let folder = folderIter.hasNext() ? folderIter.next() : DriveApp.createFolder(folderName);
+        const file = folder.createFile(blob);
+        file.setName((payload.user_id || 'user') + '_' + (payload.attachment.name || 'attachment') + '_' + new Date().getTime());
+        fileUrl = file.getUrl();
+      }
+    } catch (fileErr) {
+      Logger.log('Failed to upload special-case attachment: ' + fileErr);
+    }
+
+    const requestId = 'SC' + new Date().getTime();
+    // If head_id provided, try to verify existence in individuals and set status accordingly
+    let status = 'جديد';
+    if (payload.head_id) {
+      try {
+        const members = sheetToJSON(INDIVIDUALS_SHEET);
+        const found = members.find(m => String(m['رقم الهوية']).trim() === String(payload.head_id).trim());
+        if (!found) status = 'قيد المراجعة';
+      } catch (e) {
+        status = 'قيد المراجعة';
+      }
+    }
+
+    sheet.appendRow([
+      requestId,
+      new Date(),
+      payload.user_id || '',
+      payload.user_name || '',
+      payload.spouse_id || '',
+      payload.head_id || '',
+      payload.case_type || '',
+      payload.description || '',
+      payload.case_date ? new Date(payload.case_date) : new Date(),
+      fileUrl || '',
+      status
+    ]);
+
+    return { success: true, message: 'تم استلام طلب الحالة الخاصة وسيتم متابعته.' };
   } catch (err) {
     return { success: false, message: err.message };
   }
