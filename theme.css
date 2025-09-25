@@ -1,0 +1,82 @@
+/* theme.css - visual identity and redesigned components for ABURJEL family site
+   Small, focused stylesheet to progressively enhance existing pages.
+   RTL-friendly, modern simple palette driven by the logo (green primary).
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
+:root{
+  --brand-green: #0b6b2d;
+  --brand-green-600: #0a5b25;
+  --muted: #6c757d;
+  --card-bg: #ffffff;
+  --surface: #f7faf7;
+  --accent: #0d6efd;
+}
+
+html,body{height:100%;}
+body{font-family:'Cairo', Tahoma, sans-serif; background:var(--surface); color:#1b1b1b; direction:rtl;}
+
+/* Header */
+.header-section{background:transparent;padding:1.25rem 0;margin-bottom:0.5rem}
+.header-section .logo{border-radius:14px;max-width:120px}
+.header-text h1{color:var(--brand-green);font-weight:800}
+.header-text p{color:var(--muted);}
+
+/* Unified header/footer */
+.header{background:linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0.6));padding:1rem 0;position:sticky;top:0;z-index:1030}
+.header .header-logo{width:64px;height:auto;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
+.header .header-title{font-weight:800;color:var(--brand-green);margin:0}
+
+.footer{background:transparent;padding:1.25rem 0;margin-top:2rem}
+
+/* Buttons and controls */
+.btn{border-radius:10px;font-weight:700}
+.btn-outline-success{color:var(--brand-green);border-color:var(--brand-green)}
+.btn-outline-success:hover{background:var(--brand-green);color:#fff}
+.btn-outline-danger{border-radius:10px}
+.btn-primary{background:var(--brand-green);border-color:var(--brand-green)}
+
+/* Card refinement */
+.selection-card{border-radius:12px}
+.selection-card .card-title{font-size:1.05rem}
+
+/* Forms */
+.form-control{border-radius:8px}
+.form-select{border-radius:8px}
+
+/* Focus accessibility */
+:focus{outline: none}
+.selection-card[role="button"]:focus, .btn:focus{box-shadow:0 0 0 4px rgba(11,107,45,0.12);outline:none}
+
+/* Utility */
+.text-success{color:var(--brand-green) !important}
+
+/* Main Panel */
+.hero-panel{background:linear-gradient(180deg,#ffffff, #f3f7f4);border-radius:14px;padding:1.25rem;border:1px solid rgba(10,80,30,0.06)}
+.selection-card{background:var(--card-bg);border-radius:12px;padding:1.2rem;transition:transform .18s ease, box-shadow .18s ease}
+.selection-card.large-card{padding:2rem}
+.selection-card .card-icon{font-size:2.2rem;color:var(--brand-green)}
+.selection-card:hover{transform:translateY(-6px);box-shadow:0 14px 40px rgba(11,107,45,0.09)}
+
+/* Buttons unified */
+.btn-primary{background:var(--brand-green);border-color:var(--brand-green);box-shadow:none}
+.btn-primary:hover{background:var(--brand-green-600);border-color:var(--brand-green-600)}
+.btn{border-radius:10px;padding:.6rem 0.9rem;font-weight:700}
+
+/* Cards and Modals */
+.card{border-radius:12px}
+.modal-content.auth-form{padding:1.5rem}
+
+/* Footer */
+.footer{background:transparent;padding:1.5rem 0;margin-top:2.5rem}
+.footer .whatsapp-link{color:var(--brand-green);font-weight:700}
+
+/* Accessibility tweaks */
+.selection-card[role="button"]:focus{outline:3px solid rgba(11,107,45,0.14);outline-offset:3px}
+
+/* Small screens */
+@media (max-width:576px){
+  .header-text h1{font-size:1.1rem}
+  .logo{max-width:86px}
+  .selection-card{padding:1rem}
+}
