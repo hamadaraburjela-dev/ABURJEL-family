@@ -3,293 +3,313 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الأحداث الحياتية - عائلة أبو رجيلة (قديح)</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <title>تسجيل الأحداث الحياتية - عائلة أبو رجيلة</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #f3f4f6;
+            direction: rtl;
+            text-align: right;
+        }
+        .container {
+            max-width: 1200px;
+        }
+    </style>
 </head>
-<body class="index-body">
+<body class="bg-gray-100 min-h-screen flex flex-col items-center">
     <!-- Top navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
-                <img src="logo.webp" alt="شعار" style="width:54px;height:54px;border-radius:10px;object-fit:cover;"/>
+    <nav class="w-full bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a class="flex items-center gap-2" href="#">
+                <img src="logo.webp" alt="شعار" class="w-12 h-12 rounded-lg object-cover"/>
                 <div>
-                    <div style="font-weight:800;">عائلة أبو رجيلة (قديح)</div>
-                    <small class="text-muted">نظام تسجيل الأحداث الحياتية</small>
+                    <div class="font-bold text-lg">عائلة أبو رجيلة (قديح)</div>
+                    <small class="text-gray-500 text-xs">نظام تسجيل الأحداث الحياتية</small>
                 </div>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="تبديل الملاحة">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="mainNav">
-                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" href="births.html">مواليد</a></li>
-                    <li class="nav-item"><a class="nav-link" href="deaths.html">وفيات</a></li>
-                    <li class="nav-item"><a class="nav-link" href="martyrs.html">شهداء</a></li>
-                    <li class="nav-item"><a class="nav-link" href="special-cases-form.html">حالات خاصة</a></li>
-                </ul>
-                <div class="d-flex ms-lg-3">
-                    <a class="btn btn-outline-primary" href="index.html">العودة للرئيسية</a>
-                </div>
+            <div class="hidden lg:flex items-center space-x-4 space-x-reverse">
+                <a class="text-gray-700 hover:text-blue-600 transition" href="#">مواليد</a>
+                <a class="text-gray-700 hover:text-blue-600 transition" href="#">وفيات</a>
+                <a class="text-gray-700 hover:text-blue-600 transition" href="#">شهداء</a>
+                <a class="text-gray-700 hover:text-blue-600 transition" href="#">حالات خاصة</a>
+                <a class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 shadow-md" href="#">العودة للرئيسية</a>
             </div>
+            <button id="mobile-menu-button" class="lg:hidden p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                </svg>
+            </button>
+        </div>
+        <div id="mobile-menu" class="hidden lg:hidden flex flex-col items-end px-4 py-2 bg-white shadow-inner">
+            <a class="py-2 text-gray-700 hover:text-blue-600 transition w-full text-right" href="#">مواليد</a>
+            <a class="py-2 text-gray-700 hover:text-blue-600 transition w-full text-right" href="#">وفيات</a>
+            <a class="py-2 text-gray-700 hover:text-blue-600 transition w-full text-right" href="#">شهداء</a>
+            <a class="py-2 text-gray-700 hover:text-blue-600 transition w-full text-right" href="#">حالات خاصة</a>
+            <a class="mt-2 w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 shadow-md" href="#">العودة للرئيسية</a>
         </div>
     </nav>
-
-    <main class="main-content">
+    
+    <main class="w-full flex-grow py-8 px-4">
         <!-- Hero + Service overview -->
-    <section class="mb-4">
-            <div class="container">
-                <div class="row align-items-center gy-3">
-                    <div class="col-lg-8">
-                        <div class="service-banner shadow-sm">
-                            <div class="banner-icon" aria-hidden="true">
-                                <!-- megaphone SVG -->
-                                <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <path d="M3 10v4h4l7 5V5L7 10H3z" />
-                                    <path d="M21 7a1 1 0 0 1-1 1h-2v8h2a1 1 0 0 1 1 1v1a1 1 0 0 1-2 0v-1h-2v-8h2a1 1 0 0 1 1 1v-1z" opacity=".9"/>
-                                </svg>
-                            </div>
-                            <div class="banner-body">
-                                <h4 class="mb-1">عن الخدمة</h4>
-                                <p class="mb-0">
-                                    نظام مركزي وآمن لتوثيق وإدارة الأحداث الحياتية لعائلة أبو رجيلة (قديح) — من تسجيل المواليد والوفيات إلى بيانات الشهداء والإصابات والحالات الخاصة.
-                                    يوفّر واجهة سريعة لإدخال السجلات، سجلًّا موحّدًا لمتابعة الحالات، وتوليد تقارير عملية لتنسيق وتوزيع الدعم بشكل منظم.
-                                </p>
-                            </div>
+        <section class="mb-8">
+            <div class="container mx-auto">
+                <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col lg:flex-row items-center gap-6">
+                    <div class="flex-grow flex items-center gap-4">
+                        <div class="flex-shrink-0 w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+                            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path d="M3 10v4h4l7 5V5L7 10H3z" />
+                                <path d="M21 7a1 1 0 0 1-1 1h-2v8h2a1 1 0 0 1 1 1v1a1 1 0 0 1-2 0v-1h-2v-8h2a1 1 0 0 1 1 1v-1z" opacity=".9"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-xl mb-1">عن الخدمة</h4>
+                            <p class="text-gray-600 text-sm md:text-base leading-relaxed">
+                                نظام مركزي وآمن لتوثيق وإدارة الأحداث الحياتية لعائلة أبو رجيلة (قديح) — من تسجيل المواليد والوفيات إلى بيانات الشهداء والإصابات والحالات الخاصة.
+                                يوفّر واجهة سريعة لإدخال السجلات، سجلًّا موحّدًا لمتابعة الحالات، وتوليد تقارير عملية لتنسيق وتوزيع الدعم بشكل منظم.
+                            </p>
                         </div>
                     </div>
-                    <div class="col-lg-4 text-lg-end">
-                        <div class="d-inline-flex gap-2">
-                            <a class="btn btn-cta btn-primary" href="https://chat.whatsapp.com/IzjmFpfOCpdJ2RxvYCQ5E0?mode=ems_copy_t" target="_blank">تواصل عبر واتساب</a>
-                        </div>
+                    <div class="flex-shrink-0 mt-4 lg:mt-0">
+                        <a class="inline-block bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-colors duration-200" href="#">
+                            تواصل عبر واتساب
+                        </a>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- Breadcrumb / quick path -->
-        <div class="container mb-3">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb bg-transparent p-0 mb-0">
-                    <li class="breadcrumb-item"><a href="index.html">الرئيسية</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">تسجيل الأحداث الحياتية</li>
+        <div class="container mx-auto mb-6">
+            <nav aria-label="مسار التنقل" class="text-sm text-gray-500">
+                <ol class="flex space-x-2 space-x-reverse items-center">
+                    <li><a href="#" class="hover:text-blue-600 transition">الرئيسية</a></li>
+                    <li>
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </li>
+                    <li class="font-bold text-gray-800">تسجيل الأحداث الحياتية</li>
                 </ol>
             </nav>
         </div>
 
-        <section class="selection-hero py-4">
-            <div class="container hero-panel p-4">
-                <div class="row g-4">
-                    
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card h-100 text-center selection-card">
-                            <div class="card-body py-4 d-flex flex-column">
-                                <div class="feature-icon feature-icon--green">
-                                    <!-- person-plus SVG (bronze via currentColor) -->
-                                    <svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <path d="M8 7a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-                                        <path fill-rule="evenodd" d="M8 8a5 5 0 0 0-4.546 2.916C3.03 11.54 4.16 12 6 12h4c1.84 0 2.97-.46 2.546-1.084A5 5 0 0 0 8 8z"/>
-                                        <path d="M13.5 5.5a.5.5 0 0 1 .5.5V7h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0V8h-1a.5.5 0 0 1 0-1h1V6a.5.5 0 0 1 .5-.5z"/>
-                                    </svg>
-                                </div>
-                                <h3 class="card-title mt-3">المواليد</h3>
-                                <p class="card-text">تسجيل بيانات المواليد الجدد في العائلة</p>
-                                <a class="btn btn-primary mt-auto w-100" href="births.html">تسجيل المواليد</a>
-                            </div>
-                        </div>
+        <section class="container mx-auto bg-white rounded-3xl shadow-lg p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Cards for different sections -->
+                <div class="p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 duration-300">
+                    <div class="p-4 rounded-full bg-[#E5F5E9] text-[#22C55E]">
+                        <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M8 7a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                            <path fill-rule="evenodd" d="M8 8a5 5 0 0 0-4.546 2.916C3.03 11.54 4.16 12 6 12h4c1.84 0 2.97-.46 2.546-1.084A5 5 0 0 0 8 8z"/>
+                            <path d="M13.5 5.5a.5.5 0 0 1 .5.5V7h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0V8h-1a.5.5 0 0 1 0-1h1V6a.5.5 0 0 1 .5-.5z"/>
+                        </svg>
                     </div>
-                    
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card h-100 text-center selection-card" role="button">
-                            <div class="card-body py-4">
-                                <div class="feature-icon feature-icon--red">
-                                    <!-- x-octagon SVG -->
-                                    <svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <path d="M11.46 0 16 4.54 11.46 9 7 5.54 11.46 0z" opacity=".01"/>
-                                        <path d="M4.54 0 9 4.54 4.54 9 0 4.54 4.54 0z" opacity=".01"/>
-                                        <path d="M4.46 2.5 2.5 4.46 4.46 6.42 6.42 4.46 4.46 2.5z"/>
-                                        <path d="M9.54 2.5 7.58 4.46 9.54 6.42 11.5 4.46 9.54 2.5z"/>
-                                        <path d="M9.54 9.58 7.58 11.54 9.54 13.5 11.5 11.54 9.54 9.58z"/>
-                                        <path d="M4.46 9.58 2.5 11.54 4.46 13.5 6.42 11.54 4.46 9.58z"/>
-                                    </svg>
-                                </div>
-                                <h3 class="card-title mt-3">الوفيات</h3>
-                                <p class="card-text">تسجيل حالات الوفاة الطبيعية في العائلة</p>
-                                <a class="btn btn-primary mt-auto w-100" href="deaths.html">تسجيل الوفيات</a>
-                            </div>
-                        </div>
+                    <h3 class="font-bold text-xl mt-4">المواليد</h3>
+                    <p class="text-gray-600 mt-2 text-sm">تسجيل بيانات المواليد الجدد في العائلة</p>
+                    <a class="mt-auto w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors duration-200 shadow-md mt-4" href="#">تسجيل المواليد</a>
+                </div>
+                
+                <div class="p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 duration-300">
+                    <div class="p-4 rounded-full bg-[#FEE4E3] text-[#EF4444]">
+                        <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M4.46 2.5 2.5 4.46 4.46 6.42 6.42 4.46 4.46 2.5z"/>
+                            <path d="M9.54 2.5 7.58 4.46 9.54 6.42 11.5 4.46 9.54 2.5z"/>
+                            <path d="M9.54 9.58 7.58 11.54 9.54 13.5 11.5 11.54 9.54 9.58z"/>
+                            <path d="M4.46 9.58 2.5 11.54 4.46 13.5 6.42 11.54 4.46 9.58z"/>
+                        </svg>
                     </div>
-                    
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card h-100 text-center selection-card" role="button">
-                            <div class="card-body py-4">
-                                <div class="feature-icon feature-icon--gold">
-                                    <!-- award SVG -->
-                                    <svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <path d="M9.669.864 8 0 6.331.864 5.5 2.391 3.75 2.636 2.9 4.182 1.5 5.06 2.2 6.77 1.75 8.5 3.5 9.5 4 11.5 5.5 12.14 8 13 10.5 12.14 12 11.5 12.5 9.5 14.25 8.5 13.8 6.77 14.5 5.06 13.1 4.182 12.25 2.636 10.5 2.391 9.669.865z"/>
-                                    </svg>
-                                </div>
-                                <h3 class="card-title mt-3">الشهداء</h3>
-                                <p class="card-text">تسجيل بيانات الشهداء وتفاصيل الاستشهاد</p>
-                                <a class="btn btn-primary mt-auto w-100" href="martyrs.html">تسجيل الشهداء</a>
-                            </div>
-                        </div>
+                    <h3 class="font-bold text-xl mt-4">الوفيات</h3>
+                    <p class="text-gray-600 mt-2 text-sm">تسجيل حالات الوفاة الطبيعية في العائلة</p>
+                    <a class="mt-auto w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors duration-200 shadow-md mt-4" href="#">تسجيل الوفيات</a>
+                </div>
+    
+                <div class="p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 duration-300">
+                    <div class="p-4 rounded-full bg-[#FEF4E3] text-[#F9A602]">
+                        <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M9.669.864 8 0 6.331.864 5.5 2.391 3.75 2.636 2.9 4.182 1.5 5.06 2.2 6.77 1.75 8.5 3.5 9.5 4 11.5 5.5 12.14 8 13 10.5 12.14 12 11.5 12.5 9.5 14.25 8.5 13.8 6.77 14.5 5.06 13.1 4.182 12.25 2.636 10.5 2.391 9.669.865z"/>
+                        </svg>
                     </div>
-                    
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card h-100 text-center selection-card" role="button">
-                            <div class="card-body py-4">
-                                <div class="feature-icon feature-icon--blue">
-                                    <!-- bandaid SVG -->
-                                    <svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <path d="M6.5 1.5a2.5 2.5 0 0 0-3.536 0L.5 4.0a2.5 2.5 0 0 0 0 3.536l6.464 6.464a2.5 2.5 0 0 0 3.536 0l2.464-2.464a2.5 2.5 0 0 0 0-3.536L9.964 1.5a2.5 2.5 0 0 0-3.464 0z"/>
-                                        <path d="M7.5 5.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zM9 7.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/>
-                                    </svg>
-                                </div>
-                                <h3 class="card-title mt-3">الإصابات</h3>
-                                <p class="card-text">تسجيل الإصابات والاحتياجات الطبية</p>
-                                <button class="btn btn-primary mt-auto w-100" data-bs-toggle="modal" data-bs-target="#injuryModal">تسجيل إصابة جديدة</button>
-                            </div>
-                        </div>
+                    <h3 class="font-bold text-xl mt-4">الشهداء</h3>
+                    <p class="text-gray-600 mt-2 text-sm">تسجيل بيانات الشهداء وتفاصيل الاستشهاد</p>
+                    <a class="mt-auto w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors duration-200 shadow-md mt-4" href="#">تسجيل الشهداء</a>
+                </div>
+    
+                <div class="p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 duration-300">
+                    <div class="p-4 rounded-full bg-[#E5F5FF] text-[#3B82F6]">
+                        <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M6.5 1.5a2.5 2.5 0 0 0-3.536 0L.5 4.0a2.5 2.5 0 0 0 0 3.536l6.464 6.464a2.5 2.5 0 0 0 3.536 0l2.464-2.464a2.5 2.5 0 0 0 0-3.536L9.964 1.5a2.5 2.5 0 0 0-3.464 0z"/>
+                            <path d="M7.5 5.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zM9 7.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/>
+                        </svg>
                     </div>
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card h-100 text-center selection-card" role="button">
-                            <div class="card-body py-4">
-                                <div class="feature-icon feature-icon--yellow">
-                                    <!-- shield-exclamation SVG -->
-                                    <svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <path d="M7.467.133a1 1 0 0 1 .966 0l5 3A1 1 0 0 1 14.7 4.1c-.39 3.22-.96 5.86-2.2 7.6C10.8 13.9 9.07 15 8 15s-2.8-1.1-4.5-3.3C1.26 9.96.69 7.32.3 4.1A1 1 0 0 1 1.067 3.13l5-3z"/>
-                                        <path d="M8 5.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 1 0v-3A.5.5 0 0 0 8 5.5zM8 12a.7.7 0 1 0 0-1.4A.7.7 0 0 0 8 12z"/>
-                                    </svg>
-                                </div>
-                                <h3 class="card-title mt-3">حالات خاصة</h3>
-                                <p class="card-text">تسجيل الحالات الخاصة التي تحتاج دعم</p>
-                                <a class="btn btn-primary mt-auto w-100" href="special-cases-form.html">حالات خاصة</a>
-                            </div>
-                        </div>
+                    <h3 class="font-bold text-xl mt-4">الإصابات</h3>
+                    <p class="text-gray-600 mt-2 text-sm">تسجيل الإصابات والاحتياجات الطبية</p>
+                    <button id="injury-btn" class="mt-auto w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors duration-200 shadow-md mt-4">
+                        تسجيل إصابة جديدة
+                    </button>
+                </div>
+    
+                <div class="p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 duration-300">
+                    <div class="p-4 rounded-full bg-[#F3E5FF] text-[#9A62F8]">
+                        <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M7.467.133a1 1 0 0 1 .966 0l5 3A1 1 0 0 1 14.7 4.1c-.39 3.22-.96 5.86-2.2 7.6C10.8 13.9 9.07 15 8 15s-2.8-1.1-4.5-3.3C1.26 9.96.69 7.32.3 4.1A1 1 0 0 1 1.067 3.13l5-3z"/>
+                            <path d="M8 5.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 1 0v-3A.5.5 0 0 0 8 5.5zM8 12a.7.7 0 1 0 0-1.4A.7.7 0 0 0 8 12z"/>
+                        </svg>
                     </div>
-                    
+                    <h3 class="font-bold text-xl mt-4">حالات خاصة</h3>
+                    <p class="text-gray-600 mt-2 text-sm">تسجيل الحالات الخاصة التي تحتاج دعم</p>
+                    <a class="mt-auto w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors duration-200 shadow-md mt-4" href="#">حالات خاصة</a>
                 </div>
             </div>
         </section>
     </main>
 
-    <div class="modal fade" id="injuryModal" tabindex="-1" aria-labelledby="injuryModalLabel" aria-hidden="true" role="dialog">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content" dir="rtl">
-                <div class="modal-header">
-                        <div class="d-flex align-items-center">
-                            <div class="modal-title-icon me-2">
-                            <!-- bandaid SVG small -->
-                            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <path d="M21 11.5c0-1.38-.56-2.63-1.47-3.54L15.54 2.5c-1.95-1.95-5.12-1.95-7.07 0L2.47 8.5C1.56 9.41 1 10.66 1 12.04V13c0 3.31 2.69 6 6 6h9c3.31 0 6-2.69 6-6v-1.5zM11 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
-                            </svg>
+    <!-- Modal -->
+    <div id="injury-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl shadow-xl w-full max-w-2xl overflow-y-auto max-h-[90vh]">
+            <div class="flex justify-between items-center p-6 border-b border-gray-200">
+                <div class="flex items-center gap-2">
+                    <div class="text-blue-600">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M21 11.5c0-1.38-.56-2.63-1.47-3.54L15.54 2.5c-1.95-1.95-5.12-1.95-7.07 0L2.47 8.5C1.56 9.41 1 10.66 1 12.04V13c0 3.31 2.69 6 6 6h9c3.31 0 6-2.69 6-6v-1.5zM11 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h5 class="text-2xl font-bold">تسجيل إصابة جديدة</h5>
+                        <small class="text-gray-500 text-sm">أدخل تفاصيل المصاب والاحتياجات الطبية</small>
+                    </div>
+                </div>
+                <button id="close-modal-btn" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <form id="injuryForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="injuredName" class="block text-sm font-medium text-gray-700 mb-1">اسم المصاب</label>
+                            <input type="text" id="injuredName" placeholder="مثال: محمد أحمد" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                         <div>
-                            <h5 class="modal-title" id="injuryModalLabel">تسجيل إصابة جديدة</h5>
-                            <small class="text-muted">أدخل تفاصيل المصاب والاحتياجات الطبية</small>
+                            <label for="injuredId" class="block text-sm font-medium text-gray-700 mb-1">رقم الهوية (اختياري)</label>
+                            <input type="text" id="injuredId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="injuryForm" class="needs-validation" novalidate>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="injuredName" class="form-label">اسم المصاب</label>
-                                <input type="text" class="form-control" id="injuredName" placeholder="مثال: محمد أحمد" required>
-                                <div class="invalid-feedback">الرجاء إدخال اسم المصاب.</div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="injuredId" class="form-label">رقم الهوية</label>
-                                <input type="text" class="form-control" id="injuredId" placeholder="اختياري">
-                            </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="injuryDate" class="block text-sm font-medium text-gray-700 mb-1">تاريخ الإصابة</label>
+                            <input type="date" id="injuryDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="injuryDate" class="form-label">تاريخ الإصابة</label>
-                                <input type="date" class="form-control" id="injuryDate" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="injuryType" class="form-label">نوع الإصابة</label>
-                                <select class="form-select" id="injuryType" required>
-                                    <option value="">اختر نوع الإصابة</option>
-                                    <option value="إصابة خفيفة">إصابة خفيفة</option>
-                                    <option value="إصابة متوسطة">إصابة متوسطة</option>
-                                    <option value="إصابة خطيرة">إصابة خطيرة</option>
-                                    <option value="إعاقة">إعاقة</option>
-                                </select>
-                                <div class="invalid-feedback">اختر نوع الإصابة.</div>
-                            </div>
+                        <div>
+                            <label for="injuryType" class="block text-sm font-medium text-gray-700 mb-1">نوع الإصابة</label>
+                            <select id="injuryType" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">اختر نوع الإصابة</option>
+                                <option value="إصابة خفيفة">إصابة خفيفة</option>
+                                <option value="إصابة متوسطة">إصابة متوسطة</option>
+                                <option value="إصابة خطيرة">إصابة خطيرة</option>
+                                <option value="إعاقة">إعاقة</option>
+                            </select>
                         </div>
-                        <div class="mb-3">
-                            <label for="injuryDescription" class="form-label">وصف الإصابة</label>
-                            <textarea class="form-control" id="injuryDescription" rows="3" placeholder="وصف الموقع، شدة الأذى، إن وُجد" required></textarea>
-                            <div class="invalid-feedback">الرجاء إدخال وصف موجز للإصابة.</div>
+                    </div>
+                    <div>
+                        <label for="injuryDescription" class="block text-sm font-medium text-gray-700 mb-1">وصف الإصابة</label>
+                        <textarea id="injuryDescription" rows="3" placeholder="وصف الموقع، شدة الأذى، إن وُجد" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="medicalNeeds" class="block text-sm font-medium text-gray-700 mb-1">الاحتياجات الطبية</label>
+                            <textarea id="medicalNeeds" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="medicalNeeds" class="form-label">الاحتياجات الطبية</label>
-                                <textarea class="form-control" id="medicalNeeds" rows="2"></textarea>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="currentTreatment" class="form-label">العلاج الحالي</label>
-                                <textarea class="form-control" id="currentTreatment" rows="2"></textarea>
-                            </div>
+                        <div>
+                            <label for="currentTreatment" class="block text-sm font-medium text-gray-700 mb-1">العلاج الحالي</label>
+                            <textarea id="currentTreatment" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                         </div>
-                        <div class="mb-3">
-                            <label for="injuryNotes" class="form-label">ملاحظات إضافية</label>
-                            <textarea class="form-control" id="injuryNotes" rows="2"></textarea>
-                        </div>
-                        <div class="d-flex justify-content-end">
-                            <button type="button" class="btn btn-light me-2" data-bs-dismiss="modal">إلغاء</button>
-                            <button type="submit" class="btn btn-primary">
-                                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                                <span class="button-text">حفظ بيانات الإصابة</span>
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    </div>
+                    <div>
+                        <label for="injuryNotes" class="block text-sm font-medium text-gray-700 mb-1">ملاحظات إضافية</label>
+                        <textarea id="injuryNotes" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-4">
+                        <button type="button" id="cancel-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-full transition-colors duration-200">إلغاء</button>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full transition-colors duration-200">
+                            حفظ بيانات الإصابة
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
-    <script>
-        // Enable Bootstrap custom validation styles
-        (function () {
-            'use strict'
-            const forms = document.querySelectorAll('.needs-validation')
-            Array.prototype.slice.call(forms).forEach(function (form) {
-                form.addEventListener('submit', function (event) {
-                    if (!form.checkValidity()) {
-                        event.preventDefault()
-                        event.stopPropagation()
-                        form.classList.add('was-validated')
-                    }
-                }, false)
-            })
-        })()
-    </script>
-
-    <footer class="footer">
-        <div id="server-status" class="status-indicator mb-2">
-            <span class="status-dot"></span>
-            <span class="status-text">جاري التحقق من حالة الخادم...</span>
-        </div>
-        <p class="copyright-text mb-2">
+    <footer class="w-full bg-gray-200 text-center py-4 px-4 text-sm mt-auto">
+        <p class="text-gray-600 mb-2">
             جميع الحقوق محفوظة &copy; 2025 | م. حماده أبو رجيلة (قديح)
         </p>
-    <a href="https://chat.whatsapp.com/IzjmFpfOCpdJ2RxvYCQ5E0?mode=ems_copy_t" target="_blank" class="whatsapp-link">
-            <!-- phone/chat SVG -->
-            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <a href="#" target="_blank" class="inline-flex items-center gap-2 text-green-600 hover:text-green-700 transition">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                 <path d="M20 15.5c-1.2 0-2.39-.2-3.5-.6-.3-.1-.63-.02-.86.2l-2.2 1.9a15.05 15.05 0 0 1-6.9-6.9l1.9-2.2c.24-.24.31-.58.2-.88A11.72 11.72 0 0 1 8.5 4 2 2 0 0 0 6.5 2H5a2 2 0 0 0-2 2C3 16.39 11.61 25 21 21v-1.5a2 2 0 0 0-2-2h-3.5z"/>
             </svg>
             تواصل عبر الواتساب
         </a>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const injuryModal = document.getElementById('injury-modal');
+            const injuryBtn = document.getElementById('injury-btn');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const cancelBtn = document.getElementById('cancel-btn');
+            const form = document.getElementById('injuryForm');
+
+            // Show the modal
+            injuryBtn.addEventListener('click', () => {
+                injuryModal.classList.remove('hidden');
+            });
+
+            // Hide the modal
+            const hideModal = () => {
+                injuryModal.classList.add('hidden');
+            };
+            closeModalBtn.addEventListener('click', hideModal);
+            cancelBtn.addEventListener('click', hideModal);
+            injuryModal.addEventListener('click', (e) => {
+                if (e.target === injuryModal) {
+                    hideModal();
+                }
+            });
+
+            // Form validation
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                // Check if all required fields are filled
+                const requiredInputs = form.querySelectorAll('[required]');
+                let isValid = true;
+                requiredInputs.forEach(input => {
+                    if (!input.value.trim()) {
+                        isValid = false;
+                        input.classList.add('border-red-500');
+                        input.classList.remove('border-gray-300');
+                    } else {
+                        input.classList.remove('border-red-500');
+                        input.classList.add('border-gray-300');
+                    }
+                });
+
+                if (isValid) {
+                    // Here you would handle form submission (e.g., sending data to a server)
+                    console.log('Form submitted successfully!');
+                    // You could add a success message or clear the form here
+                    form.reset();
+                    hideModal();
+                }
+            });
+        });
+    </script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

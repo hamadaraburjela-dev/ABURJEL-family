@@ -1214,12 +1214,20 @@ function handleAddAid(payload) {
   }
   const aidSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(AID_RECORDS_SHEET);
   const newRecordId = 'AID' + new Date().getTime();
-  aidSheet.appendRow([newRecordId, payload.aidMemberId, payload.aidType, payload.aidDate, payload.aidSource, payload.aidNotes || '', new Date(), admin.username, payload.aidStatus]);
-  logAdminAction(admin.username, 'إضافة مساعدة فردية', `تمت إضافة مساعدة من نوع ${payload.aidType} للمستفيد ${payload.aidMemberId}.`);
-  return { success: true, message: 'تمت إضافة المساعدة بنجاح!' };
-}
-
-function handleBulkAddAidFromXLSX(payload) {
+  aidSheet.appendRow([newRecordId, payload.aidMemberId, payload.aidType, payload.aidDate, payload.aidSource, payload.aidNotes || '', new Date(), admin.username, payload.aidStatus]);
+  logAdminAction(admin.username, 'إضافة مساعدة فردية', `تمت إضافة مساعدة من نوع ${payload.aidType} للمستفيد ${payload.aidMemberId}.`);
+  
+  // إنشاء إشعار للمستخدم عند إضافة مساعدة
+  createNotification({
+    userId: payload.aidMemberId,
+    type: 'aid_received',
+    title: 'تم إضافة مساعدة جديدة',
+    message: `تم إضافة مساعدة من نوع "${payload.aidType}" من مصدر "${payload.aidSource}" إلى حسابك.`,
+    priority: 'normal'
+  });
+  
+  return { success: true, message: 'تمت إضافة المساعدة بنجاح!' };
+}function handleBulkAddAidFromXLSX(payload) {
   const admin = authenticateToken(payload.token);
   const fileContent = payload.fileContent;
   if (!fileContent) throw new Error('محتوى الملف مفقود.');
@@ -1403,14 +1411,21 @@ function handleGenerateReport(payload) {
 }
 
 function handlePasswordResetRequest(userId) {
-  if (!userId) throw new Error('الرجاء إدخال رقم الهوية.');
-  const requestsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(PASSWORD_RESET_REQUESTS_SHEET);
-  if (!requestsSheet) throw new Error('ورقة "طلبات إعادة تعيين" غير موجودة.');
-  requestsSheet.appendRow([new Date(), userId, 'جديد']);
-  return { success: true, message: 'تم إرسال طلب إعادة تعيين كلمة المرور. سيقوم المسؤول بالتعامل معه قريباً.' };
-}
-
-function handleGetResetRequests(token) {
+  if (!userId) throw new Error('الرجاء إدخال رقم الهوية.');
+  const requestsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(PASSWORD_RESET_REQUESTS_SHEET);
+  if (!requestsSheet) throw new Error('ورقة "طلبات إعادة تعيين" غير موجودة.');
+  requestsSheet.appendRow([new Date(), userId, 'جديد']);
+  
+  // Send notification to admin
+  createNotification(
+    null, // admin notification
+    'طلب إعادة تعيين كلمة مرور جديد',
+    `طلب إعادة تعيين كلمة مرور للفرد ${userId}`,
+    'عادي'
+  );
+  
+  return { success: true, message: 'تم إرسال طلب إعادة تعيين كلمة المرور. سيقوم المسؤول بالتعامل معه قريباً.' };
+}function handleGetResetRequests(token) {
   authenticateToken(token);
   const requestsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(PASSWORD_RESET_REQUESTS_SHEET);
   if (!requestsSheet) return { success: true, data: [] };
@@ -1452,25 +1467,32 @@ function handleClearMemberPassword(payload) {
         : `قام بمسح كلمة مرور الفرد ${userId} بشكل مباشر من لوحة التحكم.`;
     logAdminAction(admin.username, 'محو كلمة مرور فرد', logMessage);
 
-    if (timestamp) {
-        const requestsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(PASSWORD_RESET_REQUESTS_SHEET);
-        if (requestsSheet) {
-            const requestsData = requestsSheet.getDataRange().getValues();
-            const requestsHeaders = requestsData[0];
-            const idCol = requestsHeaders.indexOf('رقم الهوية');
-            const dateCol = requestsHeaders.indexOf('التاريخ والوقت');
-            const statusCol = requestsHeaders.indexOf('الحالة');
+    if (timestamp) {
+        const requestsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(PASSWORD_RESET_REQUESTS_SHEET);
+        if (requestsSheet) {
+            const requestsData = requestsSheet.getDataRange().getValues();
+            const requestsHeaders = requestsData[0];
+            const idCol = requestsHeaders.indexOf('رقم الهوية');
+            const dateCol = requestsHeaders.indexOf('التاريخ والوقت');
+            const statusCol = requestsHeaders.indexOf('الحالة');
 
-            for (let i = 1; i < requestsData.length; i++) {
-                if (String(requestsData[i][idCol]).trim() === String(userId).trim() && requestsData[i][dateCol].getTime() === new Date(timestamp).getTime()) {
-                    requestsSheet.getRange(i + 1, statusCol + 1).setValue('تم التعامل معه');
-                    break;
-                }
-            }
-        }
-    }
-
-    return { success: true, message: 'تم محو كلمة المرور بنجاح. يمكن للفرد الآن تعيين كلمة مرور جديدة.' };
+            for (let i = 1; i < requestsData.length; i++) {
+                if (String(requestsData[i][idCol]).trim() === String(userId).trim() && requestsData[i][dateCol].getTime() === new Date(timestamp).getTime()) {
+                    requestsSheet.getRange(i + 1, statusCol + 1).setValue('تم التعامل معه');
+                    
+                    // Send notification to user about password reset completion
+                    createNotification(
+                        userId,
+                        'تم إعادة تعيين كلمة المرور',
+                        'تم إعادة تعيين كلمة المرور بنجاح. يمكنك الآن تعيين كلمة مرور جديدة.',
+                        'مهم'
+                    );
+                    
+                    break;
+                }
+            }
+        }
+    }    return { success: true, message: 'تم محو كلمة المرور بنجاح. يمكن للفرد الآن تعيين كلمة مرور جديدة.' };
 }
 
 function handleUpdateAidStatus(payload) {
@@ -1684,6 +1706,14 @@ function handleSubmitSpecialCaseRequest(payload) {
       ''  // تاريخ آخر تحديث
     ]);
 
+    // Send notification to admin
+    createNotification(
+      null, // admin notification
+      'طلب حالة خاصة جديد',
+      `طلب حالة خاصة من ${payload.user_name || payload.user_id}: ${payload.case_type || 'غير محدد'}`,
+      'عادي'
+    );
+
     return { success: true, message: 'تم استلام طلب الحالة الخاصة وسيتم متابعته.' };
   } catch (err) {
     return { success: false, message: err.message };
@@ -1748,6 +1778,15 @@ function handleSubmitBirthRegistration(payload) {
   const status = fatherExists ? 'جديد' : 'قيد المراجعة';
   sheet.appendRow([requestId, new Date(), fatherID, fatherName, babyName, babyID, new Date(birthDate), status, fileUrl]);
 
+  // إنشاء إشعار للأدمن عن طلب مولود جديد
+  createNotification({
+    type: 'new_birth_request',
+    title: 'طلب تسجيل مولود جديد',
+    message: `تم استلام طلب تسجيل مولود باسم "${babyName}" من الوالد "${fatherName}" (${fatherID})`,
+    priority: 'high',
+    isAdmin: true
+  });
+
   return { success: true, message: fatherExists ? 'تم إرسال طلب تسجيل المولود.' : 'تم إرسال الطلب للمراجعة بسبب عدم العثور على الأب في السجلات.' };
 }
 
@@ -1782,8 +1821,37 @@ function handleUpdateBirthRequestStatus(payload) {
 
   for (let i = 1; i < data.length; i++) {
     if (String(data[i][idCol]).trim() === String(requestId).trim()) {
+      const fatherIdCol = headers.indexOf('رقم هوية الأب');
+      const babyNameCol = headers.indexOf('اسم المولود');
+      const fatherId = data[i][fatherIdCol];
+      const babyName = data[i][babyNameCol];
+      
       sheet.getRange(i + 1, statusCol + 1).setValue(newStatus);
       logAdminAction(admin.username, 'تحديث حالة طلب مولود', `تم تحديث ${requestId} إلى ${newStatus}`);
+      
+      // إنشاء إشعار للمستخدم عن تحديث حالة طلب المولود
+      let notificationMessage = '';
+      let notificationType = '';
+      
+      if (newStatus === 'مقبول') {
+        notificationMessage = `تم قبول طلب تسجيل المولود "${babyName}". سيتم إضافته إلى النظام قريباً.`;
+        notificationType = 'birth_request_approved';
+      } else if (newStatus === 'مرفوض') {
+        notificationMessage = `تم رفض طلب تسجيل المولود "${babyName}". يرجى مراجعة الإدارة للمزيد من التفاصيل.`;
+        notificationType = 'birth_request_rejected';
+      } else {
+        notificationMessage = `تم تحديث حالة طلب تسجيل المولود "${babyName}" إلى: ${newStatus}`;
+        notificationType = 'birth_request_updated';
+      }
+      
+      createNotification({
+        userId: fatherId,
+        type: notificationType,
+        title: 'تحديث حالة طلب المولود',
+        message: notificationMessage,
+        priority: 'normal'
+      });
+      
       return { success: true, message: 'تم تحديث حالة الطلب.' };
     }
   }
@@ -1984,6 +2052,15 @@ function handleSubmitMartyrRegistration(payload) {
     message = 'تم إرسال الطلب للمراجعة الإدارية. سيتم التواصل معكم قريباً.';
   }
   
+  // إنشاء إشعار للأدمن عن طلب شهيد جديد
+  createNotification({
+    type: 'new_martyr_request',
+    title: 'طلب تسجيل شهيد جديد',
+    message: `تم استلام طلب تسجيل شهيد باسم "${martyrName}" - ${martyrID}. إنا لله وإنا إليه راجعون.`,
+    priority: 'high',
+    isAdmin: true
+  });
+  
   return { 
     success: true, 
     message: message
@@ -2052,6 +2129,15 @@ function handleSubmitInjuryRegistration(payload) {
       fileUrl
     ]);
 
+    // إنشاء إشعار للأدمن عن إصابة جديدة
+    createNotification({
+      type: 'new_injury_request',
+      title: 'تسجيل إصابة جديدة',
+      message: `تم تسجيل إصابة جديدة للمصاب رقم ${injuredID} في ${injuryPlace}. السبب: ${injuryCause}`,
+      priority: 'high',
+      isAdmin: true
+    });
+
     return { success: true, message: '\u062a\u0645 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u0625\u0635\u0627\u0628\u0629 \u0628\u0646\u062c\u0627\u062d' };
   } catch (err) {
     return { success: false, message: err.message };
@@ -2088,9 +2174,38 @@ function handleUpdateInjuryRequestStatus(payload) {
 
   for (let i = 1; i < data.length; i++) {
     if (String(data[i][idCol]).trim() === String(requestId).trim()) {
+      const injuredIdCol = headers.indexOf('رقم المصاب');
+      const injuryPlaceCol = headers.indexOf('مكان الإصابة');
+      const injuredId = data[i][injuredIdCol];
+      const injuryPlace = data[i][injuryPlaceCol];
+      
       sheet.getRange(i + 1, statusCol + 1).setValue(newStatus);
-      logAdminAction(admin.username, '\u062a\u062d\u062f\u064a\u062b \u062d\u0627\u0644\u0629 \u0627\u0644\u0625\u0635\u0627\u0628\u0629', `\u062a\u0645 \u062a\u062d\u062f\u064a\u062b ${requestId} \u0625\u0644\u0649 ${newStatus}`);
-      return { success: true, message: '\u062a\u0645 \u062a\u062d\u062f\u064a\u062b \u0627\u0644\u062d\u0627\u0644\u0629' };
+      logAdminAction(admin.username, 'تحديث حالة الإصابة', `تم تحديث ${requestId} إلى ${newStatus}`);
+      
+      // إنشاء إشعار للمستخدم عن تحديث حالة الإصابة
+      let notificationMessage = '';
+      let notificationType = '';
+      
+      if (newStatus === 'مقبول') {
+        notificationMessage = `تم قبول تسجيل الإصابة في ${injuryPlace}. تم إضافتها إلى النظام.`;
+        notificationType = 'injury_request_approved';
+      } else if (newStatus === 'مرفوض') {
+        notificationMessage = `تم رفض تسجيل الإصابة في ${injuryPlace}. يرجى مراجعة الإدارة للمزيد من التفاصيل.`;
+        notificationType = 'injury_request_rejected';
+      } else {
+        notificationMessage = `تم تحديث حالة تسجيل الإصابة في ${injuryPlace} إلى: ${newStatus}`;
+        notificationType = 'injury_request_updated';
+      }
+      
+      createNotification({
+        userId: injuredId,
+        type: notificationType,
+        title: 'تحديث حالة الإصابة',
+        message: notificationMessage,
+        priority: 'normal'
+      });
+      
+      return { success: true, message: 'تم تحديث الحالة' };
     }
   }
   throw new Error('\u0644\u0645 \u064a\u062a\u0645 \u0627\u0644\u0639\u062b\u0648\u0631 \u0639\u0644\u0649 \u0627\u0644\u0637\u0644\u0628');
@@ -2193,6 +2308,28 @@ function handleUpdateSpecialCaseStatus(payload) {
       if (typeof payload.adminNotes !== 'undefined' && notesCol !== -1) sheet.getRange(i + 1, notesCol + 1).setValue(payload.adminNotes || '');
       if (updaterCol !== -1) sheet.getRange(i + 1, updaterCol + 1).setValue(admin.username || '');
       if (updateDateCol !== -1) sheet.getRange(i + 1, updateDateCol + 1).setValue(new Date());
+      
+      // Send notification to user about status update
+      const userIdCol = headers.indexOf('رقم مقدم الطلب');
+      if (userIdCol !== -1) {
+        const userId = data[i][userIdCol];
+        let notificationMessage = '';
+        if (newStatus === 'معتمد') {
+          notificationMessage = `تم قبول طلب الحالة الخاصة رقم ${requestId}`;
+        } else if (newStatus === 'مرفوض') {
+          notificationMessage = `تم رفض طلب الحالة الخاصة رقم ${requestId}`;
+        } else {
+          notificationMessage = `تم تحديث حالة طلب الحالة الخاصة رقم ${requestId} إلى: ${newStatus}`;
+        }
+        
+        createNotification(
+          userId,
+          'تحديث حالة طلب الحالة الخاصة',
+          notificationMessage,
+          'مهم'
+        );
+      }
+      
       logAdminAction(admin.username, 'تحديث حالة حالات خاصة', `تم تحديث ${requestId} إلى ${newStatus}`);
       return { success: true, message: 'تم تحديث حالة الطلب.' };
     }
@@ -2220,8 +2357,38 @@ function handleUpdateMartyrRequestStatus(payload) {
 
   for (let i = 1; i < data.length; i++) {
     if (String(data[i][idCol]).trim() === String(requestId).trim()) {
+      const martyrIdCol = headers.indexOf('رقم هوية الشهيد');
+      const martyrNameCol = headers.indexOf('اسم الشهيد');
+      const martyrId = data[i][martyrIdCol];
+      const martyrName = data[i][martyrNameCol];
+      
       sheet.getRange(i + 1, statusCol + 1).setValue(newStatus);
       logAdminAction(admin.username, 'تحديث حالة طلب شهيد', `تم تحديث ${requestId} إلى ${newStatus}`);
+      
+      // إنشاء إشعار للمستخدم عن تحديث حالة طلب الشهيد
+      let notificationMessage = '';
+      let notificationType = '';
+      
+      if (newStatus === 'مقبول') {
+        notificationMessage = `تم قبول طلب تسجيل الشهيد "${martyrName}". تم إضافته إلى سجل الشهداء. إنا لله وإنا إليه راجعون.`;
+        notificationType = 'martyr_request_approved';
+      } else if (newStatus === 'مرفوض') {
+        notificationMessage = `تم رفض طلب تسجيل الشهيد "${martyrName}". يرجى مراجعة الإدارة للمزيد من التفاصيل.`;
+        notificationType = 'martyr_request_rejected';
+      } else {
+        notificationMessage = `تم تحديث حالة طلب تسجيل الشهيد "${martyrName}" إلى: ${newStatus}`;
+        notificationType = 'martyr_request_updated';
+      }
+      
+      // إرسال الإشعار لمقدم الطلب (قد يكون الأب أو قريب)
+      createNotification({
+        userId: martyrId,
+        type: notificationType,
+        title: 'تحديث حالة طلب الشهيد',
+        message: notificationMessage,
+        priority: 'normal'
+      });
+      
       return { success: true, message: 'تم تحديث حالة الطلب.' };
     }
   }
@@ -2285,6 +2452,28 @@ function handleUpdateDeathRequestStatus(payload) {
   for (let i = 1; i < data.length; i++) {
     if (String(data[i][idCol]).trim() === String(requestId).trim()) {
       sheet.getRange(i + 1, statusCol + 1).setValue(newStatus);
+      
+      // Send notification to user about status update
+      const userIdCol = headers.indexOf('رقم هوية المتوفى');
+      if (userIdCol !== -1) {
+        const userId = data[i][userIdCol];
+        let notificationMessage = '';
+        if (newStatus === 'معتمد') {
+          notificationMessage = `تم قبول طلب تسجيل الوفاة رقم ${requestId}`;
+        } else if (newStatus === 'مرفوض') {
+          notificationMessage = `تم رفض طلب تسجيل الوفاة رقم ${requestId}`;
+        } else {
+          notificationMessage = `تم تحديث حالة طلب تسجيل الوفاة رقم ${requestId} إلى: ${newStatus}`;
+        }
+        
+        createNotification(
+          userId,
+          'تحديث حالة طلب تسجيل الوفاة',
+          notificationMessage,
+          'مهم'
+        );
+      }
+      
       logAdminAction(admin.username, 'تحديث حالة طلب وفاة', `تم تحديث ${requestId} إلى ${newStatus}`);
       return { success: true, message: 'تم تحديث حالة الطلب.' };
     }
@@ -2395,6 +2584,15 @@ function handleSubmitDeathRegistration(payload) {
   } else {
     message = 'تم إرسال الطلب للمراجعة الإدارية. سيتم التواصل معكم قريباً.';
   }
+
+  // إنشاء إشعار للأدمن عن طلب وفاة جديد
+  createNotification({
+    type: 'new_death_request',
+    title: 'تسجيل وفاة جديدة',
+    message: `تم تسجيل وفاة جديدة للمتوفى "${deceasedName}" - ${deceasedID}. إنا لله وإنا إليه راجعون.`,
+    priority: 'high',
+    isAdmin: true
+  });
 
   return { success: true, message };
 }
