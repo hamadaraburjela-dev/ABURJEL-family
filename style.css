@@ -139,6 +139,7 @@
 
 :root {
     --primary-green: #008000;
+    --accent-gold: #c59d2f; /* warm display gold */
     --accent-blue: #0d6efd; /* calmer blue to replace orange accents */
     --dark-grey: #212529;
     --light-grey: #f4f7f6;
@@ -1702,7 +1703,76 @@ body {
 
 /* Hero / selection cards layout */
 .selection-hero { padding: 2rem 0; }
-.feature-icon { box-shadow: 0 8px 26px rgba(2,48,32,0.06); }
+
+/* Bronze / metallic feature icons (unified style) */
+.feature-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, #c78a52 0%, #a66f3d 45%, #6b4626 100%);
+    color: #fff;
+    font-size: 1.5rem;
+    box-shadow: 0 10px 22px rgba(0,0,0,0.18), inset 0 2px 8px rgba(255,255,255,0.06);
+    border: 1px solid rgba(0,0,0,0.08);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+/* ensure any color-variant classes don't override the bronze look */
+.feature-icon--green,
+.feature-icon--red,
+.feature-icon--gold,
+.feature-icon--blue,
+.feature-icon--yellow {
+    background: inherit;
+}
+
+.feature-icon i {
+    color: rgba(255,250,245,0.96);
+    filter: drop-shadow(0 1px 0 rgba(0,0,0,0.22));
+    font-size: 1.25rem;
+}
+
+/* SVG icon sizing inside bronze badges */
+.feature-icon svg,
+.banner-icon svg,
+.modal-title-icon svg,
+.whatsapp-link svg {
+    width: 28px;
+    height: 28px;
+    display: block;
+    color: rgba(255,250,245,0.98); /* used with fill="currentColor" inside SVG */
+    /* make icons sharper and more vivid */
+    color: #ffffff;
+    filter: drop-shadow(0 4px 10px rgba(0,0,0,0.28)) saturate(1.25) contrast(1.08);
+    opacity: 0.98;
+}
+
+/* Slightly larger banner icon */
+.banner-icon svg { width: 36px; height: 36px; transform: translateY(-1px); }
+
+/* Align SVG inside inline links */
+.whatsapp-link svg { vertical-align: baseline; margin-inline-start: 0.35rem; color: var(--accent-gold); }
+.whatsapp-link { color: var(--accent-gold); }
+
+/* Emoji clarity: larger and with subtle shadow for color pop */
+.emoji {
+    font-size: 1.2rem;
+    line-height: 1;
+    color: var(--accent-gold);
+    text-shadow: 0 2px 6px rgba(0,0,0,0.14);
+    filter: saturate(1.18) contrast(1.04);
+}
+
+.emoji--sm { font-size: 1.05rem; }
+
+.selection-card:hover .feature-icon {
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 16px 34px rgba(0,0,0,0.22), inset 0 2px 8px rgba(255,255,255,0.07);
+}
+
 .card-title { font-size: 1.1rem; font-weight: 800; color: #163b16; }
 .card-text { color: #495b4a; margin-bottom: 1rem; }
 .selection-card { padding: 0; overflow: hidden; }
@@ -1723,6 +1793,50 @@ body {
 .modal-header { border-bottom: none; padding-top: 1.25rem; padding-bottom: 0.75rem; }
 .modal-body { padding: 1.25rem 1.5rem; }
 .modal .btn { min-width: 120px; }
+
+/* Modal title icon - match bronze style */
+.modal-title-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, #c78a52 0%, #9c6a3a 50%, #5b3a22 100%);
+    color: #fff;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.14), inset 0 1px 4px rgba(255,255,255,0.05);
+}
+
+/* Banner icon - match bronze badge */
+.banner-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, #c78a52 0%, #a66f3d 45%, #6b4626 100%);
+    color: #fff;
+    font-size: 1.35rem;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.16), inset 0 2px 6px rgba(255,255,255,0.06);
+}
+
+/* Emoji helper: make Unicode emoji look consistent and centered inside badges/links */
+.emoji {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.45em;
+    height: 1.45em;
+    line-height: 1;
+    font-size: 1.05rem;
+    margin-inline-start: 0.45rem;
+    vertical-align: -0.08rem;
+    font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', 'Twemoji Mozilla', sans-serif;
+}
+
+/* smaller emoji variant for footer links */
+.emoji--sm { font-size: 0.95rem; margin-inline-start: 0.4rem; }
 
 /* Footer */
 .footer { padding: 2rem 1rem; background: transparent; color: #5a6a5a; }
