@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة طلبات تعديل البيانات</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="modern-theme.css">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .request-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .request-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        
+        .request-header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+        }
+        
+        .request-body {
+            padding: 20px;
+        }
+        
+        .status-pending {
+            background: #ffc107;
+            color: #000;
+        }
+        
+        .status-approved {
+            background: #28a745;
+            color: white;
+        }
+        
+        .status-rejected {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .changes-list {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .changes-list .change-item {
+            border-bottom: 1px solid #dee2e6;
+            padding: 8px 0;
+        }
+        
+        .changes-list .change-item:last-child {
+            border-bottom: none;
+        }
+        
+        .change-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .change-value {
+            color: #007bff;
+            font-weight: 500;
+        }
+        
+        .admin-actions {
+            background: #f8f9fa;
+            border-radius: 0 0 15px 15px;
+            padding: 15px 20px;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        .header {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+            <img src="logo.webp" alt="شعار" class="me-3" style="width: 50px; height: 50px; border-radius: 50%;">
+            <div>
+                <h2 class="mb-0 fw-bold text-dark">إدارة طلبات تعديل البيانات</h2>
+                <p class="mb-0 text-muted">مراجعة وقبول/رفض طلبات التعديل</p>
+            </div>
+        </div>
+        <div>
+            <a href="admin.html" class="btn btn-outline-primary me-2">
+                <i class="bi bi-arrow-right"></i> العودة لللوحة الرئيسية
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container-fluid px-4">
+        <!-- إحصائيات سريعة -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="display-6 text-warning mb-2">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+                        <h5 id="pendingCount">0</h5>
+                        <small class="text-muted">قيد المراجعة</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="display-6 text-success mb-2">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                        <h5 id="approvedCount">0</h5>
+                        <small class="text-muted">مقبول</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="display-6 text-danger mb-2">
+                            <i class="bi bi-x-circle"></i>
+                        </div>
+                        <h5 id="rejectedCount">0</h5>
+                        <small class="text-muted">مرفوض</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="display-6 text-info mb-2">
+                            <i class="bi bi-list-ul"></i>
+                        </div>
+                        <h5 id="totalCount">0</h5>
+                        <small class="text-muted">إجمالي الطلبات</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- فلاتر -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">تصفية حسب الحالة</label>
+                                <select class="form-select" id="statusFilter">
+                                    <option value="">جميع الحالات</option>
+                                    <option value="مُنتظر المراجعة">قيد المراجعة</option>
+                                    <option value="مقبول">مقبول</option>
+                                    <option value="مرفوض">مرفوض</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">البحث</label>
+                                <input type="text" class="form-control" id="searchInput" placeholder="بحث برقم الهوية أو الاسم...">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- قائمة الطلبات -->
+        <div id="requestsList">
+            <!-- سيتم ملؤها بالجافاسكريبت -->
+        </div>
+
+        <!-- Loading -->
+        <div id="loadingSpinner" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">جاري التحميل...</span>
+            </div>
+            <p class="mt-2 text-muted">جاري تحميل الطلبات...</p>
+        </div>
+    </div>
+
+    <!-- نموذج تفاصيل الطلب -->
+    <div class="modal fade" id="requestDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-eye me-2"></i>تفاصيل طلب التعديل
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="requestDetailsContent">
+                    <!-- سيتم ملؤها بالجافاسكريبت -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نموذج الرد على الطلب -->
+    <div class="modal fade" id="responseModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-chat-text me-2"></i>الرد على الطلب
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="responseForm">
+                        <div class="mb-3">
+                            <label class="form-label">الإجراء</label>
+                            <select class="form-select" id="actionSelect" required>
+                                <option value="">اختر الإجراء</option>
+                                <option value="مقبول">قبول الطلب</option>
+                                <option value="مرفوض">رفض الطلب</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">ملاحظات الإدارة</label>
+                            <textarea class="form-control" id="adminNotes" rows="4" placeholder="اكتب ملاحظاتك هنا..."></textarea>
+                        </div>
+                        <input type="hidden" id="currentRequestId">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="submitResponse">
+                        <i class="bi bi-check-circle me-2"></i>إرسال الرد
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="script.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // التحقق من صحة تسجيل الدخول
+            const adminToken = sessionStorage.getItem('adminToken');
+            if (!adminToken) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // تحميل طلبات التعديل
+            loadEditRequests();
+
+            // ربط الأحداث
+            document.getElementById('statusFilter').addEventListener('change', filterRequests);
+            document.getElementById('searchInput').addEventListener('input', filterRequests);
+            document.getElementById('submitResponse').addEventListener('click', handleResponse);
+        });
+
+        let allRequests = [];
+
+        async function loadEditRequests() {
+            try {
+                const result = await App.apiCall({
+                    action: 'getAllEditRequests',
+                    token: sessionStorage.getItem('adminToken')
+                });
+
+                if (result && result.success) {
+                    allRequests = result.requests;
+                    displayRequests(allRequests);
+                    updateStats();
+                } else {
+                    throw new Error(result?.message || 'فشل في تحميل الطلبات');
+                }
+            } catch (error) {
+                console.error('خطأ في تحميل الطلبات:', error);
+                Toastify({
+                    text: "حدث خطأ في تحميل الطلبات: " + error.message,
+                    duration: 5000,
+                    gravity: "top",
+                    position: "center",
+                    backgroundColor: "linear-gradient(to right, #ff6b6b, #feca57)",
+                }).showToast();
+            } finally {
+                document.getElementById('loadingSpinner').style.display = 'none';
+            }
+        }
+
+        function displayRequests(requests) {
+            const container = document.getElementById('requestsList');
+            
+            if (requests.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <div class="display-1 text-muted mb-3">
+                            <i class="bi bi-inbox"></i>
+                        </div>
+                        <h4 class="text-muted">لا توجد طلبات حالياً</h4>
+                        <p class="text-muted">سيتم عرض طلبات تعديل البيانات هنا عند توفرها</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = requests.map(request => `
+                <div class="request-card" data-request-id="${request.requestId}">
+                    <div class="request-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1">
+                                <i class="bi bi-person me-2"></i>${request.userName}
+                            </h5>
+                            <small class="opacity-75">رقم الهوية: ${request.userIdNumber}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge status-${getStatusClass(request.status)} fs-6">
+                                ${request.status}
+                            </span>
+                            <br>
+                            <small class="opacity-75">
+                                <i class="bi bi-calendar me-1"></i>${request.requestDate}
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="request-body">
+                        <div class="mb-3">
+                            <strong class="text-primary">
+                                <i class="bi bi-chat-quote me-2"></i>سبب التعديل:
+                            </strong>
+                            <p class="mb-0 mt-2">${request.reason}</p>
+                        </div>
+                        
+                        <div class="changes-list">
+                            <strong class="text-success mb-2 d-block">
+                                <i class="bi bi-pencil-square me-2"></i>التغييرات المطلوبة:
+                            </strong>
+                            ${formatChanges(request.requestedChanges)}
+                        </div>
+                        
+                        ${request.adminNotes ? `
+                            <div class="mt-3 p-3 bg-light rounded">
+                                <strong class="text-info">
+                                    <i class="bi bi-person-badge me-2"></i>ملاحظات الإدارة:
+                                </strong>
+                                <p class="mb-0 mt-2">${request.adminNotes}</p>
+                                ${request.reviewDate ? `<small class="text-muted d-block mt-1">تم المراجعة: ${request.reviewDate} بواسطة ${request.reviewer || 'الإدارة'}</small>` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    ${request.status === 'مُنتظر المراجعة' ? `
+                        <div class="admin-actions d-flex gap-2">
+                            <button class="btn btn-success btn-sm" onclick="openResponseModal('${request.requestId}', 'مقبول')">
+                                <i class="bi bi-check-circle me-1"></i>قبول
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="openResponseModal('${request.requestId}', 'مرفوض')">
+                                <i class="bi bi-x-circle me-1"></i>رفض
+                            </button>
+                            <button class="btn btn-outline-info btn-sm" onclick="viewDetails('${request.requestId}')">
+                                <i class="bi bi-eye me-1"></i>تفاصيل
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function formatChanges(changesText) {
+            if (!changesText) return '<p class="text-muted">لا توجد تغييرات محددة</p>';
+            
+            const changes = changesText.split('\n').filter(change => change.trim());
+            return changes.map(change => {
+                const [label, value] = change.split(':').map(s => s.trim());
+                return `
+                    <div class="change-item">
+                        <span class="change-label">${label}:</span>
+                        <span class="change-value">${value || 'غير محدد'}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getStatusClass(status) {
+            switch (status) {
+                case 'مقبول': return 'approved';
+                case 'مرفوض': return 'rejected';
+                default: return 'pending';
+            }
+        }
+
+        function updateStats() {
+            const pending = allRequests.filter(r => r.status === 'مُنتظر المراجعة').length;
+            const approved = allRequests.filter(r => r.status === 'مقبول').length;
+            const rejected = allRequests.filter(r => r.status === 'مرفوض').length;
+            
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('approvedCount').textContent = approved;
+            document.getElementById('rejectedCount').textContent = rejected;
+            document.getElementById('totalCount').textContent = allRequests.length;
+        }
+
+        function filterRequests() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            let filtered = allRequests;
+            
+            if (statusFilter) {
+                filtered = filtered.filter(r => r.status === statusFilter);
+            }
+            
+            if (searchTerm) {
+                filtered = filtered.filter(r => 
+                    r.userName.toLowerCase().includes(searchTerm) ||
+                    r.userIdNumber.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            displayRequests(filtered);
+        }
+
+        function openResponseModal(requestId, suggestedAction = '') {
+            document.getElementById('currentRequestId').value = requestId;
+            document.getElementById('actionSelect').value = suggestedAction;
+            document.getElementById('adminNotes').value = '';
+            
+            new bootstrap.Modal(document.getElementById('responseModal')).show();
+        }
+
+        function viewDetails(requestId) {
+            const request = allRequests.find(r => r.requestId === requestId);
+            if (!request) return;
+            
+            document.getElementById('requestDetailsContent').innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">معلومات المستخدم</h6>
+                        <p><strong>الاسم:</strong> ${request.userName}</p>
+                        <p><strong>رقم الهوية:</strong> ${request.userIdNumber}</p>
+                        <p><strong>تاريخ الطلب:</strong> ${request.requestDate}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-primary">حالة الطلب</h6>
+                        <p><strong>الحالة:</strong> <span class="badge status-${getStatusClass(request.status)}">${request.status}</span></p>
+                        ${request.reviewDate ? `<p><strong>تاريخ المراجعة:</strong> ${request.reviewDate}</p>` : ''}
+                        ${request.reviewer ? `<p><strong>المراجع:</strong> ${request.reviewer}</p>` : ''}
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <h6 class="text-primary">سبب التعديل</h6>
+                <p class="bg-light p-3 rounded">${request.reason}</p>
+                
+                <h6 class="text-primary">التغييرات المطلوبة</h6>
+                <div class="bg-light p-3 rounded">
+                    ${formatChanges(request.requestedChanges)}
+                </div>
+                
+                ${request.adminNotes ? `
+                    <h6 class="text-primary mt-3">ملاحظات الإدارة</h6>
+                    <p class="bg-info bg-opacity-10 p-3 rounded">${request.adminNotes}</p>
+                ` : ''}
+            `;
+            
+            new bootstrap.Modal(document.getElementById('requestDetailsModal')).show();
+        }
+
+        async function handleResponse() {
+            const requestId = document.getElementById('currentRequestId').value;
+            const action = document.getElementById('actionSelect').value;
+            const notes = document.getElementById('adminNotes').value.trim();
+            
+            if (!action) {
+                Toastify({
+                    text: "يرجى اختيار الإجراء المطلوب",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "center",
+                    backgroundColor: "linear-gradient(to right, #ff6b6b, #feca57)",
+                }).showToast();
+                return;
+            }
+            
+            try {
+                const result = await App.apiCall({
+                    action: 'updateEditRequestStatus',
+                    token: sessionStorage.getItem('adminToken'),
+                    requestId: requestId,
+                    status: action,
+                    adminNotes: notes,
+                    reviewer: sessionStorage.getItem('adminUsername') || 'الإدارة'
+                });
+                
+                if (result && result.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('responseModal')).hide();
+                    
+                    Toastify({
+                        text: `تم ${action === 'مقبول' ? 'قبول' : 'رفض'} الطلب بنجاح`,
+                        duration: 3000,
+                        gravity: "top",
+                        position: "center",
+                        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                    }).showToast();
+                    
+                    // إعادة تحميل الطلبات
+                    loadEditRequests();
+                } else {
+                    throw new Error(result?.message || 'فشل في تحديث حالة الطلب');
+                }
+                
+            } catch (error) {
+                console.error('خطأ في تحديث الطلب:', error);
+                Toastify({
+                    text: "حدث خطأ في تحديث الطلب: " + error.message,
+                    duration: 5000,
+                    gravity: "top",
+                    position: "center",
+                    backgroundColor: "linear-gradient(to right, #ff6b6b, #feca57)",
+                }).showToast();
+            }
+        }
+    </script>
+</body>
+</html>

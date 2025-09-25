@@ -11,6 +11,99 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="modern-theme.css">
     <link rel="stylesheet" href="assets/site.css">
+    
+    <style>
+        /* إشعارات الأدمن */
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        
+        .notifications-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            width: 380px;
+            max-height: 450px;
+            overflow-y: auto;
+            z-index: 1050;
+            display: none;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .notification-item {
+            padding: 16px;
+            border-bottom: 1px solid #f5f5f5;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .notification-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .notification-item.unread {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .notification-item.priority-high {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .notification-title {
+            font-weight: 600;
+            color: #2d3a4b;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+        }
+        
+        .notification-message {
+            color: #555;
+            font-size: 0.875rem;
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+        
+        .notification-time {
+            color: #888;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .notification-actions {
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .notification-actions .btn {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+        }
+    </style>
 </head>
 <body>
     <div class="container-fluid">
@@ -26,6 +119,31 @@
                 </div>
             </div>
             <div class="d-flex align-items-center position-relative">
+                <!-- أيقونة الإشعارات للأدمن -->
+                <div class="notification-icon position-relative me-2" id="adminNotificationIcon">
+                    <button class="btn btn-light btn-modern">
+                        <i class="bi bi-bell text-warning"></i>
+                    </button>
+                    <span class="notification-badge d-none" id="adminNotificationBadge">0</span>
+                    
+                    <!-- قائمة الإشعارات المنسدلة -->
+                    <div class="notifications-dropdown" id="adminNotificationsDropdown">
+                        <div class="p-3 border-bottom bg-warning bg-opacity-10">
+                            <h6 class="mb-0 text-warning">
+                                <i class="bi bi-bell-fill me-2"></i>إشعارات الإدارة
+                            </h6>
+                        </div>
+                        <div id="adminNotificationsList">
+                            <!-- سيتم ملؤها بالجافاسكريبت -->
+                        </div>
+                        <div class="p-2 text-center border-top">
+                            <button class="btn btn-sm btn-outline-warning" id="adminMarkAllReadBtn">
+                                <i class="bi bi-check-all me-1"></i>تمييز الكل كمقروء
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
                 <button class="btn btn-warning btn-modern me-2" id="superadmin-link" style="display: none;" onclick="location.href='superadmin.html'">
                     <i class="bi bi-people-fill me-1"></i>إدارة المدراء
                 </button>
@@ -401,6 +519,32 @@
                                     </a>
                                 </div>
 
+                                <!-- كارد طلبات تعديل البيانات -->
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
+                                    <a href="edit-requests.html" class="text-decoration-none">
+                                        <div class="action-card action-warning h-100">
+                                            <div class="action-header">
+                                                <div class="action-icon">
+                                                    <i class="bi bi-person-gear"></i>
+                                                </div>
+                                                <div class="action-badge">
+                                                    <span>طلبات</span>
+                                                </div>
+                                            </div>
+                                            <div class="action-content">
+                                                <h6>طلبات تعديل البيانات</h6>
+                                                <p>مراجعة وقبول/رفض طلبات تعديل البيانات الشخصية</p>
+                                            </div>
+                                            <div class="action-footer">
+                                                <span class="action-link">
+                                                    <i class="bi bi-arrow-left"></i>
+                                                    دخول
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+
                                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
                                     <a href="fair-distribution.html" class="text-decoration-none">
                                         <div class="action-card action-secondary h-100">
@@ -550,5 +694,210 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="assets/site.js"></script>
     <script src="script.js"></script>
+    
+    <script>
+        // إشعارات الأدمن
+        document.addEventListener('DOMContentLoaded', function() {
+            initAdminNotifications();
+        });
+        
+        function initAdminNotifications() {
+            const adminToken = sessionStorage.getItem('adminToken');
+            if (!adminToken) return;
+            
+            // تحميل الإشعارات
+            loadAdminNotifications();
+            
+            // ربط أحداث الإشعارات
+            document.getElementById('adminNotificationIcon').addEventListener('click', toggleAdminNotifications);
+            document.getElementById('adminMarkAllReadBtn').addEventListener('click', markAllAdminNotificationsAsRead);
+            
+            // إخفاء القائمة عند النقر خارجها
+            document.addEventListener('click', function(e) {
+                if (!document.getElementById('adminNotificationIcon').contains(e.target)) {
+                    document.getElementById('adminNotificationsDropdown').style.display = 'none';
+                }
+            });
+            
+            // تحديث الإشعارات كل 15 ثانية (الأدمن يحتاج تحديثات أسرع)
+            setInterval(loadAdminNotifications, 15000);
+        }
+        
+        async function loadAdminNotifications() {
+            try {
+                const result = await App.apiCall({
+                    action: 'getAdminNotifications',
+                    token: sessionStorage.getItem('adminToken')
+                });
+                
+                if (result && result.success) {
+                    displayAdminNotifications(result.notifications);
+                    updateAdminNotificationBadge(result.notifications);
+                }
+            } catch (error) {
+                console.error('خطأ في تحميل إشعارات الأدمن:', error);
+            }
+        }
+        
+        function displayAdminNotifications(notifications) {
+            const container = document.getElementById('adminNotificationsList');
+            
+            if (notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="notification-item text-center text-muted">
+                        <i class="bi bi-inbox me-2"></i>لا توجد إشعارات جديدة
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = notifications.map(notification => `
+                <div class="notification-item ${notification.isRead ? '' : 'unread'} ${notification.priority === 'high' ? 'priority-high' : ''}" data-id="${notification.id}">
+                    <div class="notification-title">
+                        <i class="${getAdminNotificationIcon(notification.type)} me-2"></i>
+                        ${notification.title}
+                    </div>
+                    <div class="notification-message">${notification.message}</div>
+                    <div class="notification-time">
+                        <i class="bi bi-clock me-1"></i>${formatNotificationTime(notification.createdAt)}
+                    </div>
+                    ${getAdminNotificationActions(notification)}
+                </div>
+            `).join('');
+            
+            // ربط أحداث النقر على الإشعارات
+            container.querySelectorAll('.notification-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    if (!e.target.classList.contains('btn')) {
+                        markAdminNotificationAsRead(this.dataset.id);
+                    }
+                });
+            });
+        }
+        
+        function getAdminNotificationActions(notification) {
+            if (notification.type === 'new_edit_request') {
+                return `
+                    <div class="notification-actions">
+                        <button class="btn btn-sm btn-primary" onclick="window.open('edit-requests.html', '_blank')">
+                            <i class="bi bi-eye me-1"></i>مراجعة
+                        </button>
+                    </div>
+                `;
+            } else if (notification.type === 'new_birth_request') {
+                return `
+                    <div class="notification-actions">
+                        <button class="btn btn-sm btn-success" onclick="window.open('life-requests.html', '_blank')">
+                            <i class="bi bi-eye me-1"></i>مراجعة
+                        </button>
+                    </div>
+                `;
+            } else if (notification.type === 'password_reset_request') {
+                return `
+                    <div class="notification-actions">
+                        <button class="btn btn-sm btn-warning" onclick="window.open('password-resets.html', '_blank')">
+                            <i class="bi bi-key me-1"></i>إدارة
+                        </button>
+                    </div>
+                `;
+            }
+            return '';
+        }
+        
+        function updateAdminNotificationBadge(notifications) {
+            const badge = document.getElementById('adminNotificationBadge');
+            const unreadCount = notifications.filter(n => !n.isRead).length;
+            
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                badge.classList.remove('d-none');
+            } else {
+                badge.classList.add('d-none');
+            }
+        }
+        
+        function toggleAdminNotifications() {
+            const dropdown = document.getElementById('adminNotificationsDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' || !dropdown.style.display ? 'block' : 'none';
+        }
+        
+        async function markAdminNotificationAsRead(notificationId) {
+            try {
+                await App.apiCall({
+                    action: 'markNotificationAsRead',
+                    notificationId: notificationId,
+                    token: sessionStorage.getItem('adminToken')
+                });
+                
+                // تحديث الإشعارات
+                loadAdminNotifications();
+            } catch (error) {
+                console.error('خطأ في تمييز الإشعار كمقروء:', error);
+            }
+        }
+        
+        async function markAllAdminNotificationsAsRead() {
+            try {
+                await App.apiCall({
+                    action: 'markAllAdminNotificationsAsRead',
+                    token: sessionStorage.getItem('adminToken')
+                });
+                
+                // تحديث الإشعارات
+                loadAdminNotifications();
+                
+                Toastify({
+                    text: "تم تمييز جميع الإشعارات كمقروءة",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "center",
+                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                }).showToast();
+            } catch (error) {
+                console.error('خطأ في تمييز جميع الإشعارات كمقروءة:', error);
+            }
+        }
+        
+        function getAdminNotificationIcon(type) {
+            switch (type) {
+                case 'new_edit_request': return 'bi-person-gear text-warning';
+                case 'new_birth_request': return 'bi-person-plus-fill text-success';
+                case 'new_martyr_request': return 'bi-heart-fill text-danger';
+                case 'new_death_request': return 'bi-person-x-fill text-dark';
+                case 'new_special_case': return 'bi-flag-fill text-info';
+                case 'password_reset_request': return 'bi-key-fill text-secondary';
+                case 'system_alert': return 'bi-exclamation-triangle-fill text-danger';
+                case 'general': return 'bi-info-circle-fill text-primary';
+                default: return 'bi-bell-fill text-warning';
+            }
+        }
+        
+        function formatNotificationTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffInMinutes = (now - date) / (1000 * 60);
+            
+            if (diffInMinutes < 1) {
+                return 'الآن';
+            } else if (diffInMinutes < 60) {
+                return `قبل ${Math.floor(diffInMinutes)} دقيقة`;
+            } else if (diffInMinutes < 1440) {
+                const diffInHours = Math.floor(diffInMinutes / 60);
+                return `قبل ${diffInHours} ساعة`;
+            } else {
+                const diffInDays = Math.floor(diffInMinutes / 1440);
+                if (diffInDays < 7) {
+                    return `قبل ${diffInDays} ${diffInDays === 1 ? 'يوم' : 'أيام'}`;
+                } else {
+                    return date.toLocaleDateString('ar-EG', { 
+                        day: 'numeric', 
+                        month: 'short', 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    });
+                }
+            }
+        }
+    </script>
 </body>
 </html>

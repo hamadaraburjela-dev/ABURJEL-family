@@ -6,7 +6,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const App = {
-        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbxQD4kOMMD2NbMBWQaw3KeUfVXOE4y6ZVdxZSIMcj2bkFXDsquVFLsn9iE-szUJUvKEig/exec', // سيتم تحديثه بالرابط الجديد من Google Apps Script
+        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbzdIFP8WktSea6rFyi1I0VInEcwySgw5FjUZvEwBof3A0le_KPcnLbvaOGtAK4yjK8K/exec', // سيتم تحديثه بالرابط الجديد من Google Apps Script
         
         async testNewUrl() {
             const input = document.getElementById('newScriptUrl');
@@ -525,6 +525,9 @@ document.addEventListener('DOMContentLoaded', () => {
             ]);
             if (aidHistoryResult) this.renderCompletedAid(aidHistoryResult.data);
             if (futureAidResult) this.renderFutureAid(futureAidResult.data);
+            
+            // تحميل طلبات التعديل
+            await this.loadUserEditRequests(userId);
         },
         
     renderUserInfo(data) {
@@ -693,6 +696,47 @@ document.addEventListener('DOMContentLoaded', () => {
                                 };
                             }
                         }, 100);
+        },
+
+        async loadUserEditRequests(userId) {
+            try {
+                const result = await this.apiCall({ action: 'getUserEditRequests', userId });
+                if (result && result.success) {
+                    this.renderUserEditRequests(result.requests);
+                }
+            } catch (error) {
+                console.error('خطأ في جلب طلبات التعديل:', error);
+            }
+        },
+
+        renderUserEditRequests(requests) {
+            const tableBody = document.getElementById('editRequestsTableBody');
+            if (!tableBody) return;
+
+            if (requests.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox me-2"></i>لا توجد طلبات تعديل
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tableBody.innerHTML = requests.map(request => {
+                const statusClass = request.status === 'مقبول' ? 'status-approved' : 
+                                  request.status === 'مرفوض' ? 'status-rejected' : 'status-pending';
+                
+                return `
+                    <tr>
+                        <td>${request.requestDate}</td>
+                        <td>${request.reason}</td>
+                        <td><span class="${statusClass}">${request.status}</span></td>
+                        <td>${request.adminNotes || '-'}</td>
+                    </tr>
+                `;
+            }).join('');
         },
 
         renderFutureAid(futureAid) {

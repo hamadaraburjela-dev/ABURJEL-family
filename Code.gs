@@ -19,6 +19,8 @@ const BIRTHS_SHEET = 'مواليد اطفال';
 const CHILDREN_CLOTHES_SHEET = 'بنزط اطفال';
 const MARTYRS_SHEET = 'الشهداء';
 const DEATHS_SHEET = 'الوفيات';
+const EDIT_REQUESTS_SHEET = 'طلبات تعديل البيانات';
+const NOTIFICATIONS_SHEET = 'الإشعارات';
 
 // --- MAIN ENTRY POINTS ---
 function doGet(e) {
@@ -74,6 +76,15 @@ function doPost(e) {
       case 'updateAidStatus': response = handleUpdateAidStatus(payload); break;
     case 'bulkProcessAid': response = handleBulkProcessAid(payload); break;
     case 'updateUserProfile': response = handleUpdateUserProfile(payload.userId, payload.profileData); break;
+    case 'submitEditRequest': response = handleSubmitEditRequest(payload); break;
+    case 'getUserEditRequests': response = handleGetUserEditRequests(payload.userId); break;
+    case 'getAllEditRequests': response = handleGetAllEditRequests(payload.token); break;
+    case 'updateEditRequestStatus': response = handleUpdateEditRequestStatus(payload); break;
+    case 'getUserNotifications': response = handleGetUserNotifications(payload.userId); break;
+    case 'getAdminNotifications': response = handleGetAdminNotifications(payload.token); break;
+    case 'markNotificationAsRead': response = handleMarkNotificationAsRead(payload); break;
+    case 'markAllNotificationsAsRead': response = handleMarkAllNotificationsAsRead(payload.userId); break;
+    case 'markAllAdminNotificationsAsRead': response = handleMarkAllAdminNotificationsAsRead(payload.token); break;
       default:
         response = { success: false, message: 'Unsupported action: ' + payload.action };
     }
@@ -355,7 +366,774 @@ function handleUpdateUserProfile(userId, profileData) {
       message: 'حدث خطأ في تحديث البيانات: ' + error.message 
     };
   }
-}function handleAdminLogin(username, password) {
+}
+
+/**
+ * Handle submission of profile edit request
+ * @param {Object} payload - Contains userId, userName, userIdNumber, requestedChanges, reason, requestDate, status
+ * @returns {Object} Response object
+ */
+function handleSubmitEditRequest(payload) {
+  try {
+    const { userId, userName, userIdNumber, requestedChanges, reason, requestDate, status } = payload;
+    
+    if (!userId || !requestedChanges || !reason) {
+      throw new Error('البيانات غير مكتملة: معرف المستخدم والتغييرات المطلوبة والسبب مطلوبون.');
+    }
+
+    // التحقق من وجود الشيت أو إنشاؤه
+    let editRequestsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(EDIT_REQUESTS_SHEET);
+    
+    if (!editRequestsSheet) {
+      // إنشاء شيت جديد لطلبات التعديل
+      editRequestsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).insertSheet(EDIT_REQUESTS_SHEET);
+      
+      // إضافة الهيدرز
+      const headers = [
+        'معرف الطلب',
+        'رقم الهوية',
+        'اسم المستخدم', 
+        'تاريخ الطلب',
+        'سبب التعديل',
+        'التغييرات المطلوبة',
+        'الحالة',
+        'ملاحظات الإدارة',
+        'تاريخ المراجعة',
+        'المراجع'
+      ];
+      editRequestsSheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+      
+      // تنسيق الهيدرز
+      const headerRange = editRequestsSheet.getRange(1, 1, 1, headers.length);
+      headerRange.setBackground('#4CAF50');
+      headerRange.setFontColor('#FFFFFF');
+      headerRange.setFontWeight('bold');
+      headerRange.setHorizontalAlignment('center');
+    }
+
+    // إنشاء معرف فريد للطلب
+    const requestId = 'REQ-' + new Date().getTime();
+    
+    // تحويل التغييرات المطلوبة إلى نص
+    const changesText = Object.entries(requestedChanges)
+      .filter(([key, value]) => value && value.trim() !== '')
+      .map(([key, value]) => `${key}: ${value}`)
+      .join('\n');
+
+    // إضافة الطلب الجديد
+    const newRow = [
+      requestId,
+      userIdNumber || userId,
+      userName || 'غير محدد',
+      new Date(requestDate).toLocaleDateString('ar-EG'),
+      reason,
+      changesText,
+      status || 'مُنتظر المراجعة',
+      '', // ملاحظات الإدارة
+      '', // تاريخ المراجعة
+      ''  // المراجع
+    ];
+
+    editRequestsSheet.appendRow(newRow);
+
+    // تسجيل العملية في السجل
+    Logger.log(`تم إرسال طلب تعديل جديد: ${requestId} للمستخدم: ${userId}`);
+
+    // إنشاء إشعار للأدمن
+    createNotification({
+      type: 'new_edit_request',
+      title: 'طلب تعديل بيانات جديد',
+      message: `تم استلام طلب تعديل بيانات جديد من المستخدم: ${userName} (${userIdNumber})`,
+      priority: 'high',
+      isAdmin: true
+    });
+
+    return {
+      success: true,
+      message: 'تم إرسال طلب التعديل بنجاح. سيتم مراجعته من قبل الإدارة.',
+      requestId: requestId
+    };
+
+  } catch (error) {
+    Logger.log('خطأ في إرسال طلب التعديل: ' + error.message);
+    return {
+      success: false,
+      message: 'حدث خطأ في إرسال طلب التعديل: ' + error.message
+    };
+  }
+}
+
+/**
+ * Handle getting user's edit requests
+ * @param {String} userId - User ID to get requests for
+ * @returns {Object} Response object with edit requests
+ */
+function handleGetUserEditRequests(userId) {
+  try {
+    if (!userId) {
+      throw new Error('معرف المستخدم مطلوب');
+    }
+
+    const editRequestsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(EDIT_REQUESTS_SHEET);
+    
+    if (!editRequestsSheet) {
+      return {
+        success: true,
+        requests: []
+      };
+    }
+
+    const data = editRequestsSheet.getDataRange().getValues();
+    const headers = data[0];
+    const requests = [];
+
+    // البحث عن طلبات هذا المستخدم
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const userIdColumn = headers.indexOf('رقم الهوية');
+      
+      if (userIdColumn !== -1 && String(row[userIdColumn]).trim() === String(userId).trim()) {
+        const request = {
+          requestId: row[headers.indexOf('معرف الطلب')] || '',
+          requestDate: row[headers.indexOf('تاريخ الطلب')] || '',
+          reason: row[headers.indexOf('سبب التعديل')] || '',
+          status: row[headers.indexOf('الحالة')] || 'مُنتظر المراجعة',
+          adminNotes: row[headers.indexOf('ملاحظات الإدارة')] || '',
+          reviewDate: row[headers.indexOf('تاريخ المراجعة')] || '',
+          reviewer: row[headers.indexOf('المراجع')] || ''
+        };
+        requests.push(request);
+      }
+    }
+
+    // ترتيب الطلبات حسب التاريخ (الأحدث أولاً)
+    requests.sort((a, b) => new Date(b.requestDate) - new Date(a.requestDate));
+
+    return {
+      success: true,
+      requests: requests
+    };
+
+  } catch (error) {
+    Logger.log('خطأ في جلب طلبات التعديل: ' + error.message);
+    return {
+      success: false,
+      message: 'حدث خطأ في جلب طلبات التعديل: ' + error.message,
+      requests: []
+    };
+  }
+}
+
+/**
+ * Handle getting all edit requests (Admin only)
+ * @param {String} token - Admin authentication token
+ * @returns {Object} Response object with all edit requests
+ */
+function handleGetAllEditRequests(token) {
+  try {
+    authenticateToken(token);
+
+    const editRequestsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(EDIT_REQUESTS_SHEET);
+    
+    if (!editRequestsSheet) {
+      return {
+        success: true,
+        requests: []
+      };
+    }
+
+    const data = editRequestsSheet.getDataRange().getValues();
+    const headers = data[0];
+    const requests = [];
+
+    // تحويل جميع الصفوف إلى كائنات
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const request = {
+        requestId: row[headers.indexOf('معرف الطلب')] || '',
+        userIdNumber: row[headers.indexOf('رقم الهوية')] || '',
+        userName: row[headers.indexOf('اسم المستخدم')] || '',
+        requestDate: row[headers.indexOf('تاريخ الطلب')] || '',
+        reason: row[headers.indexOf('سبب التعديل')] || '',
+        requestedChanges: row[headers.indexOf('التغييرات المطلوبة')] || '',
+        status: row[headers.indexOf('الحالة')] || 'مُنتظر المراجعة',
+        adminNotes: row[headers.indexOf('ملاحظات الإدارة')] || '',
+        reviewDate: row[headers.indexOf('تاريخ المراجعة')] || '',
+        reviewer: row[headers.indexOf('المراجع')] || ''
+      };
+      requests.push(request);
+    }
+
+    // ترتيب الطلبات حسب التاريخ (الأحدث أولاً)
+    requests.sort((a, b) => {
+      const dateA = new Date(a.requestDate);
+      const dateB = new Date(b.requestDate);
+      return dateB - dateA;
+    });
+
+    return {
+      success: true,
+      requests: requests
+    };
+
+  } catch (error) {
+    Logger.log('خطأ في جلب جميع طلبات التعديل: ' + error.message);
+    return {
+      success: false,
+      message: 'حدث خطأ في جلب طلبات التعديل: ' + error.message,
+      requests: []
+    };
+  }
+}
+
+/**
+ * Handle updating edit request status (Admin only)
+ * @param {Object} payload - Contains token, requestId, status, adminNotes, reviewer
+ * @returns {Object} Response object
+ */
+function handleUpdateEditRequestStatus(payload) {
+  try {
+    const { token, requestId, status, adminNotes, reviewer } = payload;
+    
+    authenticateToken(token);
+    
+    if (!requestId || !status) {
+      throw new Error('معرف الطلب والحالة الجديدة مطلوبان');
+    }
+
+    const editRequestsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(EDIT_REQUESTS_SHEET);
+    
+    if (!editRequestsSheet) {
+      throw new Error('لم يتم العثور على شيت طلبات التعديل');
+    }
+
+    const data = editRequestsSheet.getDataRange().getValues();
+    const headers = data[0];
+    
+    // البحث عن الطلب المحدد
+    let rowIndex = -1;
+    for (let i = 1; i < data.length; i++) {
+      const requestIdCol = headers.indexOf('معرف الطلب');
+      if (requestIdCol !== -1 && String(data[i][requestIdCol]).trim() === String(requestId).trim()) {
+        rowIndex = i;
+        break;
+      }
+    }
+    
+    if (rowIndex === -1) {
+      throw new Error('لم يتم العثور على الطلب المحدد');
+    }
+
+    // تحديث البيانات
+    const statusColIndex = headers.indexOf('الحالة');
+    const adminNotesColIndex = headers.indexOf('ملاحظات الإدارة');
+    const reviewDateColIndex = headers.indexOf('تاريخ المراجعة');
+    const reviewerColIndex = headers.indexOf('المراجع');
+
+    if (statusColIndex !== -1) {
+      data[rowIndex][statusColIndex] = status;
+    }
+    
+    if (adminNotesColIndex !== -1) {
+      data[rowIndex][adminNotesColIndex] = adminNotes || '';
+    }
+    
+    if (reviewDateColIndex !== -1) {
+      data[rowIndex][reviewDateColIndex] = new Date().toLocaleDateString('ar-EG');
+    }
+    
+    if (reviewerColIndex !== -1) {
+      data[rowIndex][reviewerColIndex] = reviewer || 'الإدارة';
+    }
+
+    // حفظ التغييرات
+    editRequestsSheet.getRange(1, 1, data.length, data[0].length).setValues(data);
+
+    // إذا تم قبول الطلب، قم بتطبيق التغييرات على بيانات المستخدم
+    if (status === 'مقبول') {
+      const userIdNumber = data[rowIndex][headers.indexOf('رقم الهوية')];
+      const requestedChanges = data[rowIndex][headers.indexOf('التغييرات المطلوبة')];
+      
+      try {
+        applyAcceptedChanges(userIdNumber, requestedChanges);
+        
+        // إنشاء إشعار للمستخدم
+        createNotification({
+          userId: userIdNumber,
+          type: 'edit_request_approved',
+          title: 'تم قبول طلب التعديل',
+          message: 'تم قبول طلب تعديل البيانات الشخصية وتطبيق التغييرات بنجاح.',
+          priority: 'normal'
+        });
+      } catch (applyError) {
+        Logger.log('خطأ في تطبيق التغييرات: ' + applyError.message);
+      }
+    } else if (status === 'مرفوض') {
+      // إنشاء إشعار للمستخدم عند الرفض
+      const userIdNumber = data[rowIndex][headers.indexOf('رقم الهوية')];
+      createNotification({
+        userId: userIdNumber,
+        type: 'edit_request_rejected',
+        title: 'تم رفض طلب التعديل',
+        message: `تم رفض طلب تعديل البيانات. ${adminNotes ? 'السبب: ' + adminNotes : ''}`,
+        priority: 'normal'
+      });
+    }
+
+    return {
+      success: true,
+      message: `تم تحديث حالة الطلب إلى: ${status}`
+    };
+
+  } catch (error) {
+    Logger.log('خطأ في تحديث حالة طلب التعديل: ' + error.message);
+    return {
+      success: false,
+      message: 'حدث خطأ في تحديث حالة الطلب: ' + error.message
+    };
+  }
+}
+
+/**
+ * Apply accepted changes to user data
+ * @param {String} userIdNumber - User ID number
+ * @param {String} requestedChangesText - Requested changes as text
+ */
+function applyAcceptedChanges(userIdNumber, requestedChangesText) {
+  try {
+    const individualsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(INDIVIDUALS_SHEET);
+    
+    if (!individualsSheet) {
+      throw new Error('لم يتم العثور على شيت الأفراد');
+    }
+
+    const data = individualsSheet.getDataRange().getValues();
+    const headers = data[0];
+    
+    // البحث عن المستخدم
+    let userRowIndex = -1;
+    for (let i = 1; i < data.length; i++) {
+      const idColIndex = headers.indexOf('رقم الهوية');
+      if (idColIndex !== -1 && String(data[i][idColIndex]).trim() === String(userIdNumber).trim()) {
+        userRowIndex = i;
+        break;
+      }
+    }
+    
+    if (userRowIndex === -1) {
+      throw new Error('لم يتم العثور على المستخدم في شيت الأفراد');
+    }
+
+    // تحليل التغييرات المطلوبة
+    const changes = requestedChangesText.split('\n').filter(change => change.trim());
+    
+    for (const change of changes) {
+      const [fieldName, fieldValue] = change.split(':').map(s => s.trim());
+      if (fieldName && fieldValue) {
+        const colIndex = headers.indexOf(fieldName);
+        if (colIndex !== -1) {
+          data[userRowIndex][colIndex] = fieldValue;
+        }
+      }
+    }
+
+    // إضافة تاريخ آخر تحديث
+    const lastUpdateColIndex = headers.indexOf('آخر تحديث');
+    if (lastUpdateColIndex !== -1) {
+      data[userRowIndex][lastUpdateColIndex] = new Date().toISOString().split('T')[0];
+    }
+
+    // حفظ التغييرات
+    individualsSheet.getRange(1, 1, data.length, data[0].length).setValues(data);
+    
+    Logger.log(`تم تطبيق التغييرات المقبولة للمستخدم: ${userIdNumber}`);
+
+  } catch (error) {
+    Logger.log('خطأ في تطبيق التغييرات المقبولة: ' + error.message);
+    throw error;
+  }
+}
+
+/**
+ * Create a notification
+ * @param {Object} notificationData - Contains userId, type, title, message, priority
+ */
+function createNotification(notificationData) {
+  try {
+    const { userId, type, title, message, priority = 'normal', isAdmin = false } = notificationData;
+    
+    // التحقق من وجود الشيت أو إنشاؤه
+    let notificationsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(NOTIFICATIONS_SHEET);
+    
+    if (!notificationsSheet) {
+      // إنشاء شيت جديد للإشعارات
+      notificationsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).insertSheet(NOTIFICATIONS_SHEET);
+      
+      // إضافة الهيدرز
+      const headers = [
+        'معرف الإشعار',
+        'معرف المستخدم',
+        'نوع الإشعار',
+        'العنوان',
+        'الرسالة',
+        'الأولوية',
+        'مقروء',
+        'تاريخ الإنشاء',
+        'للأدمن',
+        'تاريخ القراءة'
+      ];
+      notificationsSheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+      
+      // تنسيق الهيدرز
+      const headerRange = notificationsSheet.getRange(1, 1, 1, headers.length);
+      headerRange.setBackground('#2196F3');
+      headerRange.setFontColor('#FFFFFF');
+      headerRange.setFontWeight('bold');
+      headerRange.setHorizontalAlignment('center');
+    }
+
+    // إنشاء معرف فريد للإشعار
+    const notificationId = 'NOTIF-' + new Date().getTime() + '-' + Math.random().toString(36).substr(2, 5);
+    
+    // إضافة الإشعار الجديد
+    const newRow = [
+      notificationId,
+      userId || '',
+      type,
+      title,
+      message,
+      priority,
+      false, // مقروء
+      new Date().toISOString(),
+      isAdmin, // للأدمن
+      '' // تاريخ القراءة
+    ];
+
+    notificationsSheet.appendRow(newRow);
+    
+    Logger.log(`تم إنشاء إشعار جديد: ${notificationId} للمستخدم: ${userId}`);
+    
+    return notificationId;
+
+  } catch (error) {
+    Logger.log('خطأ في إنشاء الإشعار: ' + error.message);
+    return null;
+  }
+}
+
+/**
+ * Handle getting user notifications
+ * @param {String} userId - User ID to get notifications for
+ * @returns {Object} Response object with notifications
+ */
+function handleGetUserNotifications(userId) {
+  try {
+    if (!userId) {
+      throw new Error('معرف المستخدم مطلوب');
+    }
+
+    const notificationsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(NOTIFICATIONS_SHEET);
+    
+    if (!notificationsSheet) {
+      return {
+        success: true,
+        notifications: []
+      };
+    }
+
+    const data = notificationsSheet.getDataRange().getValues();
+    const headers = data[0];
+    const notifications = [];
+
+    // البحث عن إشعارات هذا المستخدم
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const userIdColumn = headers.indexOf('معرف المستخدم');
+      const isAdminColumn = headers.indexOf('للأدمن');
+      
+      if (userIdColumn !== -1 && isAdminColumn !== -1 && 
+          String(row[userIdColumn]).trim() === String(userId).trim() &&
+          !row[isAdminColumn]) { // فقط الإشعارات غير الخاصة بالأدمن
+        
+        const notification = {
+          id: row[headers.indexOf('معرف الإشعار')] || '',
+          type: row[headers.indexOf('نوع الإشعار')] || '',
+          title: row[headers.indexOf('العنوان')] || '',
+          message: row[headers.indexOf('الرسالة')] || '',
+          priority: row[headers.indexOf('الأولوية')] || 'normal',
+          isRead: row[headers.indexOf('مقروء')] || false,
+          createdAt: row[headers.indexOf('تاريخ الإنشاء')] || '',
+          readAt: row[headers.indexOf('تاريخ القراءة')] || ''
+        };
+        notifications.push(notification);
+      }
+    }
+
+    // ترتيب الإشعارات حسب التاريخ (الأحدث أولاً)
+    notifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    return {
+      success: true,
+      notifications: notifications
+    };
+
+  } catch (error) {
+    Logger.log('خطأ في جلب إشعارات المستخدم: ' + error.message);
+    return {
+      success: false,
+      message: 'حدث خطأ في جلب الإشعارات: ' + error.message,
+      notifications: []
+    };
+  }
+}
+
+/**
+ * Handle getting admin notifications
+ * @param {String} token - Admin authentication token
+ * @returns {Object} Response object with admin notifications
+ */
+function handleGetAdminNotifications(token) {
+  try {
+    authenticateToken(token);
+
+    const notificationsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(NOTIFICATIONS_SHEET);
+    
+    if (!notificationsSheet) {
+      return {
+        success: true,
+        notifications: []
+      };
+    }
+
+    const data = notificationsSheet.getDataRange().getValues();
+    const headers = data[0];
+    const notifications = [];
+
+    // البحث عن إشعارات الأدمن
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const isAdminColumn = headers.indexOf('للأدمن');
+      
+      if (isAdminColumn !== -1 && row[isAdminColumn]) { // فقط إشعارات الأدمن
+        const notification = {
+          id: row[headers.indexOf('معرف الإشعار')] || '',
+          type: row[headers.indexOf('نوع الإشعار')] || '',
+          title: row[headers.indexOf('العنوان')] || '',
+          message: row[headers.indexOf('الرسالة')] || '',
+          priority: row[headers.indexOf('الأولوية')] || 'normal',
+          isRead: row[headers.indexOf('مقروء')] || false,
+          createdAt: row[headers.indexOf('تاريخ الإنشاء')] || '',
+          readAt: row[headers.indexOf('تاريخ القراءة')] || ''
+        };
+        notifications.push(notification);
+      }
+    }
+
+    // ترتيب الإشعارات حسب التاريخ (الأحدث أولاً)
+    notifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    return {
+      success: true,
+      notifications: notifications
+    };
+
+  } catch (error) {
+    Logger.log('خطأ في جلب إشعارات الأدمن: ' + error.message);
+    return {
+      success: false,
+      message: 'حدث خطأ في جلب إشعارات الأدمن: ' + error.message,
+      notifications: []
+    };
+  }
+}
+
+/**
+ * Handle marking notification as read
+ * @param {Object} payload - Contains notificationId and optional token for admin
+ * @returns {Object} Response object
+ */
+function handleMarkNotificationAsRead(payload) {
+  try {
+    const { notificationId, token } = payload;
+    
+    if (!notificationId) {
+      throw new Error('معرف الإشعار مطلوب');
+    }
+
+    // إذا كان هناك token، فهو من الأدمن
+    if (token) {
+      authenticateToken(token);
+    }
+
+    const notificationsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(NOTIFICATIONS_SHEET);
+    
+    if (!notificationsSheet) {
+      throw new Error('لم يتم العثور على شيت الإشعارات');
+    }
+
+    const data = notificationsSheet.getDataRange().getValues();
+    const headers = data[0];
+    
+    // البحث عن الإشعار المحدد
+    let rowIndex = -1;
+    for (let i = 1; i < data.length; i++) {
+      const notifIdCol = headers.indexOf('معرف الإشعار');
+      if (notifIdCol !== -1 && String(data[i][notifIdCol]).trim() === String(notificationId).trim()) {
+        rowIndex = i;
+        break;
+      }
+    }
+    
+    if (rowIndex === -1) {
+      throw new Error('لم يتم العثور على الإشعار المحدد');
+    }
+
+    // تحديث حالة القراءة
+    const isReadColIndex = headers.indexOf('مقروء');
+    const readAtColIndex = headers.indexOf('تاريخ القراءة');
+
+    if (isReadColIndex !== -1) {
+      data[rowIndex][isReadColIndex] = true;
+    }
+    
+    if (readAtColIndex !== -1) {
+      data[rowIndex][readAtColIndex] = new Date().toISOString();
+    }
+
+    // حفظ التغييرات
+    notificationsSheet.getRange(1, 1, data.length, data[0].length).setValues(data);
+
+    return {
+      success: true,
+      message: 'تم تمييز الإشعار كمقروء'
+    };
+
+  } catch (error) {
+    Logger.log('خطأ في تمييز الإشعار كمقروء: ' + error.message);
+    return {
+      success: false,
+      message: 'حدث خطأ في تمييز الإشعار كمقروء: ' + error.message
+    };
+  }
+}
+
+/**
+ * Handle marking all user notifications as read
+ * @param {String} userId - User ID
+ * @returns {Object} Response object
+ */
+function handleMarkAllNotificationsAsRead(userId) {
+  try {
+    if (!userId) {
+      throw new Error('معرف المستخدم مطلوب');
+    }
+
+    const notificationsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(NOTIFICATIONS_SHEET);
+    
+    if (!notificationsSheet) {
+      return { success: true, message: 'لا توجد إشعارات' };
+    }
+
+    const data = notificationsSheet.getDataRange().getValues();
+    const headers = data[0];
+    let updatedCount = 0;
+
+    // تحديث جميع إشعارات المستخدم
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const userIdColumn = headers.indexOf('معرف المستخدم');
+      const isAdminColumn = headers.indexOf('للأدمن');
+      const isReadColumn = headers.indexOf('مقروء');
+      const readAtColumn = headers.indexOf('تاريخ القراءة');
+      
+      if (userIdColumn !== -1 && isAdminColumn !== -1 && isReadColumn !== -1 &&
+          String(row[userIdColumn]).trim() === String(userId).trim() &&
+          !row[isAdminColumn] && !row[isReadColumn]) {
+        
+        data[i][isReadColumn] = true;
+        if (readAtColumn !== -1) {
+          data[i][readAtColumn] = new Date().toISOString();
+        }
+        updatedCount++;
+      }
+    }
+
+    if (updatedCount > 0) {
+      // حفظ التغييرات
+      notificationsSheet.getRange(1, 1, data.length, data[0].length).setValues(data);
+    }
+
+    return {
+      success: true,
+      message: `تم تمييز ${updatedCount} إشعار كمقروء`
+    };
+
+  } catch (error) {
+    Logger.log('خطأ في تمييز جميع الإشعارات كمقروءة: ' + error.message);
+    return {
+      success: false,
+      message: 'حدث خطأ في تمييز الإشعارات كمقروءة: ' + error.message
+    };
+  }
+}
+
+/**
+ * Handle marking all admin notifications as read
+ * @param {String} token - Admin authentication token
+ * @returns {Object} Response object
+ */
+function handleMarkAllAdminNotificationsAsRead(token) {
+  try {
+    authenticateToken(token);
+
+    const notificationsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(NOTIFICATIONS_SHEET);
+    
+    if (!notificationsSheet) {
+      return { success: true, message: 'لا توجد إشعارات' };
+    }
+
+    const data = notificationsSheet.getDataRange().getValues();
+    const headers = data[0];
+    let updatedCount = 0;
+
+    // تحديث جميع إشعارات الأدمن
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const isAdminColumn = headers.indexOf('للأدمن');
+      const isReadColumn = headers.indexOf('مقروء');
+      const readAtColumn = headers.indexOf('تاريخ القراءة');
+      
+      if (isAdminColumn !== -1 && isReadColumn !== -1 &&
+          row[isAdminColumn] && !row[isReadColumn]) {
+        
+        data[i][isReadColumn] = true;
+        if (readAtColumn !== -1) {
+          data[i][readAtColumn] = new Date().toISOString();
+        }
+        updatedCount++;
+      }
+    }
+
+    if (updatedCount > 0) {
+      // حفظ التغييرات
+      notificationsSheet.getRange(1, 1, data.length, data[0].length).setValues(data);
+    }
+
+    return {
+      success: true,
+      message: `تم تمييز ${updatedCount} إشعار كمقروء`
+    };
+
+  } catch (error) {
+    Logger.log('خطأ في تمييز جميع إشعارات الأدمن كمقروءة: ' + error.message);
+    return {
+      success: false,
+      message: 'حدث خطأ في تمييز إشعارات الأدمن كمقروءة: ' + error.message
+    };
+  }
+}
+
+function handleAdminLogin(username, password) {
   const logSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(ADMINS_LOGIN_LOG_SHEET);
   let logStatus = 'فاشل';
   let logReason = '';

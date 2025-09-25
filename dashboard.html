@@ -175,6 +175,102 @@
             font-style: italic;
             padding: 20px;
         }
+        
+        .card-header-warning {
+            background: linear-gradient(90deg, #f39c12 0%, #f1c40f 100%);
+            color: white;
+        }
+        
+        .status-pending {
+            color: #f39c12;
+            font-weight: 600;
+        }
+        
+        .status-approved {
+            color: #27ae60;
+            font-weight: 600;
+        }
+        
+        .status-rejected {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+        
+        .alert-info-custom {
+            background: rgba(52, 152, 219, 0.1);
+            border: 1px solid rgba(52, 152, 219, 0.3);
+            color: #2980b9;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .notifications-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 350px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .notification-item {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.3s;
+        }
+        
+        .notification-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .notification-item.unread {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .notification-title {
+            font-weight: 600;
+            color: #2d3a4b;
+            margin-bottom: 5px;
+        }
+        
+        .notification-message {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .notification-time {
+            color: #999;
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 <body>
@@ -184,6 +280,31 @@
             <h1 class="header-title d-none d-sm-inline-block align-middle ms-3">لوحة تحكم المستخدم</h1>
         </div>
         <div class="d-flex align-items-center gap-2">
+            <!-- أيقونة الإشعارات -->
+            <div class="notification-icon position-relative me-2" id="notificationIcon">
+                <button class="btn btn-outline-info btn-modern">
+                    <i class="bi bi-bell"></i>
+                </button>
+                <span class="notification-badge d-none" id="notificationBadge">0</span>
+                
+                <!-- قائمة الإشعارات المنسدلة -->
+                <div class="notifications-dropdown" id="notificationsDropdown">
+                    <div class="p-3 border-bottom">
+                        <h6 class="mb-0">
+                            <i class="bi bi-bell-fill me-2"></i>الإشعارات
+                        </h6>
+                    </div>
+                    <div id="notificationsList">
+                        <!-- سيتم ملؤها بالجافاسكريبت -->
+                    </div>
+                    <div class="p-2 text-center border-top">
+                        <button class="btn btn-sm btn-outline-primary" id="markAllReadBtn">
+                            <i class="bi bi-check-all me-1"></i>تمييز الكل كمقروء
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
             <button id="refreshUserDataBtn" class="btn btn-outline-primary btn-modern"><i class="bi bi-arrow-repeat"></i> تحديث البيانات</button>
             <a href="index.html" onclick="localStorage.clear();" class="btn btn-outline-danger btn-modern"><i class="bi bi-box-arrow-right"></i> تسجيل الخروج</a>
         </div>
@@ -198,7 +319,7 @@
                     <p class="text-muted mb-0" id="userTitle">رقم الهوية: ---</p>
                 </div>
             </div>
-            <button class="btn btn-outline-primary btn-sm" id="editProfileBtn">
+            <button class="btn btn-danger btn-sm" id="editProfileBtn">
                 <i class="bi bi-pencil-square"></i> تعديل البيانات
             </button>
         </div>
@@ -244,6 +365,35 @@
             </div>
         </div>
     </div>
+
+    <!-- قسم طلبات التعديل -->
+    <div class="data-table-card mb-4">
+        <div class="card-header-modern card-header-warning">
+            <h5 class="mb-0"><i class="bi bi-clipboard-check me-2"></i> طلبات تعديل البيانات</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-container table-responsive">
+                <table class="table table-modern table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>تاريخ الطلب</th>
+                            <th>سبب التعديل</th>
+                            <th>الحالة</th>
+                            <th>ملاحظات الإدارة</th>
+                        </tr>
+                    </thead>
+                    <tbody id="editRequestsTableBody">
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">
+                                <i class="bi bi-inbox me-2"></i>لا توجد طلبات تعديل
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <div class="data-table-card mb-4">
         <div class="card-header-modern card-header-info">
             <h5 class="mb-0"><i class="bi bi-calendar-check-fill me-2"></i> المساعدات المستقبلية المجدولة</h5>
@@ -306,11 +456,15 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-person-gear me-2"></i>تحديث البيانات الشخصية
+                        <i class="bi bi-person-gear me-2"></i>طلب تعديل البيانات الشخصية
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
+                    <div class="alert-info-custom mb-4">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>ملاحظة مهمة:</strong> سيتم إرسال طلب التعديل إلى الإدارة للمراجعة. سيتم إشعارك بقبول أو رفض الطلب خلال 24-48 ساعة من تاريخ الإرسال.
+                    </div>
                     <form id="profileUpdateForm">
                         <div class="row">
                             <!-- البيانات الأساسية -->
@@ -387,6 +541,10 @@
                                 <label class="form-label">معرف العائلة</label>
                                 <input type="text" class="form-control" id="editFamilyId" placeholder="معرف العائلة (اختياري)">
                             </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label">سبب طلب التعديل</label>
+                                <textarea class="form-control" id="editReason" rows="3" placeholder="يرجى ذكر سبب طلب تعديل البيانات..." required></textarea>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -395,7 +553,7 @@
                         <i class="bi bi-x-circle me-2"></i>إلغاء
                     </button>
                     <button type="button" class="btn btn-primary" id="saveProfileBtn">
-                        <i class="bi bi-check-circle me-2"></i>حفظ التغييرات
+                        <i class="bi bi-send me-2"></i>إرسال طلب التعديل
                     </button>
                 </div>
             </div>
@@ -409,6 +567,9 @@
     <script>
         // إضافة وظيفة تحديث البيانات الشخصية
         document.addEventListener('DOMContentLoaded', function() {
+            // تهيئة الإشعارات
+            initNotifications();
+            
             // زر فتح نموذج التعديل
             document.getElementById('editProfileBtn')?.addEventListener('click', function() {
                 new bootstrap.Modal(document.getElementById('editProfileModal')).show();
@@ -419,6 +580,7 @@
                 const userId = localStorage.getItem('loggedInUserId');
                 if (userId && typeof App !== 'undefined') {
                     App.loadUserData(userId);
+                    App.loadUserEditRequests(userId); // تحديث طلبات التعديل أيضاً
                     Toastify({
                         text: "تم تحديث البيانات",
                         duration: 3000,
@@ -429,10 +591,26 @@
                 }
             });
 
-            // حفظ التغييرات
+            // حفظ طلب التعديل
             document.getElementById('saveProfileBtn')?.addEventListener('click', async function() {
                 const userId = localStorage.getItem('loggedInUserId');
+                const userName = document.getElementById('userName').textContent;
+                const userIdNumber = document.getElementById('userTitle').textContent.replace('رقم الهوية: ', '');
+                
                 if (!userId) return;
+
+                // التحقق من وجود سبب التعديل
+                const reason = document.getElementById('editReason').value.trim();
+                if (!reason) {
+                    Toastify({
+                        text: "يرجى إدخال سبب طلب التعديل",
+                        duration: 5000,
+                        gravity: "top",
+                        position: "center",
+                        backgroundColor: "linear-gradient(to right, #ff6b6b, #feca57)",
+                    }).showToast();
+                    return;
+                }
 
                 const updatedData = {
                     'رقم الهاتف': document.getElementById('editPhone').value,
@@ -444,23 +622,32 @@
                     'المهنة': document.getElementById('editProfession').value,
                     'مكان العمل': document.getElementById('editWorkPlace').value,
                     'الدخل الشهري': document.getElementById('editMonthlyIncome').value,
-                    'المؤهل العلمي': document.getElementById('editEducation').value
+                    'المؤهل العلمي': document.getElementById('editEducation').value,
+                    'عدد أفراد الأسرة': document.getElementById('editFamilySize').value,
+                    'معرف العائلة': document.getElementById('editFamilyId').value
                 };
 
                 try {
                     const response = await App.apiCall({
-                        action: 'updateUserProfile',
+                        action: 'submitEditRequest',
                         userId: userId,
-                        profileData: updatedData
+                        userName: userName,
+                        userIdNumber: userIdNumber,
+                        requestedChanges: updatedData,
+                        reason: reason,
+                        requestDate: new Date().toISOString(),
+                        status: 'مُنتظر المراجعة'
                     });
 
                     if (response && response.success) {
                         bootstrap.Modal.getInstance(document.getElementById('editProfileModal')).hide();
-                        App.loadUserData(userId); // إعادة تحميل البيانات
+                        
+                        // إعادة تعيين النموذج
+                        document.getElementById('profileUpdateForm').reset();
                         
                         Toastify({
-                            text: "تم تحديث البيانات بنجاح",
-                            duration: 3000,
+                            text: "تم إرسال طلب التعديل بنجاح. سيتم مراجعته من قبل الإدارة وإشعارك بالنتيجة قريباً.",
+                            duration: 8000,
                             gravity: "top",
                             position: "center",
                             backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
@@ -468,7 +655,7 @@
                     }
                 } catch (error) {
                     Toastify({
-                        text: "حدث خطأ في تحديث البيانات",
+                        text: "حدث خطأ في إرسال طلب التعديل. يرجى المحاولة لاحقاً.",
                         duration: 5000,
                         gravity: "top",
                         position: "center",
@@ -477,6 +664,163 @@
                 }
             });
         });
+        
+        // دوال الإشعارات
+        function initNotifications() {
+            const userId = localStorage.getItem('loggedInUserId');
+            if (!userId) return;
+            
+            // تحميل الإشعارات
+            loadUserNotifications(userId);
+            
+            // ربط أحداث الإشعارات
+            document.getElementById('notificationIcon').addEventListener('click', toggleNotifications);
+            document.getElementById('markAllReadBtn').addEventListener('click', markAllNotificationsAsRead);
+            
+            // إخفاء القائمة عند النقر خارجها
+            document.addEventListener('click', function(e) {
+                if (!document.getElementById('notificationIcon').contains(e.target)) {
+                    document.getElementById('notificationsDropdown').style.display = 'none';
+                }
+            });
+            
+            // تحديث الإشعارات كل 30 ثانية
+            setInterval(() => loadUserNotifications(userId), 30000);
+        }
+        
+        async function loadUserNotifications(userId) {
+            try {
+                const result = await App.apiCall({
+                    action: 'getUserNotifications',
+                    userId: userId
+                });
+                
+                if (result && result.success) {
+                    displayNotifications(result.notifications);
+                    updateNotificationBadge(result.notifications);
+                }
+            } catch (error) {
+                console.error('خطأ في تحميل الإشعارات:', error);
+            }
+        }
+        
+        function displayNotifications(notifications) {
+            const container = document.getElementById('notificationsList');
+            
+            if (notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="notification-item text-center text-muted">
+                        <i class="bi bi-inbox me-2"></i>لا توجد إشعارات جديدة
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = notifications.map(notification => `
+                <div class="notification-item ${notification.isRead ? '' : 'unread'}" data-id="${notification.id}">
+                    <div class="notification-title">
+                        <i class="${getNotificationIcon(notification.type)} me-2"></i>
+                        ${notification.title}
+                    </div>
+                    <div class="notification-message">${notification.message}</div>
+                    <div class="notification-time">
+                        <i class="bi bi-clock me-1"></i>${formatNotificationTime(notification.createdAt)}
+                    </div>
+                </div>
+            `).join('');
+            
+            // ربط أحداث النقر على الإشعارات
+            container.querySelectorAll('.notification-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    markNotificationAsRead(this.dataset.id);
+                });
+            });
+        }
+        
+        function updateNotificationBadge(notifications) {
+            const badge = document.getElementById('notificationBadge');
+            const unreadCount = notifications.filter(n => !n.isRead).length;
+            
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                badge.classList.remove('d-none');
+            } else {
+                badge.classList.add('d-none');
+            }
+        }
+        
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notificationsDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' || !dropdown.style.display ? 'block' : 'none';
+        }
+        
+        async function markNotificationAsRead(notificationId) {
+            try {
+                await App.apiCall({
+                    action: 'markNotificationAsRead',
+                    notificationId: notificationId
+                });
+                
+                // تحديث الإشعارات
+                const userId = localStorage.getItem('loggedInUserId');
+                loadUserNotifications(userId);
+            } catch (error) {
+                console.error('خطأ في تمييز الإشعار كمقروء:', error);
+            }
+        }
+        
+        async function markAllNotificationsAsRead() {
+            try {
+                const userId = localStorage.getItem('loggedInUserId');
+                await App.apiCall({
+                    action: 'markAllNotificationsAsRead',
+                    userId: userId
+                });
+                
+                // تحديث الإشعارات
+                loadUserNotifications(userId);
+                
+                Toastify({
+                    text: "تم تمييز جميع الإشعارات كمقروءة",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "center",
+                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                }).showToast();
+            } catch (error) {
+                console.error('خطأ في تمييز جميع الإشعارات كمقروءة:', error);
+            }
+        }
+        
+        function getNotificationIcon(type) {
+            switch (type) {
+                case 'edit_request_approved': return 'bi-check-circle-fill text-success';
+                case 'edit_request_rejected': return 'bi-x-circle-fill text-danger';
+                case 'edit_request_pending': return 'bi-hourglass-split text-warning';
+                case 'aid_received': return 'bi-gift-fill text-primary';
+                case 'general': return 'bi-info-circle-fill text-info';
+                default: return 'bi-bell-fill text-secondary';
+            }
+        }
+        
+        function formatNotificationTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffInHours = (now - date) / (1000 * 60 * 60);
+            
+            if (diffInHours < 1) {
+                return 'قبل قليل';
+            } else if (diffInHours < 24) {
+                return `قبل ${Math.floor(diffInHours)} ساعة`;
+            } else {
+                const diffInDays = Math.floor(diffInHours / 24);
+                if (diffInDays < 7) {
+                    return `قبل ${diffInDays} ${diffInDays === 1 ? 'يوم' : 'أيام'}`;
+                } else {
+                    return date.toLocaleDateString('ar-EG');
+                }
+            }
+        }
     </script>
 </body>
 </html>
