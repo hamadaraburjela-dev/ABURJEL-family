@@ -6,141 +6,189 @@
     <title>تسجيل إصابة - عائلة أبو رجيلة</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <style>
-        * { font-family: 'Cairo', sans-serif; }
-        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
-        .main-content { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius:20px; padding:30px; margin:20px auto; border:1px solid rgba(255,255,255,0.2); max-width:700px }
-        .form-label { font-weight:500; }
-        .form-section { background:rgba(255,255,255,0.95); border-radius:16px; padding:24px; box-shadow:0 8px 32px rgba(0,0,0,0.08); }
-        .preview-img { max-width:120px; max-height:120px; border-radius:10px; margin-top:10px; }
-    </style>
 </head>
-<body>
-    <div class="container">
-        <main class="main-content">
-            <h3 class="mb-4 text-center text-primary">تسجيل إصابة جديدة</h3>
-            <form id="injuryForm">
-                <div class="form-section mb-3">
-                    <label class="form-label">رقم هوية المصاب</label>
-                    <input type="text" class="form-control" id="injuredID" maxlength="9" required>
-                    <div id="injuredName" class="mt-2 text-success"></div>
+<body style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh;">
+    <header class="text-center py-4">
+        <div class="container">
+            <img src="logo.webp" alt="شعار عائلة أبو رجيلة" class="mb-3" style="width:80px;height:80px;" />
+            <h1 class="h3 mb-2">عائلة أبو رجيلة</h1>
+            <p class="text-muted">تسجيل الإصابات والاحتياجات الطبية</p>
+        </div>
+    </header>
+
+    <main class="container" style="max-width:800px;">
+        <div class="row justify-content-center">
+            <div class="col-12">
+                <div class="card shadow-lg" style="border-radius:15px; border:none;">
+                    <div class="card-header text-center" style="background: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%); color: white; border-radius: 15px 15px 0 0;">
+                        <h2 class="mb-0">🩹 تسجيل إصابة جديدة</h2>
+                        <p class="mb-0 mt-2 opacity-75">املأ بيانات الإصابة لتسجيلها في سجلات العائلة (شيت: إصابات)</p>
+                    </div>
+                    <div class="card-body p-4">
+                        <form id="injuryForm" class="needs-validation" novalidate>
+                            <div class="mb-4">
+                                <label for="injuredID" class="form-label fw-bold">رقم هوية المصاب <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg" id="injuredID" pattern="[0-9]{9}" maxlength="9" required>
+                                <div class="invalid-feedback">يرجى إدخال رقم هوية صالح (9 أرقام).</div>
+                                <div id="injuredName" class="form-text mt-2 text-success"></div>
+                            </div>
+
+                            <div class="mb-4" id="fatherIdSection" style="display:none;">
+                                <label for="fatherID" class="form-label fw-bold">رقم هوية ولي الأمر (إن وجد)</label>
+                                <input type="text" class="form-control form-control-lg" id="fatherID" pattern="[0-9]{9}" maxlength="9">
+                                <div id="fatherName" class="form-text mt-2 text-info"></div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label for="injuryDate" class="form-label fw-bold">تاريخ الإصابة <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control form-control-lg" id="injuryDate" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="injuryPlace" class="form-label fw-bold">مكان الإصابة <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control form-control-lg" id="injuryPlace" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="injuryCause" class="form-label fw-bold">سبب الإصابة <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg" id="injuryCause" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="additionalDetails" class="form-label fw-bold">تفاصيل إضافية</label>
+                                <textarea id="additionalDetails" class="form-control form-control-lg" rows="3"></textarea>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="injuryFile" class="form-label fw-bold">رفع تقرير طبي أو صورة (اختياري)</label>
+                                <input type="file" id="injuryFile" class="form-control form-control-lg" accept="image/*,.pdf">
+                                <div id="filePreviewContainer" class="mt-2" style="display:none;"><img id="filePreview" src="" alt="معاينة" class="img-fluid" style="max-height:220px; border-radius:8px;"/></div>
+                            </div>
+
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary btn-lg">حفظ كإصابة</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-                <div class="form-section mb-3" id="fatherSection" style="display:none">
-                    <label class="form-label">رقم هوية ولي الأمر (إذا المصاب طفل أو غير موجود في قاعدة البيانات)</label>
-                    <input type="text" class="form-control" id="fatherID" maxlength="9">
-                    <div id="fatherName" class="mt-2 text-info"></div>
-                </div>
-                <div class="form-section mb-3">
-                    <label class="form-label">تاريخ الإصابة</label>
-                    <input type="date" class="form-control" id="injuryDate" required>
-                </div>
-                <div class="form-section mb-3">
-                    <label class="form-label">مكان الإصابة</label>
-                    <input type="text" class="form-control" id="injuryPlace" required>
-                </div>
-                <div class="form-section mb-3">
-                    <label class="form-label">سبب الإصابة</label>
-                    <input type="text" class="form-control" id="injuryCause" required>
-                </div>
-                <div class="form-section mb-3">
-                    <label class="form-label">تفاصيل إضافية</label>
-                    <textarea class="form-control" id="additionalDetails" rows="2"></textarea>
-                </div>
-                <div class="form-section mb-3">
-                    <label class="form-label">رفع تقرير طبي أو صورة الإصابة</label>
-                    <input type="file" class="form-control" id="injuryFile" accept="image/*,application/pdf">
-                    <img id="filePreview" class="preview-img" style="display:none">
-                </div>
-                <button type="submit" class="btn btn-primary w-100">تسجيل الإصابة</button>
-            </form>
-        </main>
-    </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer mt-4 text-center">
+        <div id="server-status" class="status-indicator mb-2">
+            <span class="status-dot"></span>
+            <span class="status-text">جاري التحقق من حالة الخادم...</span>
+        </div>
+        <p class="copyright-text mb-2">جميع الحقوق محفوظة © 2025 | م. حماده أبو رجيلة</p>
+        <a href="https://wa.me/972569210941" target="_blank" class="whatsapp-link"><i class="bi bi-whatsapp"></i> تواصل عبر الواتساب</a>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="script.js"></script>
+
     <script>
-        // تحقق من رقم الهوية
-        document.getElementById('injuredID').addEventListener('blur', async function() {
-            const id = this.value.trim();
-            if (id.length === 9 && window.App && App.verifyPersonById) {
-                const res = await App.verifyPersonById(id);
-                if (res.exists) {
-                    document.getElementById('injuredName').textContent = 'الاسم: ' + res.name;
-                    document.getElementById('fatherSection').style.display = 'none';
-                } else {
-                    document.getElementById('injuredName').textContent = '';
-                    document.getElementById('fatherSection').style.display = 'block';
+        // Ensure a compatible postToServer exists
+        if (typeof postToServer === 'undefined' && window.App && typeof window.App.postToServer === 'function') {
+            window.postToServer = function(payload) { return window.App.postToServer(payload); };
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('injuryForm');
+            const injuredID = document.getElementById('injuredID');
+            const injuredName = document.getElementById('injuredName');
+            const fatherID = document.getElementById('fatherID');
+            const fatherName = document.getElementById('fatherName');
+            const fatherIdSection = document.getElementById('fatherIdSection');
+            const injuryFile = document.getElementById('injuryFile');
+            const filePreview = document.getElementById('filePreview');
+            const filePreviewContainer = document.getElementById('filePreviewContainer');
+
+            // Verify injured ID and autofill name
+            injuredID.addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+            injuredID.addEventListener('blur', async function() {
+                const id = this.value.trim();
+                if (id.length === 9 && window.App && App.verifyPersonById) {
+                    const res = await App.verifyPersonById(id);
+                    if (res.exists) { injuredName.textContent = 'الاسم: ' + (res.name || ''); fatherIdSection.style.display = 'none'; }
+                    else { injuredName.textContent = ''; fatherIdSection.style.display = 'block'; }
                 }
-            }
-        });
-        // تحقق من ولي الأمر
-        document.getElementById('fatherID').addEventListener('blur', async function() {
-            const id = this.value.trim();
-            if (id.length === 9 && window.App && App.verifyPersonById) {
-                const res = await App.verifyPersonById(id);
-                document.getElementById('fatherName').textContent = res.exists ? 'الاسم: ' + res.name : '';
-            }
-        });
-        // معاينة الملف
-        document.getElementById('injuryFile').addEventListener('change', function() {
-            const file = this.files[0];
-            const preview = document.getElementById('filePreview');
-            if (file && file.type.startsWith('image')) {
-                const reader = new FileReader();
-                reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
-                reader.readAsDataURL(file);
-            } else { preview.style.display = 'none'; }
-        });
-        // إرسال النموذج
-        document.getElementById('injuryForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const injuredID = document.getElementById('injuredID').value.trim();
-            const fatherID = document.getElementById('fatherID').value.trim();
-            const injuryDate = document.getElementById('injuryDate').value;
-            const injuryPlace = document.getElementById('injuryPlace').value.trim();
-            const injuryCause = document.getElementById('injuryCause').value.trim();
-            const additionalDetails = document.getElementById('additionalDetails').value.trim();
-            const fileInput = document.getElementById('injuryFile');
-            let injuryFile = null;
-            if (fileInput.files[0]) {
-                const file = fileInput.files[0];
-                injuryFile = await new Promise((resolve, reject) => {
+            });
+
+            // Father ID check
+            fatherID.addEventListener('input', function(e) { this.value = this.value.replace(/[^0-9]/g, ''); });
+            fatherID.addEventListener('blur', async function() {
+                const id = this.value.trim();
+                if (id.length === 9 && typeof postToServer === 'function') {
+                    try {
+                        const res = await postToServer({ action: 'getUserData', userId: id });
+                        if (res && res.success && res.data) fatherName.textContent = 'الاسم: ' + (res.data['الاسم الكامل'] || '');
+                        else fatherName.textContent = '';
+                    } catch (err) { fatherName.textContent = ''; }
+                } else fatherName.textContent = '';
+            });
+
+            // File preview
+            injuryFile.addEventListener('change', function(e) {
+                const file = this.files[0];
+                if (file && file.type.startsWith('image')) {
                     const reader = new FileReader();
-                    reader.onload = () => {
-                        const base64 = reader.result.split(',')[1];
-                        resolve({ name: file.name, mimeType: file.type, data: base64 });
-                    };
-                    reader.onerror = reject;
+                    reader.onload = function(ev) { filePreview.src = ev.target.result; filePreviewContainer.style.display = 'block'; };
                     reader.readAsDataURL(file);
-                });
-            }
-            // إرسال البيانات
-            try {
-                const payload = {
-                    action: 'submitInjuryRegistration',
-                    injuredID,
-                    injuryDate,
-                    injuryPlace,
-                    injuryCause,
-                    additionalDetails,
-                    fatherID,
-                    injuryFile
-                };
-                const res = await App.postToServer(payload);
-                if (res && res.success) {
-                    App.showToast(res.message || 'تم تسجيل الإصابة بنجاح', true);
-                    this.reset();
-                    document.getElementById('filePreview').style.display = 'none';
-                    document.getElementById('injuredName').textContent = '';
-                    document.getElementById('fatherName').textContent = '';
-                } else {
-                    App.showToast(res.message || 'فشل التسجيل', false);
-                }
-            } catch (err) {
-                App.showToast(err.message || 'حدث خطأ أثناء التسجيل', false);
-            }
+                } else { filePreviewContainer.style.display = 'none'; }
+            });
+
+            const toBase64 = (file) => new Promise((resolve, reject) => {
+                if (!file) return resolve(null);
+                const reader = new FileReader();
+                reader.onload = () => { const base64 = reader.result.substring(reader.result.indexOf(',') + 1); resolve({ name: file.name, mimeType: file.type, data: base64 }); };
+                reader.onerror = reject; reader.readAsDataURL(file);
+            });
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (!form.checkValidity()) { form.classList.add('was-validated'); return; }
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const origText = submitBtn.textContent;
+                submitBtn.disabled = true; submitBtn.textContent = 'جاري الحفظ...';
+
+                (async () => {
+                    try {
+                        const fileObj = await toBase64(injuryFile.files[0]);
+                        const payload = {
+                            action: 'submitInjuryRegistration',
+                            injuredID: injuredID.value.trim(),
+                            fatherID: fatherID.value.trim() || null,
+                            injuryDate: document.getElementById('injuryDate').value,
+                            injuryPlace: document.getElementById('injuryPlace').value.trim(),
+                            injuryCause: document.getElementById('injuryCause').value.trim(),
+                            additionalDetails: document.getElementById('additionalDetails').value.trim(),
+                            injuryFile: fileObj
+                        };
+
+                        const res = await postToServer ? await postToServer(payload) : await App.postToServer(payload);
+                        if (!res || !res.success) throw new Error(res?.message || 'فشل الحفظ');
+
+                        if (window.App && App.showDialog) {
+                            App.showDialog({ type: 'success', title: 'تم الحفظ', message: res.message || 'تم تسجيل الإصابة بنجاح', confirmText: 'حسناً' });
+                        } else if (window.App && App.showToast) {
+                            App.showToast(res.message || 'تم تسجيل الإصابة بنجاح', true);
+                        } else alert(res.message || 'تمت الإضافة');
+
+                        form.reset(); filePreviewContainer.style.display = 'none'; injuredName.textContent = ''; fatherName.textContent = '';
+                        form.classList.remove('was-validated');
+                    } catch (err) {
+                        if (window.App && App.showDialog) App.showDialog({ type: 'danger', title: 'فشل الحفظ', message: err.message || 'حدث خطأ', confirmText: 'موافق' });
+                        else if (window.App && App.showToast) App.showToast(err.message || 'فشل الإرسال', false);
+                        else alert(err.message || 'فشل الإرسال');
+                    } finally { submitBtn.disabled = false; submitBtn.textContent = origText; }
+                })();
+            });
         });
     </script>
 </body>
