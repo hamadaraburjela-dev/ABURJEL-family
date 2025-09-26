@@ -104,22 +104,22 @@
             padding: 4px 8px;
         }
         /* Admin dashboard card badges */
+        .action-card { position: relative; overflow: visible; }
+        /* small dot indicator placed over each action icon when there is a new request */
         .request-badge {
             position: absolute;
-            top: 8px;
-            right: 12px; /* RTL layout: badge on the right */
-            min-width: 28px;
-            height: 28px;
-            padding: 0 .45rem;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            border-radius: 16px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-            z-index: 5;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #dc3545; /* red dot */
+            border: 2px solid #fff; /* white ring */
+            box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+            display: none; /* shown only when there's a request */
+            z-index: 6;
         }
-        .action-card { position: relative; overflow: visible; }
+        /* place badge relative to the action-header (icon area) */
+        .action-header { position: relative; }
+        .action-header .request-badge { top: 6px; right: 10px; }
     </style>
 </head>
 <body>
@@ -409,6 +409,7 @@
                                                 <div class="action-icon">
                                                     <i class="bi bi-people-fill"></i>
                                                 </div>
+                                                <span class="request-badge" data-target="manage-members" aria-hidden="true"></span>
                                                 <div class="action-badge">
                                                     <span>إدارة</span>
                                                 </div>
@@ -425,7 +426,6 @@
                                             </div>
                                         </div>
                                     </a>
-                                    <span class="badge bg-danger text-white request-badge" data-target="manage-members">0</span>
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
@@ -435,6 +435,7 @@
                                                 <div class="action-icon">
                                                     <i class="bi bi-box-seam-fill"></i>
                                                 </div>
+                                                <span class="request-badge" data-target="manage-aid" aria-hidden="true"></span>
                                                 <div class="action-badge">
                                                     <span>مساعدات</span>
                                                 </div>
@@ -447,20 +448,10 @@
                                                 <span class="action-link">
                                                     <i class="bi bi-arrow-left"></i>
                                                     دخول
-                                                </span>
-                                                <!-- أيقونة لطلبات المواليد بجانب إدارة الشهداء -->
-                                                <a href="life-requests.html" class="btn btn-sm btn-outline-light" title="طلبات المواليد">
-                                                    <i class="bi bi-person-plus-fill"></i>
-                                                </a>
-                                                <!-- أيقونة وإسم لإدارة الحالات الخاصة (يظهر الاسم على شاشات متوسطة فأكبر) -->
-                                                <a href="manage-special-cases.html" class="btn btn-sm btn-outline-light ms-1 d-flex align-items-center" title="إدارة الحالات الخاصة">
-                                                    <i class="bi bi-flag-fill me-1"></i>
-                                                    <span class="d-none d-md-inline">إدارة الحالات الخاصة</span>
-                                                </a>
+                                                </span>                                
                                             </div>
                                         </div>
                                     </a>
-                                    <span class="badge bg-danger text-white request-badge" data-target="manage-aid">0</span>
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
@@ -470,6 +461,7 @@
                                                 <div class="action-icon">
                                                     <i class="bi bi-clipboard-data-fill"></i>
                                                 </div>
+                                                <span class="request-badge" data-target="aid-logs" aria-hidden="true"></span>
                                                 <div class="action-badge">
                                                     <span>سجلات</span>
                                                 </div>
@@ -486,7 +478,6 @@
                                             </div>
                                         </div>
                                     </a>
-                                    <span class="badge bg-danger text-white request-badge" data-target="aid-logs">0</span>
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
@@ -496,6 +487,7 @@
                                                 <div class="action-icon">
                                                     <i class="bi bi-file-earmark-bar-graph-fill"></i>
                                                 </div>
+                                                <span class="request-badge" data-target="reports" aria-hidden="true"></span>
                                                 <div class="action-badge">
                                                     <span>تقارير</span>
                                                 </div>
@@ -512,7 +504,6 @@
                                             </div>
                                         </div>
                                     </a>
-                                    <span class="badge bg-danger text-white request-badge" data-target="reports">0</span>
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
@@ -522,6 +513,7 @@
                                                 <div class="action-icon">
                                                     <i class="bi bi-key-fill"></i>
                                                 </div>
+                                                <span class="request-badge" data-target="password-resets" aria-hidden="true"></span>
                                                 <div class="action-badge">
                                                     <span>أمان</span>
                                                 </div>
@@ -538,7 +530,6 @@
                                             </div>
                                         </div>
                                     </a>
-                                    <span class="badge bg-danger text-white request-badge" data-target="password-resets">0</span>
                                 </div>
 
                                 <!-- كارد طلبات تعديل البيانات -->
@@ -549,6 +540,7 @@
                                                 <div class="action-icon">
                                                     <i class="bi bi-person-gear"></i>
                                                 </div>
+                                                <span class="request-badge" data-target="edit-requests" aria-hidden="true"></span>
                                                 <div class="action-badge">
                                                     <span>طلبات</span>
                                                 </div>
@@ -565,7 +557,6 @@
                                             </div>
                                         </div>
                                     </a>
-                                    <span class="badge bg-danger text-white request-badge" data-target="edit-requests">0</span>
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
@@ -575,6 +566,7 @@
                                                 <div class="action-icon">
                                                     <i class="bi bi-diagram-3-fill"></i>
                                                 </div>
+                                                <span class="request-badge" data-target="fair-distribution" aria-hidden="true"></span>
                                                 <div class="action-badge">
                                                     <span>توزيع</span>
                                                 </div>
@@ -591,7 +583,6 @@
                                             </div>
                                         </div>
                                     </a>
-                                    <span class="badge bg-danger text-white request-badge" data-target="fair-distribution">0</span>
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
@@ -601,6 +592,7 @@
                                                 <div class="action-icon">
                                                                     <i class="bi bi-person-plus-fill"></i>
                                                                 </div>
+                                                <span class="request-badge" data-target="life-requests" aria-hidden="true"></span>
                                                 <div class="action-badge">
                                                     <span>طلبات المواليد</span>
                                                 </div>
@@ -617,7 +609,6 @@
                                             </div>
                                         </div>
                                     </a>
-                                    <span class="badge bg-danger text-white request-badge" data-target="life-requests">0</span>
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
@@ -627,6 +618,7 @@
                                                 <div class="action-icon">
                                                     <i class="bi bi-award-fill"></i>
                                                 </div>
+                                                <span class="request-badge" data-target="martyrs-admin" aria-hidden="true"></span>
                                                 <div class="action-badge">
                                                     <span>شهداء</span>
                                                 </div>
@@ -643,7 +635,6 @@
                                             </div>
                                         </div>
                                     </a>
-                                    <span class="badge bg-danger text-white request-badge" data-target="martyrs-admin">0</span>
                                 </div>
                                 <!-- بطاقة إدارة الحالات الخاصة -->
                                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
@@ -653,6 +644,7 @@
                                                 <div class="action-icon">
                                                     <i class="bi bi-flag-fill"></i>
                                                 </div>
+                                                <span class="request-badge" data-target="manage-special-cases" aria-hidden="true"></span>
                                                 <div class="action-badge">
                                                     <span>حالات خاصة</span>
                                                 </div>
@@ -669,7 +661,6 @@
                                             </div>
                                         </div>
                                     </a>
-                                    <span class="badge bg-danger text-white request-badge" data-target="manage-special-cases">0</span>
                                 </div>
                                 <!-- بطاقة إدارة الوفيات -->
                                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
@@ -679,6 +670,7 @@
                                                 <div class="action-icon">
                                                     <i class="bi bi-file-earmark-medical-fill"></i>
                                                 </div>
+                                                <span class="request-badge" data-target="deaths-admin" aria-hidden="true"></span>
                                                 <div class="action-badge">
                                                     <span>وفيات</span>
                                                 </div>
@@ -695,7 +687,6 @@
                                             </div>
                                         </div>
                                     </a>
-                                    <span class="badge bg-danger text-white request-badge" data-target="deaths-admin">0</span>
                                 </div>
                             </div>
                         </div>
@@ -996,6 +987,65 @@
                 }
             }
         }
+        
+        /* Dashboard badges updater */
+        (function(){
+            async function initDashboardBadges() {
+                try {
+                    if (window.App && typeof App.getAdminCounts === 'function') {
+                        const counts = await App.getAdminCounts(sessionStorage.getItem('adminToken'));
+                        applyBadgeCounts(counts || {});
+                    } else if (window.App && typeof App.getAdminNotifications === 'function') {
+                        const res = await App.getAdminNotifications(sessionStorage.getItem('adminToken'));
+                        if (res && res.success) {
+                            const byType = {};
+                            (res.notifications || []).forEach(n => {
+                                if (!n.isRead) byType[n.type] = (byType[n.type] || 0) + 1;
+                            });
+                            const counts = {
+                                'edit-requests': byType['new_edit_request'] || 0,
+                                'life-requests': byType['new_birth_request'] || 0,
+                                'password-resets': byType['password_reset_request'] || 0,
+                                'manage-members': 0,
+                                'manage-aid': 0,
+                                'aid-logs': 0,
+                                'reports': 0,
+                                'fair-distribution': 0,
+                                'martyrs-admin': byType['new_martyr_request'] || 0,
+                                'manage-special-cases': byType['new_special_case'] || 0,
+                                'deaths-admin': byType['new_death_request'] || 0
+                            };
+                            applyBadgeCounts(counts);
+                        }
+                    }
+                } catch (err) {
+                    console.error('خطأ في تحميل عدادات لوحة التحكم:', err);
+                }
+                setTimeout(initDashboardBadges, 15000);
+            }
+
+            function applyBadgeCounts(counts) {
+                document.querySelectorAll('.request-badge').forEach(b => {
+                    const key = b.dataset.target;
+                    const v = counts && counts[key] ? Number(counts[key]) : 0;
+                    // show simple dot if there's at least one request
+                    if (v > 0) {
+                        b.style.display = 'block';
+                    } else {
+                        b.style.display = 'none';
+                    }
+                });
+            }
+
+            // expose init so it runs after DOM ready
+            window.initDashboardBadges = initDashboardBadges;
+            // if DOM already loaded
+            if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                initDashboardBadges();
+            } else {
+                document.addEventListener('DOMContentLoaded', initDashboardBadges);
+            }
+        })();
     </script>
 </body>
 </html>

@@ -6,7 +6,12 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const App = {
-        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbxw5CMhkibA4uRGAOBc3gigqZqL3ShidSAxWlfrFPF0qV39S4ZUCLjxRN2ymP3DCEbEdA/exec', // سيتم تحديثه بالرابط الجديد من Google Apps Script
+    // The backend URL is loaded at runtime from (in order):
+    // 1) window.APP_CONFIG?.WEB_APP_URL (set by hosting or a script tag)
+    // 2) /app-config.json (local config file you can change without editing this file)
+    // 3) fallback to the original Apps Script URL for backward compatibility
+    WEB_APP_URL: null,
+    DEFAULT_WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbycIdQvgsC5i34hgQnGdMvv7_bQQS4yrxC3id2qRpLWsMVVIWtCOQ99dewrWPTyxoutMw/exec',
         
         async testNewUrl() {
             const input = document.getElementById('newScriptUrl');
@@ -76,8 +81,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
         init() {
             this.initModals();
-            this.initPageBasedOnURL();
-            this.checkServerStatus();
+
+            // Load runtime config (app-config.json or window.APP_CONFIG) which may set WEB_APP_URL
+            // Continue initialization after config is loaded so backend-dependent checks use the correct URL.
+            this.loadConfig().then(() => {
+                this.initPageBasedOnURL();
+                this.checkServerStatus();
+            }).catch(err => {
+                console.warn('Failed to load app config, continuing with defaults', err);
+                this.initPageBasedOnURL();
+                this.checkServerStatus();
+            });
+        },
+
+        // Try to load `window.APP_CONFIG`, then `/app-config.json`. If neither present, fall back to DEFAULT_WEB_APP_URL.
+        async loadConfig() {
+            try {
+                // 1) window.APP_CONFIG
+                if (window.APP_CONFIG && window.APP_CONFIG.WEB_APP_URL) {
+                    this.WEB_APP_URL = window.APP_CONFIG.WEB_APP_URL;
+                    console.log('Loaded WEB_APP_URL from window.APP_CONFIG');
+                    return;
+                }
+
+                // 2) fetch local app-config.json
+                const resp = await fetch('app-config.json', { cache: 'no-store' });
+                if (resp.ok) {
+                    const cfg = await resp.json();
+                    if (cfg && cfg.WEB_APP_URL) {
+                        this.WEB_APP_URL = cfg.WEB_APP_URL;
+                        console.log('Loaded WEB_APP_URL from app-config.json');
+                        return;
+                    }
+                }
+            } catch (err) {
+                console.warn('Unable to load app-config.json or window.APP_CONFIG', err);
+            }
+
+            // 3) fallback
+            this.WEB_APP_URL = this.DEFAULT_WEB_APP_URL;
+            console.log('Using DEFAULT_WEB_APP_URL');
         },
         
         initModals() {

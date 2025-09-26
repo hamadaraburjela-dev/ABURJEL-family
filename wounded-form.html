@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الأحداث الحياتية | عائلة أبو رجيلة (قديح)</title>
+    <title>بوابة الدخول - نظام بيانات عائلة أبو رجيلة</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
     <style>
         :root {
-            --primary-color: #00796B; /* Deep Teal - رمز للثقة والاحترافية */
-            --secondary-color: #ECEFF1; /* Very light gray for clean background */
-            --accent-color: #FF7043; /* Bright orange for CTAs/Highlights */
-            --text-color-dark: #263238; /* Dark Slate Gray */
-            --text-color-light: #546E7A; /* Muted text */
-            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            --card-hover-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            --primary-color: #00796B; /* Deep Teal - العلامة التجارية */
+            --secondary-color: #ECEFF1; /* خلفية نظيفة */
+            --accent-color: #FF7043; /* برتقالي للمناداة */
+            --text-color-dark: #263238; 
+            --text-color-light: #546E7A; 
+            --card-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
         }
 
         body {
@@ -24,153 +25,146 @@
             color: var(--text-color-dark);
             font-family: 'Cairo', 'Tahoma', 'Arial', sans-serif;
             font-weight: 400;
+            min-height: 100vh;
         }
 
         h1, h2, h3, h4, .navbar-brand div {
             font-family: 'Cairo', sans-serif;
-            font-weight: 700; /* Bold titles */
+            font-weight: 700; 
         }
         
-        .main-content {
-            padding-top: 1.5rem; /* أقل على الجوال */
+        .main-container {
+            padding-top: 1rem;
             padding-bottom: 3rem;
         }
 
-        /* --- Navbar Styling --- */
+        /* Navbar Styling */
         .navbar {
             border-bottom: 4px solid var(--primary-color);
         }
-        .navbar-brand div { color: var(--primary-color); }
-        .navbar-brand small { font-weight: 300; }
-        .nav-link { color: var(--text-color-dark) !important; font-weight: 600; transition: color 0.3s; margin-right: 0.5rem; }
-        .nav-link:hover { color: var(--primary-color) !important; }
-        .btn-outline-primary { color: var(--primary-color); border-color: var(--primary-color); font-weight: 600; }
-        .btn-outline-primary:hover { background-color: var(--primary-color); color: white; }
-        
-        /* --- Service Banner --- */
-        .service-banner {
-            background-color: white;
-            border-radius: 12px;
-            border-right: 6px solid var(--accent-color);
-            box-shadow: var(--card-shadow);
-            padding: 1.5rem; /* تقليل البادينج على الجوال */
-            display: flex; 
-            align-items: center;
-        }
-        
-        .banner-icon {
-            color: var(--accent-color);
-            font-size: 2.5rem; /* تقليل حجم الأيقونة على الجوال */
-            margin-left: 1rem;
-            min-width: 45px;
-        }
-        
-        .service-banner h4 { font-weight: 800; color: var(--primary-color); font-size: 1.25rem; }
-        .service-banner p { font-size: 0.9rem; }
-        
-        .btn-cta { background-color: var(--accent-color); border-color: var(--accent-color); font-weight: 700; transition: transform 0.2s; }
-        .btn-cta:hover { background-color: #FF5722; border-color: #FF5722; transform: translateY(-2px); }
-
-        /* --- Selection Cards Area --- */
-        .selection-hero {
-            background-color: white;
-            border-radius: 12px;
-            padding: 1.5rem; /* تقليل البادينج على الجوال */
-            box-shadow: var(--card-shadow);
-        }
-        
-        .selection-card {
-            border: none;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            border-radius: 10px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-        
-        .selection-card:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--card-hover-shadow);
-        }
-
-        /* FEATURE ICON SIZE ADJUSTMENT - Mobile Optimized */
-        .feature-icon {
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            width: 60px; 
-            height: 60px;
-            border-radius: 50%;
-            margin-bottom: 0.75rem;
-            font-size: 1.8rem;
-            color: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .feature-icon svg {
-            width: 30px;
-            height: 30px;
-        }
-        /* Color Palette for Event Types */
-        .feature-icon--green { background-color: #4CAF50; } 
-        .feature-icon--red { background-color: #E53935; } 
-        .feature-icon--gold { background-color: #FFB300; }
-        .feature-icon--blue { background-color: #29B6F6; } 
-        .feature-icon--yellow { background-color: #FFCA28; color: #333;}
-        
-        .selection-card .card-title {
+        .navbar-brand div {
             color: var(--primary-color);
             font-weight: 800;
-            margin-bottom: 0.25rem;
-            font-size: 1.3rem; /* تصغير حجم العنوان قليلاً على الجوال */
+        }
+        .navbar-brand small {
+             color: var(--text-color-light) !important;
         }
 
-        .selection-card .card-text {
+
+        /* Header/Welcome Section */
+        .welcome-card {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #009688 100%);
+            color: white;
+            padding: 2.5rem;
+            border-radius: 18px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+        }
+        .welcome-card h1 {
+            color: white;
+            font-weight: 800;
+            font-size: 2rem;
+        }
+        
+        /* Main Login Card */
+        .login-card {
+            border-radius: 18px;
+            border: none;
+            box-shadow: var(--card-shadow);
+        }
+        
+        /* Tabs Styling */
+        .nav-tabs {
+            border-bottom: 2px solid #ccc;
+        }
+        .nav-tabs .nav-link {
+            border: none;
+            border-bottom: 3px solid transparent;
             color: var(--text-color-light);
-            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+        }
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            background-color: white;
+            font-weight: 700;
         }
 
-        /* --- Footer Styling --- */
+        /* Login Button */
+        .btn-login {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            font-weight: 700;
+        }
+        .btn-login:hover {
+            background-color: #FF5722;
+            border-color: #FF5722;
+        }
+        
+        /* Quick Access Cards/Buttons */
+        .quick-access-btn {
+            display: flex;
+            align-items: center;
+            justify-content: start;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            text-align: right;
+            border: 1px solid #eee;
+        }
+        .quick-access-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        .quick-access-btn i {
+            font-size: 2rem;
+            margin-left: 1rem;
+            width: 40px;
+        }
+        .quick-access-btn h5 {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.2rem;
+        }
+        .quick-access-btn p {
+            font-size: 0.8rem;
+            margin-bottom: 0;
+            color: var(--text-color-light);
+        }
+        
+        /* Specific Colors for Quick Access */
+        .btn-births { background-color: #E0F2F1; color: #004D40; }
+        .btn-deaths { background-color: #FFE0B2; color: #E65100; }
+        .btn-martyrs { background-color: #FFF3E0; color: #B78D1A; }
+        .btn-injuries { background-color: #FFEBEE; color: #C62828; }
+        .btn-special { background-color: #E8EAF6; color: #3949AB; }
+
+        /* Footer Styling */
         .footer {
             background-color: var(--text-color-dark);
             color: var(--secondary-color);
-            padding: 1.5rem 0; /* تقليل البادينج */
+            padding: 1.5rem 0;
             text-align: center;
             border-top: 5px solid var(--accent-color);
         }
-        
         .status-indicator { color: #ccc; font-weight: 600; font-size: 0.9rem; }
         .status-dot { background-color: #ccc; height: 10px; width: 10px; border-radius: 50%; display: inline-block; margin-left: 0.5rem; transition: all 0.5s; }
         .copyright-text { color: #B0BEC5; font-size: 0.75rem; }
         .whatsapp-link { color: #4CAF50; text-decoration: none; font-weight: 700; font-size: 0.9rem; }
         .whatsapp-link:hover { color: #66BB6A; }
 
-
-        /* Media Query for Large Screens (Desktop) */
-        @media (min-width: 992px) {
-            .main-content {
-                padding-top: 2rem;
-                padding-bottom: 4rem;
-            }
-            .service-banner {
-                padding: 2.5rem;
-            }
-            .service-banner h4 { font-size: 1.5rem; }
-            .service-banner p { font-size: 1rem; }
-            .selection-hero {
-                padding: 3rem;
-            }
-            .selection-card .card-title {
-                font-size: 1.5rem;
-            }
-        }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-lg sticky-top">
+    
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
                 <img src="logo.webp" alt="شعار" style="width:54px;height:54px;border-radius:10px;object-fit:cover;"/>
                 <div>
-                    <div>عائلة أبو رجيلة (قديح)</div>
+                    <div style="color: var(--primary-color);">عائلة أبو رجيلة (قديح)</div>
                     <small class="text-muted">نظام تسجيل الأحداث الحياتية</small>
                 </div>
             </a>
@@ -179,261 +173,296 @@
             </button>
             <div class="collapse navbar-collapse" id="mainNav">
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" href="births.html">المواليد</a></li>
-                    <li class="nav-item"><a class="nav-link" href="deaths.html">الوفيات</a></li>
-                    <li class="nav-item"><a class="nav-link" href="martyrs.html">الشهداء</a></li>
-                    <li class="nav-item"><a class="nav-link" href="special-cases-form.html">الحالات الخاصة</a></li>
+                    <li class="nav-item"><a class="nav-link" href="births.html" style="color: var(--text-color-dark) !important; font-weight: 600;">مواليد</a></li>
+                    <li class="nav-item"><a class="nav-link" href="deaths.html" style="color: var(--text-color-dark) !important; font-weight: 600;">وفيات</a></li>
+                    <li class="nav-item"><a class="nav-link" href="martyrs.html" style="color: var(--text-color-dark) !important; font-weight: 600;">شهداء</a></li>
+                    <li class="nav-item"><a class="nav-link" href="injuries.html" style="color: var(--text-color-dark) !important; font-weight: 600;">إصابات</a></li>
+                    <li class="nav-item"><a class="nav-link" href="special-cases-form.html" style="color: var(--text-color-dark) !important; font-weight: 600;">حالات خاصة</a></li>
                 </ul>
-                <div class="d-flex ms-lg-3">
-                    <a class="btn btn-outline-primary px-4" href="index.html">الرئيسية</a>
-                </div>
             </div>
         </div>
     </nav>
 
-    <main class="main-content">
-        <div class="container">
-            <section class="mb-5">
-                <div class="row align-items-center gy-4">
-                    <div class="col-lg-8">
-                        <div class="service-banner">
-                            <div class="banner-icon" aria-hidden="true">
-                                <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <path d="M3 10v4h4l7 5V5L7 10H3z" />
-                                    <path d="M21 7a1 1 0 0 1-1 1h-2v8h2a1 1 0 0 1 1 1v1a1 1 0 0 1-2 0v-1h-2v-8h2a1 1 0 0 1 1 1v-1z" opacity=".9"/>
-                                </svg>
-                            </div>
-                            <div class="banner-body">
-                                <h4 class="mb-2">نظام توثيق وإدارة الأحداث الحياتية</h4>
-                                <p class="mb-0 text-color-light">
-                                    منصة مركزية وموثوقة لتوثيق وإدارة جميع الأحداث الحياتية لعائلة أبو رجيلة (قديح). يضمن هذا النظام تسجيل دقيق للمواليد، الوفيات، بيانات الشهداء والإصابات، والحالات الخاصة، لتسهيل عملية التنسيق والدعم المنظم.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 text-lg-end">
-                        <a class="btn btn-cta btn-lg w-100 w-lg-auto" href="https://chat.whatsapp.com/IzjmFpfOCpdJ2RxvYCQ5E0?mode=ems_copy_t" target="_blank">
-                            <i class="bi bi-whatsapp me-2"></i> تواصل مع الإدارة
-                        </a>
-                    </div>
-                </div>
-            </section>
+    <div class="main-container container" style="max-width: 1000px;">
+        <div class="row justify-content-center">
+            <div class="col-12">
 
-            <nav aria-label="breadcrumb" class="mb-4">
-                <ol class="breadcrumb bg-transparent p-0 mb-0">
-                    <li class="breadcrumb-item"><a href="index.html" class="text-color-light">الرئيسية</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">تسجيل الأحداث الحياتية</li>
-                </ol>
-            </nav>
-
-            <section class="selection-hero">
-                <h2 class="text-center mb-5 text-primary-color" style="font-weight: 800;">اختر نوع الحدث المراد تسجيله</h2>
-                <div class="row g-4 justify-content-center">
-                    
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card h-100 text-center selection-card">
-                            <div class="card-body py-5 d-flex flex-column align-items-center">
-                                <div class="feature-icon feature-icon--green">
-                                    <svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <path d="M8 7a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-                                        <path fill-rule="evenodd" d="M8 8a5 5 0 0 0-4.546 2.916C3.03 11.54 4.16 12 6 12h4c1.84 0 2.97-.46 2.546-1.084A5 5 0 0 0 8 8z"/>
-                                        <path d="M13.5 5.5a.5.5 0 0 1 .5.5V7h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0V8h-1a.5.5 0 0 1 0-1h1V6a.5.5 0 0 1 .5-.5z"/>
-                                    </svg>
-                                </div>
-                                <h3 class="card-title mt-2">المواليد</h3>
-                                <p class="card-text mb-4">تسجيل بيانات المواليد الجدد وإضافة سجلاتهم العائلية.</p>
-                                <a class="btn btn-primary mt-auto w-75" href="births.html" style="background-color:#4CAF50; border-color:#4CAF50;">تسجيل مولود جديد</a>
-                            </div>
-                        </div>
+                <div class="welcome-card text-center mb-5">
+                    <div class="d-flex align-items-center justify-content-center gap-3 mb-3">
+                        <i class="bi bi-house-door-fill" style="font-size: 2.5rem;"></i>
+                        <h1>بوابة نظام بيانات العائلة</h1>
                     </div>
-                    
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card h-100 text-center selection-card">
-                            <div class="card-body py-5 d-flex flex-column align-items-center">
-                                <div class="feature-icon feature-icon--red">
-                                    <svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <path d="M11.46 0 16 4.54 11.46 9 7 5.54 11.46 0z" opacity=".01"/>
-                                        <path d="M4.54 0 9 4.54 4.54 9 0 4.54 4.54 0z" opacity=".01"/>
-                                        <path d="M4.46 2.5 2.5 4.46 4.46 6.42 6.42 4.46 4.46 2.5z"/>
-                                        <path d="M9.54 2.5 7.58 4.46 9.54 6.42 11.5 4.46 9.54 2.5z"/>
-                                        <path d="M9.54 9.58 7.58 11.54 9.54 13.5 11.5 11.54 9.54 9.58z"/>
-                                        <path d="M4.46 9.58 2.5 11.54 4.46 13.5 6.42 11.54 4.46 9.58z"/>
-                                    </svg>
-                                </div>
-                                <h3 class="card-title mt-2">الوفيات</h3>
-                                <p class="card-text mb-4">تسجيل حالات الوفاة الطبيعية وتوثيق تفاصيلها التاريخية.</p>
-                                <a class="btn btn-primary mt-auto w-75" href="deaths.html" style="background-color:#E53935; border-color:#E53935;">تسجيل حالة وفاة</a>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card h-100 text-center selection-card">
-                            <div class="card-body py-5 d-flex flex-column align-items-center">
-                                <div class="feature-icon feature-icon--gold">
-                                    <svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <path d="M9.669.864 8 0 6.331.864 5.5 2.391 3.75 2.636 2.9 4.182 1.5 5.06 2.2 6.77 1.75 8.5 3.5 9.5 4 11.5 5.5 12.14 8 13 10.5 12.14 12 11.5 12.5 9.5 14.25 8.5 13.8 6.77 14.5 5.06 13.1 4.182 12.25 2.636 10.5 2.391 9.669.865z"/>
-                                    </svg>
-                                </div>
-                                <h3 class="card-title mt-2">الشهداء</h3>
-                                <p class="card-text mb-4">تسجيل بيانات الشهداء وتفاصيل الاستشهاد لتوثيق تضحياتهم.</p>
-                                <a class="btn btn-primary mt-auto w-75" href="martyrs.html" style="background-color:#FFB300; border-color:#FFB300;">تسجيل الشهداء</a>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card h-100 text-center selection-card">
-                            <div class="card-body py-5 d-flex flex-column align-items-center">
-                                <div class="feature-icon feature-icon--blue">
-                                    <svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <path d="M6.5 1.5a2.5 2.5 0 0 0-3.536 0L.5 4.0a2.5 2.5 0 0 0 0 3.536l6.464 6.464a2.5 2.5 0 0 0 3.536 0l2.464-2.464a2.5 2.5 0 0 0 0-3.536L9.964 1.5a2.5 2.5 0 0 0-3.464 0z"/>
-                                        <path d="M7.5 5.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zM9 7.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/>
-                                    </svg>
-                                </div>
-                                <h3 class="card-title mt-2">الإصابات</h3>
-                                <p class="card-text mb-4">تسجيل الإصابات وتحديد الاحتياجات الطبية اللازمة للدعم.</p>
-                                <a class="btn btn-cta mt-auto w-75" href="injuries.html">تسجيل إصابة جديدة</a>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card h-100 text-center selection-card">
-                            <div class="card-body py-5 d-flex flex-column align-items-center">
-                                <div class="feature-icon feature-icon--yellow">
-                                    <svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <path d="M7.467.133a1 1 0 0 1 .966 0l5 3A1 1 0 0 1 14.7 4.1c-.39 3.22-.96 5.86-2.2 7.6C10.8 13.9 9.07 15 8 15s-2.8-1.1-4.5-3.3C1.26 9.96.69 7.32.3 4.1A1 1 0 0 1 1.067 3.13l5-3z"/>
-                                        <path d="M8 5.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 1 0v-3A.5.5 0 0 0 8 5.5zM8 12a.7.7 0 1 0 0-1.4A.7.7 0 0 0 8 12z"/>
-                                    </svg>
-                                </div>
-                                <h3 class="card-title mt-2">حالات خاصة</h3>
-                                <p class="card-text mb-4">تسجيل الحالات الإنسانية أو الطارئة التي تحتاج لدعم خاص.</p>
-                                <a class="btn btn-primary mt-auto w-75" href="special-cases-form.html" style="background-color:#FFCA28; border-color:#FFCA28; color:#333;">تسجيل حالة خاصة</a>
-                            </div>
-                        </div>
-                    </div>
-                    
+                    <p class="lead mb-0" id="welcomeMessage">
+                        مرحباً بك! يرجى إدخال هويتك واسمك للاستمرار في استخدام النظام.
+                    </p>
                 </div>
-            </section>
-        </div>
-    </main>
+                
+                <div class="card login-card p-0">
+                    <div class="card-body p-4">
+                        
+                        <ul class="nav nav-tabs mb-4" id="mainTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="register-tab" data-bs-toggle="tab" data-bs-target="#register-event" type="button" role="tab" aria-controls="register-event" aria-selected="true">
+                                    <i class="bi bi-pencil-square me-2"></i> تسجيل حدث جديد
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="view-tab" data-bs-toggle="tab" data-bs-target="#view-events" type="button" role="tab" aria-controls="view-events" aria-selected="false">
+                                    <i class="bi bi-list-columns-reverse me-2"></i> سجل الأحداث الأخيرة
+                                </button>
+                            </li>
+                        </ul>
 
-    <div class="modal fade" id="injuryModal" tabindex="-1" aria-labelledby="injuryModalLabel" aria-hidden="true" role="dialog">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content" dir="rtl">
-                <div class="modal-header">
-                        <div class="d-flex align-items-center">
-                            <div class="modal-title-icon me-2">
-                            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <path d="M21 11.5c0-1.38-.56-2.63-1.47-3.54L15.54 2.5c-1.95-1.95-5.12-1.95-7.07 0L2.47 8.5C1.56 9.41 1 10.66 1 12.04V13c0 3.31 2.69 6 6 6h9c3.31 0 6-2.69 6-6v-1.5zM11 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <h5 class="modal-title" id="injuryModalLabel">تسجيل إصابة جديدة</h5>
-                            <small class="text-muted">أدخل تفاصيل المصاب والاحتياجات الطبية بدقة</small>
+                        <div class="tab-content">
+                            
+                            <div class="tab-pane fade show active" id="register-event" role="tabpanel" aria-labelledby="register-tab">
+                                <p class="lead text-muted text-center mb-4">اختر نوع الحدث الذي تود تسجيله، ثم سيطلب منك إدخال هويتك للتحقق.</p>
+                                
+                                <div class="row g-3">
+                                    <div class="col-6 col-lg-4">
+                                        <a href="births.html" class="quick-access-btn btn-births text-decoration-none">
+                                            <i class="bi bi-person-plus-fill"></i>
+                                            <div>
+                                                <h5>تسجيل مولود جديد</h5>
+                                                <p>توثيق المواليد وإضافتهم لقاعدة البيانات.</p>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <div class="col-6 col-lg-4">
+                                        <a href="deaths.html" class="quick-access-btn btn-deaths text-decoration-none">
+                                            <i class="bi bi-person-x-fill"></i>
+                                            <div>
+                                                <h5>تسجيل حالة وفاة</h5>
+                                                <p>توثيق حالات الوفاة وتاريخها.</p>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <div class="col-6 col-lg-4">
+                                        <a href="martyrs.html" class="quick-access-btn btn-martyrs text-decoration-none">
+                                            <i class="bi bi-star-fill"></i>
+                                            <div>
+                                                <h5>تسجيل شهيد</h5>
+                                                <p>توثيق تضحيات الشهداء الأبرار.</p>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <div class="col-6 col-lg-4">
+                                        <a href="injuries.html" class="quick-access-btn btn-injuries text-decoration-none">
+                                            <i class="bi bi-bandaid-fill"></i>
+                                            <div>
+                                                <h5>بلاغ إصابة/جرح</h5>
+                                                <p>إرسال بلاغ طارئ عن الإصابات.</p>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <div class="col-6 col-lg-4">
+                                        <a href="special-cases-form.html" class="quick-access-btn btn-special text-decoration-none">
+                                            <i class="bi bi-heart-pulse-fill"></i>
+                                            <div>
+                                                <h5>طلب حالات خاصة</h5>
+                                                <p>متابعة ودعم الحالات الخاصة والإغاثية.</p>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="alert alert-info mt-4 text-center" style="font-weight: 600;">
+                                    <i class="bi bi-info-circle-fill me-2"></i> عند النقر على أي زر، سيتم نقلك لصفحة النموذج مباشرة.
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="view-events" role="tabpanel" aria-labelledby="view-tab">
+                                <div id="loginSection" class="text-center p-4 border rounded-3 mb-4">
+                                    <p class="lead mb-3">
+                                        <i class="bi bi-shield-lock-fill me-2" style="color: var(--primary-color);"></i>
+                                        **الرجاء تسجيل الدخول لعرض سجل الأحداث**
+                                    </p>
+                                    
+                                    <form id="loginForm" class="mx-auto" style="max-width: 400px;">
+                                        <div class="mb-3">
+                                            <input type="text" class="form-control form-control-lg" id="idNumber" 
+                                                placeholder="رقم الهوية (9 أرقام)" pattern="[0-9]{9}" maxlength="9" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <input type="text" class="form-control form-control-lg" id="fullName" 
+                                                placeholder="الاسم الكامل" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-login btn-lg w-100">
+                                            <i class="bi bi-box-arrow-in-right me-2"></i> تسجيل الدخول والتحقق
+                                        </button>
+                                        <div id="loginNote" class="form-text mt-2 text-danger"></div>
+                                    </form>
+                                </div>
+
+                                <div id="eventsSection" style="display: none;">
+                                    <h4 class="mb-3" style="color: var(--primary-color);">
+                                        <i class="bi bi-calendar-event-fill me-2"></i> سجل الأحداث الحديثة
+                                    </h4>
+                                    
+                                    <div class="table-responsive">
+                                        <table class="table table-hover align-middle table-striped">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>نوع الحدث</th>
+                                                    <th>الاسم</th>
+                                                    <th>تاريخ الحدث</th>
+                                                    <th>ملاحظات</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="eventsTableBody">
+                                                <tr><td colspan="4" class="text-center text-muted p-4">... جاري تحميل البيانات بعد تسجيل الدخول ...</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <div class="text-center mt-4">
+                                        <button type="button" class="btn btn-outline-danger" id="logoutBtn">
+                                            <i class="bi bi-box-arrow-left me-2"></i> تسجيل الخروج
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="injuryForm" class="needs-validation" novalidate>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="injuredName" class="form-label">اسم المصاب (الرباعي)</label>
-                                <input type="text" class="form-control" id="injuredName" placeholder="مثال: محمد أحمد علي" required>
-                                <div class="invalid-feedback">الرجاء إدخال اسم المصاب.</div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="injuredId" class="form-label">رقم الهوية</label>
-                                <input type="text" class="form-control" id="injuredId" placeholder="اختياري - لتسهيل البحث">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="injuryDate" class="form-label">تاريخ الإصابة</label>
-                                <input type="date" class="form-control" id="injuryDate" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="injuryType" class="form-label">تصنيف الإصابة</label>
-                                <select class="form-select" id="injuryType" required>
-                                    <option value="">اختر تصنيف الإصابة</option>
-                                    <option value="إصابة خفيفة">إصابة خفيفة</option>
-                                    <option value="إصابة متوسطة">إصابة متوسطة</option>
-                                    <option value="إصابة خطيرة">إصابة خطيرة</option>
-                                    <option value="إعاقة دائمة">إعاقة دائمة</option>
-                                </select>
-                                <div class="invalid-feedback">الرجاء اختيار تصنيف الإصابة.</div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="injuryDescription" class="form-label">وصف تفصيلي للإصابة وموقعها بالجسم</label>
-                            <textarea class="form-control" id="injuryDescription" rows="3" placeholder="مثال: بتر في الساق اليسرى، إصابة بالرأس، حروق من الدرجة الثانية..." required></textarea>
-                            <div class="invalid-feedback">الرجاء إدخال وصف موجز للإصابة.</div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="medicalNeeds" class="form-label">الاحتياجات الطبية المطلوبة (إن وُجدت)</label>
-                                <textarea class="form-control" id="medicalNeeds" rows="2" placeholder="أدوية محددة، معدات، علاج طبيعي، مساعدة طبية عاجلة..."></textarea>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="currentTreatment" class="form-label">مكان ونوع العلاج الحالي</label>
-                                <textarea class="form-control" id="currentTreatment" rows="2" placeholder="اسم المستشفى الحالي أو نوع العلاج المتوفر"></textarea>
-                            </div>
-                        </div>
-                        <div class="mb-4">
-                            <label for="injuryNotes" class="form-label">ملاحظات إضافية</label>
-                            <textarea class="form-control" id="injuryNotes" rows="2" placeholder="أي معلومات أخرى مهمة"></textarea>
-                        </div>
-                        <div class="d-flex justify-content-end">
-                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">إلغاء</button>
-                            <button type="submit" class="btn btn-cta">
-                                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                                <span class="button-text"><i class="bi bi-save me-2"></i> حفظ بيانات الإصابة</span>
-                            </button>
-                        </div>
-                    </form>
                 </div>
             </div>
         </div>
     </div>
 
     <footer class="footer">
-        <div id="server-status" class="status-indicator mb-3">
+        <div id="server-status" class="status-indicator mb-2">
             <span class="status-dot"></span>
             <span class="status-text">جاري التحقق من حالة الخادم...</span>
         </div>
-        <a href="https://chat.whatsapp.com/IzjmFpfOCpdJ2RxvYCQ5E0?mode=ems_copy_t" target="_blank" class="whatsapp-link mb-3 d-block">
-            <i class="bi bi-phone me-2"></i> تواصل مع المطور مباشرة عبر الواتساب
-        </a>
-        <p class="copyright-text mb-0">
-            جميع الحقوق محفوظة &copy; 2025 | م. حماده أبو رجيلة (قديح)
+        <p class="copyright-text mb-2">
+            جميع الحقوق محفوظة &copy; 2025 | م. حماده أبو رجيلة
         </p>
+        <a href="https://wa.me/972569210941" target="_blank" class="whatsapp-link">
+            <i class="bi bi-whatsapp"></i> تواصل عبر الواتساب
+        </a>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="assets/site.js"></script>
+    <script src="script.js"></script> 
+    
     <script>
-        // Enable Bootstrap custom validation styles
-        (function () {
-            'use strict'
-            const forms = document.querySelectorAll('.needs-validation')
-            Array.prototype.slice.call(forms).forEach(function (form) {
-                form.addEventListener('submit', function (event) {
-                    if (!form.checkValidity()) {
-                        event.preventDefault()
-                        event.stopPropagation()
-                        form.classList.add('was-validated')
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('loginForm');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const loginSection = document.getElementById('loginSection');
+            const eventsSection = document.getElementById('eventsSection');
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            const loginNote = document.getElementById('loginNote');
+            const idNumberInput = document.getElementById('idNumber');
+
+            // Function to manage UI state
+            function updateUI(isLoggedIn, userName = '') {
+                if (isLoggedIn) {
+                    loginSection.style.display = 'none';
+                    eventsSection.style.display = 'block';
+                    welcomeMessage.innerHTML = `<i class="bi bi-person-check-fill me-2" style="color: white;"></i> مرحباً بك، **${userName}**! يمكنك الآن عرض سجل الأحداث.`;
+                    
+                    // Attempt to load events if the function is available (Assumes App.loadEvents is in script.js)
+                    if (window.App && App.loadEvents) {
+                        App.loadEvents(); 
                     }
-                    // Prevent form submission only if validation fails, otherwise submission logic goes here.
-                }, false)
-            })
-        })()
-        
-        // Mock Server Status Check (Enhanced)
-        document.addEventListener('DOMContentLoaded', () => {
+                } else {
+                    loginSection.style.display = 'block';
+                    eventsSection.style.display = 'none';
+                    welcomeMessage.innerHTML = `مرحباً بك! يرجى إدخال هويتك واسمك للاستمرار في استخدام النظام.`;
+                }
+            }
+
+            // Check initial login state (simple check based on a stored flag)
+            const storedLogin = localStorage.getItem('isLoggedIn');
+            const storedName = localStorage.getItem('userName');
+            updateUI(storedLogin === 'true', storedName);
+
+            // Login Form Submission (Preserved Logic - Assumes App.login is in script.js)
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                if (!loginForm.checkValidity()) {
+                    loginForm.classList.add('was-validated');
+                    return;
+                }
+
+                const idNumber = document.getElementById('idNumber').value.trim();
+                const fullName = document.getElementById('fullName').value.trim();
+                const submitBtn = loginForm.querySelector('button[type="submit"]');
+                const origText = submitBtn.textContent;
+                
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'جاري التحقق...';
+                loginNote.textContent = '';
+
+                try {
+                    // Assuming App.login is a function in script.js that validates ID/Name
+                    const result = window.App && App.login ? await App.login(idNumber, fullName) : { success: true, name: fullName }; 
+
+                    if (result && result.success) {
+                        localStorage.setItem('isLoggedIn', 'true');
+                        localStorage.setItem('userName', result.name);
+                        localStorage.setItem('userId', idNumber);
+                        
+                        updateUI(true, result.name);
+                        loginForm.classList.remove('was-validated');
+                        if (window.App && App.showToast) App.showToast(`تم تسجيل الدخول بنجاح، مرحباً بك يا ${result.name}`, true);
+                    } else {
+                        loginNote.textContent = result.message || 'فشل التحقق. تأكد من رقم الهوية والاسم.';
+                        if (window.App && App.showToast) App.showToast(result.message || 'فشل التحقق', false);
+                        localStorage.setItem('isLoggedIn', 'false');
+                        updateUI(false);
+                    }
+                } catch (err) {
+                    loginNote.textContent = 'خطأ في الاتصال بالخادم أثناء التحقق.';
+                    if (window.App && App.showToast) App.showToast('خطأ في الاتصال', false);
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = origText;
+                }
+            });
+
+            // Logout Button (Preserved Logic - Assumes App.logout is in script.js)
+            logoutBtn.addEventListener('click', function() {
+                localStorage.setItem('isLoggedIn', 'false');
+                localStorage.removeItem('userName');
+                localStorage.removeItem('userId');
+                
+                if (window.App && App.logout) { // If logout logic is defined in script.js
+                    App.logout();
+                }
+                updateUI(false);
+                if (window.App && App.showToast) App.showToast('تم تسجيل الخروج بنجاح.', true);
+                
+                // Switch back to the registration tab
+                const registerTab = document.getElementById('register-tab');
+                const registerEvent = document.getElementById('register-event');
+                const viewTab = document.getElementById('view-tab');
+                const viewEvents = document.getElementById('view-events');
+
+                new bootstrap.Tab(registerTab).show(); 
+            });
+
+            // ID validation (9 digits only)
+            idNumberInput.addEventListener('input', function(e) {
+                e.target.value = e.target.value.replace(/[^0-9]/g, '');
+            });
+            
+            // Handle tab switching for login requirement
+            const viewTab = document.getElementById('view-tab');
+            viewTab.addEventListener('shown.bs.tab', function (event) {
+                const storedLoginCheck = localStorage.getItem('isLoggedIn') === 'true';
+                if (storedLoginCheck && window.App && App.loadEvents) {
+                    App.loadEvents(); // Reload events when tab is shown if logged in
+                }
+            });
+
+
+            // Mock Server Status Check (Enhanced Footer)
             const statusDot = document.querySelector('.status-dot');
             const statusText = document.querySelector('.status-text');
-            // Mock server check for demonstration
             setTimeout(() => {
                 statusDot.style.backgroundColor = '#4CAF50'; // Green
                 statusDot.style.boxShadow = '0 0 5px #4CAF50';
