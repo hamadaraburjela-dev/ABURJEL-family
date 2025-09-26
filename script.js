@@ -1168,6 +1168,40 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
 
+        // Admin notification helpers (centralized)
+        async getAdminNotifications(token) {
+            if (!token) return null;
+            try {
+                const result = await this.apiCall({ action: 'getAdminNotifications', token });
+                return result;
+            } catch (error) {
+                console.error('خطأ في جلب إشعارات الأدمن:', error);
+                return null;
+            }
+        },
+
+        async markAdminNotificationAsRead(notificationId, token) {
+            if (!notificationId || !token) return null;
+            try {
+                const result = await this.apiCall({ action: 'markAdminNotificationAsRead', notificationId, token }, true);
+                return result;
+            } catch (error) {
+                console.error('خطأ في تمييز إشعار الأدمن كمقروء:', error);
+                return null;
+            }
+        },
+
+        async markAllAdminNotificationsAsRead(token) {
+            if (!token) return null;
+            try {
+                const result = await this.apiCall({ action: 'markAllAdminNotificationsAsRead', token }, true);
+                return result;
+            } catch (error) {
+                console.error('خطأ في تمييز جميع إشعارات الأدمن كمقروءة:', error);
+                return null;
+            }
+        },
+
         async markNotificationAsRead(notificationId) {
             try {
                 const result = await this.apiCall({

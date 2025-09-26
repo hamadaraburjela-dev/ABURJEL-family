@@ -690,123 +690,30 @@
         </footer>
     </div>
 
-    <script>
-        // Admin notifications client-side wiring
-        (function(){
-            const icon = document.getElementById('adminNotificationIcon');
-            const dropdown = document.getElementById('adminNotificationsDropdown');
-            const listEl = document.getElementById('adminNotificationsList');
-            const badge = document.getElementById('adminNotificationBadge');
-            const markAllBtn = document.getElementById('adminMarkAllReadBtn');
-
-            if (!icon || !dropdown || !listEl) return;
-
-            function toggleDropdown() {
-                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-            }
-
-            icon.querySelector('button')?.addEventListener('click', function(e){
-                e.stopPropagation();
-                toggleDropdown();
-                // load when opening
-                if (dropdown.style.display === 'block') loadAdminNotifications();
-            });
-
-            // close when clicking outside
-            document.addEventListener('click', function(e){
-                if (!icon.contains(e.target)) dropdown.style.display = 'none';
-            });
-
-            async function loadAdminNotifications() {
-                const token = sessionStorage.getItem('adminToken');
-                if (!token || typeof App === 'undefined') return;
-
-                try {
-                    const res = await App.apiCall({ action: 'getAdminNotifications', token });
-                    if (!res || !res.success) return;
-                    renderAdminNotifications(res.notifications || []);
-                } catch (err) {
-                    console.error('Failed loading admin notifications', err);
-                }
-            }
-
-            function renderAdminNotifications(notifications) {
-                if (!notifications || notifications.length === 0) {
-                    listEl.innerHTML = '<div class="p-3 text-center text-muted">لا توجد إشعارات</div>';
-                    badge.classList.add('d-none');
-                    return;
-                }
-
-                listEl.innerHTML = notifications.map(n => `
-                    <div class="notification-item ${n.isRead ? '' : 'unread'}" data-id="${n.id}">
-                        <div class="notification-title">${n.title || n.type}</div>
-                        <div class="notification-message">${n.message || ''}</div>
-                        <div class="d-flex justify-content-between align-items-center mt-2">
-                            <div class="notification-time"><i class="bi bi-clock me-1"></i>${formatTime(n.createdAt)}</div>
-                            <div class="notification-actions">
-                                <button class="btn btn-sm btn-outline-success mark-read-btn">تمييز كمقروء</button>
-                            </div>
-                        </div>
+    <!-- Admin notifications modal -->
+    <div class="modal fade" id="adminNotificationsModal" tabindex="-1" aria-labelledby="adminNotificationsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="adminNotificationsModalLabel"><i class="bi bi-bell-fill me-2"></i>إشعارات الإدارة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div id="adminNotificationsModalList" class="p-3" style="max-height:60vh; overflow:auto;">
+                        <!-- populated by JS -->
                     </div>
-                `).join('');
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="adminModalMarkAllReadBtn">
+                        <i class="bi bi-check-all me-1"></i>تمييز الكل كمقروء
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                // wire click handlers
-                listEl.querySelectorAll('.notification-item').forEach(item => {
-                    item.addEventListener('click', function(e){
-                        // avoid double handling when clicking the inner button
-                        if (e.target.classList.contains('mark-read-btn')) return;
-                        markAdminNotificationAsRead(this.dataset.id);
-                    });
-                    const btn = item.querySelector('.mark-read-btn');
-                    btn?.addEventListener('click', function(e){ e.stopPropagation(); markAdminNotificationAsRead(item.dataset.id); });
-                });
-
-                updateAdminBadge(notifications);
-            }
-
-            function updateAdminBadge(notifications) {
-                const unread = (notifications || []).filter(n => !n.isRead).length;
-                if (unread > 0) {
-                    badge.textContent = unread > 99 ? '99+' : String(unread);
-                    badge.classList.remove('d-none');
-                } else {
-                    badge.classList.add('d-none');
-                }
-            }
-
-            async function markAdminNotificationAsRead(id) {
-                if (!id || typeof App === 'undefined') return;
-                const token = sessionStorage.getItem('adminToken');
-                try {
-                    await App.apiCall({ action: 'markAdminNotificationAsRead', token, notificationId: id }, true);
-                    // reload list
-                    loadAdminNotifications();
-                } catch (err) { console.error('mark read failed', err); }
-            }
-
-            async function markAllAdminNotificationsAsRead() {
-                const token = sessionStorage.getItem('adminToken');
-                if (!token) return;
-                try {
-                    await App.apiCall({ action: 'markAllAdminNotificationsAsRead', token }, true);
-                    loadAdminNotifications();
-                } catch (err) { console.error('mark all read failed', err); }
-            }
-
-            function formatTime(ts) {
-                if (!ts) return '';
-                const d = new Date(ts);
-                return d.toLocaleString('ar-EG');
-            }
-
-            markAllBtn?.addEventListener('click', function(e){ e.stopPropagation(); markAllAdminNotificationsAsRead(); });
-
-            // initial poll every 30s
-            setInterval(loadAdminNotifications, 30000);
-            // load once on page ready
-            document.addEventListener('DOMContentLoaded', loadAdminNotifications);
-        })();
-    </script>
+    <!-- Duplicate admin inline script removed: admin notification helpers were centralized into script.js -->
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
@@ -823,12 +730,30 @@
             const adminToken = sessionStorage.getItem('adminToken');
             if (!adminToken) return;
             
-            // تحميل الإشعارات
-            loadAdminNotifications();
-            
-            // ربط أحداث الإشعارات
-            document.getElementById('adminNotificationIcon').addEventListener('click', toggleAdminNotifications);
-            document.getElementById('adminMarkAllReadBtn').addEventListener('click', markAllAdminNotificationsAsRead);
+            // تحميل الإشعارات عند فتح المودال
+            const modalEl = document.getElementById('adminNotificationsModal');
+            const modalInstance = modalEl ? new bootstrap.Modal(modalEl) : null;
+            const modalList = document.getElementById('adminNotificationsModalList');
+
+            // عند ضغط زر الجرس افتح المودال بدلاً من dropdown
+            document.getElementById('adminNotificationIcon').querySelector('button').addEventListener('click', function(e){
+                e.stopPropagation();
+                modalInstance?.show();
+                loadAdminNotifications();
+            });
+
+            // زر تمييز الكل داخل المودال
+            document.getElementById('adminModalMarkAllReadBtn')?.addEventListener('click', async function(){
+                await markAllAdminNotificationsAsRead();
+                loadAdminNotifications();
+            });
+
+            // إخفاء القائمة القديمة عند النقر خارجها
+            document.addEventListener('click', function(e) {
+                if (!document.getElementById('adminNotificationIcon').contains(e.target)) {
+                    document.getElementById('adminNotificationsDropdown').style.display = 'none';
+                }
+            });
             
             // إخفاء القائمة عند النقر خارجها
             document.addEventListener('click', function(e) {
@@ -843,15 +768,13 @@
         
         async function loadAdminNotifications() {
             try {
-                const result = await App.apiCall({
-                    action: 'getAdminNotifications',
-                    token: sessionStorage.getItem('adminToken')
-                });
-                
-                if (result && result.success) {
-                    displayAdminNotifications(result.notifications);
-                    updateAdminNotificationBadge(result.notifications);
-                }
+                    const result = await App.getAdminNotifications(sessionStorage.getItem('adminToken'));
+                        if (result && result.success) {
+                            displayAdminNotifications(result.notifications || []);
+                            updateAdminNotificationBadge(result.notifications || []);
+                            // also render into modal list
+                            renderAdminModalList(result.notifications || [], modalList);
+                        }
             } catch (error) {
                 console.error('خطأ في تحميل إشعارات الأدمن:', error);
             }
@@ -886,8 +809,46 @@
             // ربط أحداث النقر على الإشعارات
             container.querySelectorAll('.notification-item').forEach(item => {
                 item.addEventListener('click', function(e) {
-                    if (!e.target.classList.contains('btn')) {
-                        markAdminNotificationAsRead(this.dataset.id);
+                        if (!e.target.classList.contains('btn')) {
+                            // call centralized App helper
+                            App.markAdminNotificationAsRead(this.dataset.id, sessionStorage.getItem('adminToken'));
+                        }
+                });
+            });
+        }
+
+        function renderAdminModalList(notifications, container) {
+            if (!container) return;
+            if (!notifications || notifications.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted p-3">لا توجد إشعارات</div>';
+                return;
+            }
+
+            container.innerHTML = notifications.map(n => `
+                <div class="notification-item ${n.isRead ? '' : 'unread'} ${n.priority === 'high' ? 'priority-high' : ''} mb-2 p-2 border rounded" data-id="${n.id}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="notification-title"><i class="${getAdminNotificationIcon(n.type)} me-2"></i>${n.title}</div>
+                            <div class="notification-message small text-muted">${n.message || ''}</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="notification-time small text-secondary">${formatNotificationTime(n.createdAt)}</div>
+                            <div class="mt-2">
+                                <button class="btn btn-sm btn-outline-success modal-mark-read">تمييز كمقروء</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // wire modal mark-as-read
+            container.querySelectorAll('.modal-mark-read').forEach(btn => {
+                btn.addEventListener('click', function(e){
+                    e.stopPropagation();
+                    const item = this.closest('.notification-item');
+                    const id = item?.dataset.id;
+                    if (id) {
+                        App.markAdminNotificationAsRead(id, sessionStorage.getItem('adminToken')).then(() => loadAdminNotifications());
                     }
                 });
             });
@@ -941,14 +902,9 @@
         
         async function markAdminNotificationAsRead(notificationId) {
             try {
-                await App.apiCall({
-                    action: 'markNotificationAsRead',
-                    notificationId: notificationId,
-                    token: sessionStorage.getItem('adminToken')
-                });
-                
-                // تحديث الإشعارات
-                loadAdminNotifications();
+                    await App.markAdminNotificationAsRead(notificationId, sessionStorage.getItem('adminToken'));
+                    // تحديث الإشعارات
+                    loadAdminNotifications();
             } catch (error) {
                 console.error('خطأ في تمييز الإشعار كمقروء:', error);
             }
@@ -956,21 +912,17 @@
         
         async function markAllAdminNotificationsAsRead() {
             try {
-                await App.apiCall({
-                    action: 'markAllAdminNotificationsAsRead',
-                    token: sessionStorage.getItem('adminToken')
-                });
-                
-                // تحديث الإشعارات
-                loadAdminNotifications();
-                
-                Toastify({
-                    text: "تم تمييز جميع الإشعارات كمقروءة",
-                    duration: 3000,
-                    gravity: "top",
-                    position: "center",
-                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-                }).showToast();
+                    await App.markAllAdminNotificationsAsRead(sessionStorage.getItem('adminToken'));
+                    // تحديث الإشعارات
+                    loadAdminNotifications();
+
+                    Toastify({
+                        text: "تم تمييز جميع الإشعارات كمقروءة",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "center",
+                        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                    }).showToast();
             } catch (error) {
                 console.error('خطأ في تمييز جميع الإشعارات كمقروءة:', error);
             }
