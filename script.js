@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2) /app-config.json (local config file you can change without editing this file)
     // 3) fallback to the original Apps Script URL for backward compatibility
     WEB_APP_URL: null,
-    DEFAULT_WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbycIdQvgsC5i34hgQnGdMvv7_bQQS4yrxC3id2qRpLWsMVVIWtCOQ99dewrWPTyxoutMw/exec',
+    DEFAULT_WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbxgGXd3RPRXp3xZaiGcCpiUE5w7NLtXO5ElIjWq8MV7CPoisRV-x6piDtSnOJITBuXC9g/exec',
         
         async testNewUrl() {
             const input = document.getElementById('newScriptUrl');
@@ -179,7 +179,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('🚀 إرسال طلب API:', payload.action);
             
             try {
-                const response = await fetch(this.WEB_APP_URL, { 
+                const url = this.WEB_APP_URL || this.DEFAULT_WEB_APP_URL;
+                const response = await fetch(url, { 
                     method: 'POST', 
                     mode: 'cors', 
                     redirect: 'follow', 
@@ -232,7 +233,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Tolerant POST helper used by pages (preserves behavior from inline scripts)
         async postToServer(payload) {
             try {
-                const response = await fetch(this.WEB_APP_URL, {
+                const url = this.WEB_APP_URL || this.DEFAULT_WEB_APP_URL;
+                const response = await fetch(url, {
                     method: 'POST',
                     mode: 'cors',
                     redirect: 'follow',
@@ -360,7 +362,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('جاري فحص حالة الخادم...', this.WEB_APP_URL);
             
             try {
-                const response = await fetch(this.WEB_APP_URL, { 
+                const url = this.WEB_APP_URL || this.DEFAULT_WEB_APP_URL;
+                const response = await fetch(url, { 
                     method: 'GET',
                     mode: 'cors',
                     cache: 'no-cache'

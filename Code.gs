@@ -105,50 +105,56 @@ function doPost(e) {
 function handleGetAllMembers(token, searchTerm, page, pageSize) {
   authenticateToken(token);
   
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(INDIVIDUALS_SHEET);
-  if (!sheet) return { success: true, members: [], total: 0 };
-  
-  const allData = sheet.getDataRange().getValues();
-  if (allData.length < 2) return { success: true, members: [], total: 0 };
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(INDIVIDUALS_SHEET);
+  if (!sheet) return { success: true, members: [], total: 0 };
 
-  const headers = allData.shift();
-  let rows = allData;
+  // If no searchTerm provided -> use paginated read (cheap)
+  if (!searchTerm) {
+    const pageNum = parseInt(page, 10) || 1;
+    const limit = parseInt(pageSize, 10) || 50; // default bigger page
+    const members = sheetToJSON(INDIVIDUALS_SHEET, { page: pageNum, pageSize: limit });
+    // The total requires counting rows; use sheet.getLastRow() - 1 (exclude header)
+    const total = Math.max(0, sheet.getLastRow() - 1);
+    return { success: true, members: members, total: total };
+  }
 
-  const nameColIndex = headers.indexOf('الاسم الكامل');
-  const idColIndex = headers.indexOf('رقم الهوية');
+  // If searchTerm is present, read only name and id columns to minimize bandwidth
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(h => (h||'').toString().trim());
+  const nameColIndex = headers.indexOf('الاسم الكامل');
+  const idColIndex = headers.indexOf('رقم الهوية');
+  if (nameColIndex === -1 || idColIndex === -1) throw new Error('لم يتم العثور على أعمدة "الاسم الكامل" أو "رقم الهوية" في شيت الأفراد.');
 
-  if (nameColIndex === -1 || idColIndex === -1) {
-    throw new Error('لم يتم العثور على أعمدة "الاسم الكامل" أو "رقم الهوية" في شيت الأفراد.');
-  }
+  const numDataRows = Math.max(0, sheet.getLastRow() - 1);
+  if (numDataRows === 0) return { success: true, members: [], total: 0 };
 
-  // 1. الفلترة على البيانات الخام (سريع جداً)
-  let filteredRows = rows;
-  if (searchTerm) {
-    const lowerCaseTerm = searchTerm.toLowerCase();
-    filteredRows = rows.filter(row =>
-      (row[nameColIndex] && row[nameColIndex].toString().toLowerCase().includes(lowerCaseTerm)) ||
-      (row[idColIndex] && row[idColIndex].toString().toLowerCase().includes(lowerCaseTerm))
-    );
-  }
+  const nameValues = sheet.getRange(2, nameColIndex + 1, numDataRows, 1).getValues();
+  const idValues = sheet.getRange(2, idColIndex + 1, numDataRows, 1).getValues();
 
-  const total = filteredRows.length;
-  const pageNum = parseInt(page, 10) || 1;
-  const limit = parseInt(pageSize, 10) || 10;
-  const startIndex = (pageNum - 1) * limit;
-  
-  // 2. تقسيم الصفحات على البيانات المفلترة
-  const paginatedRows = filteredRows.slice(startIndex, startIndex + limit);
+  const lowerCaseTerm = searchTerm.toString().toLowerCase();
+  const matchedRowOffsets = [];
+  for (let i = 0; i < numDataRows; i++) {
+    const nameCell = (nameValues[i] && nameValues[i][0]) ? String(nameValues[i][0]).toLowerCase() : '';
+    const idCell = (idValues[i] && idValues[i][0]) ? String(idValues[i][0]).toLowerCase() : '';
+    if (nameCell.includes(lowerCaseTerm) || idCell.includes(lowerCaseTerm)) matchedRowOffsets.push(i);
+  }
 
-  // 3. تحويل الجزء الصغير المطلوب فقط إلى JSON
-  const pagedMembers = paginatedRows.map(row => {
-    const memberObj = {};
-    headers.forEach((header, index) => {
-      memberObj[header] = row[index];
-    });
-    return memberObj;
-  });
+  const total = matchedRowOffsets.length;
+  const pageNum = parseInt(page, 10) || 1;
+  const limit = parseInt(pageSize, 10) || 50;
+  const start = (pageNum - 1) * limit;
+  const end = Math.min(start + limit, matchedRowOffsets.length);
 
-  return { success: true, members: pagedMembers, total: total };
+  const result = [];
+  // fetch only matched rows in this page
+  for (let j = start; j < end; j++) {
+    const rowOffset = matchedRowOffsets[j];
+    const sheetRow = 2 + rowOffset;
+    const rowData = sheet.getRange(sheetRow, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = rowData[i]);
+    result.push(obj);
+  }
+  return { success: true, members: result, total: total };
 }
 
 /**
@@ -204,8 +210,17 @@ function handleCheckPasswordStatus(id, spouseId) {
   if (!id || !spouseId) {
     throw new Error('يجب إدخال رقم الهوية ورقم هوية الزوجة.');
   }
-  const members = sheetToJSON(INDIVIDUALS_SHEET);
-  const member = members.find(m => String(m['رقم الهوية']).trim() == String(id).trim() && String(m['رقم هوية الزوجة']).trim() == String(spouseId).trim());
+  // Use cached row map to avoid reading the whole sheet
+  const rowIndex = getRowIndexByUniqueId(INDIVIDUALS_SHEET, id, 'رقم الهوية');
+  if (rowIndex === -1) throw new Error('بيانات الدخول غير صحيحة.');
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(INDIVIDUALS_SHEET);
+  const lastCol = sheet.getLastColumn();
+  const rowValues = sheet.getRange(rowIndex, 1, 1, lastCol).getValues()[0];
+  const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(h => (h||'').toString().trim());
+  const member = headers.reduce((o, h, i) => { o[h] = rowValues[i]; return o; }, {});
+  if (String(member['رقم هوية الزوجة']).trim() !== String(spouseId).trim()) {
+    throw new Error('بيانات الدخول غير صحيحة.');
+  }
   if (!member) {
     throw new Error('بيانات الدخول غير صحيحة.');
   }
@@ -226,13 +241,22 @@ function handleUserLoginWithPassword(id, spouseId, password) {
       logReason = 'بيانات غير مكتملة';
       throw new Error('يجب إدخال رقم الهوية ورقم هوية الزوجة وكلمة المرور.');
     }
-    const members = sheetToJSON(INDIVIDUALS_SHEET);
-    const member = members.find(m => String(m['رقم الهوية']).trim() == String(id).trim() && String(m['رقم هوية الزوجة']).trim() == String(spouseId).trim());
-    if (!member) {
-      logReason = 'بيانات الدخول غير صحيحة';
-      throw new Error('بيانات الدخول غير صحيحة. الرجاء التأكد من أرقام الهوية.');
-    }
-    const storedPassword = member['كلمة المرور (SHA-256)'];
+    // targeted lookup
+    const rowIndex = getRowIndexByUniqueId(INDIVIDUALS_SHEET, id, 'رقم الهوية');
+    if (rowIndex === -1) {
+      logReason = 'بيانات الدخول غير صحيحة';
+      throw new Error('بيانات الدخول غير صحيحة. الرجاء التأكد من أرقام الهوية.');
+    }
+    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(INDIVIDUALS_SHEET);
+    const lastCol = sheet.getLastColumn();
+    const rowValues = sheet.getRange(rowIndex, 1, 1, lastCol).getValues()[0];
+    const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(h => (h||'').toString().trim());
+    const member = headers.reduce((o, h, i) => { o[h] = rowValues[i]; return o; }, {});
+    if (String(member['رقم هوية الزوجة']).trim() !== String(spouseId).trim()) {
+      logReason = 'بيانات الدخول غير صحيحة';
+      throw new Error('بيانات الدخول غير صحيحة. الرجاء التأكد من أرقام الهوية.');
+    }
+    const storedPassword = member['كلمة المرور (SHA-256)'];
     if (!storedPassword) {
         logReason = 'لم يتم تعيين كلمة مرور لهذا الحساب بعد.';
         throw new Error('لم يتم تعيين كلمة مرور لهذا الحساب بعد. يرجى البدء من جديد.');
@@ -256,32 +280,20 @@ function handleSetMemberPassword(userId, password) {
   if (!userId) throw new Error('معرف المستخدم مفقود.');
   if (!password || password.length < 6) throw new Error('كلمة المرور يجب أن لا تقل عن 6 أحرف.');
   
-  const individualsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(INDIVIDUALS_SHEET);
-  const data = individualsSheet.getDataRange().getValues();
-  const headers = data[0];
-  const idColIndex = headers.indexOf('رقم الهوية');
-  const passwordColIndex = headers.indexOf('كلمة المرور (SHA-256)');
-  
-  if (idColIndex === -1 || passwordColIndex === -1) {
-    throw new Error('أحد الأعمدة المطلوبة مفقود. يرجى التأكد من وجود عمود "كلمة المرور (SHA-256)" في ورقة الأفراد.');
-  }
-  
-  let rowIndexToUpdate = -1;
-  for (let i = 1; i < data.length; i++) {
-    if (String(data[i][idColIndex]).trim() == String(userId).trim()) {
-      rowIndexToUpdate = i + 1;
-      break;
-    }
-  }
-  if (rowIndexToUpdate === -1) throw new Error('لم يتم العثور على الفرد.');
-  
-  const passwordHash = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, password).map(byte => (byte + 256) % 256).map(b => b.toString(16).padStart(2, '0')).join('');
-  individualsSheet.getRange(rowIndexToUpdate, passwordColIndex + 1).setValue(passwordHash);
-  
-  const individuals = sheetToJSON(INDIVIDUALS_SHEET);
-  const member = individuals.find(m => String(m['رقم الهوية']).trim() == String(userId).trim());
-  
-  return { success: true, message: 'تم حفظ كلمة المرور بنجاح.', userName: member['الاسم الكامل'] };
+  // use cached row lookup and update only necessary cell
+  const individualsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(INDIVIDUALS_SHEET);
+  const headers = individualsSheet.getRange(1, 1, 1, individualsSheet.getLastColumn()).getValues()[0].map(h => (h||'').toString().trim());
+  const idColIndex = headers.indexOf('رقم الهوية');
+  const passwordColIndex = headers.indexOf('كلمة المرور (SHA-256)');
+  if (idColIndex === -1 || passwordColIndex === -1) throw new Error('أحد الأعمدة المطلوبة مفقود. يرجى التأكد من وجود عمود "كلمة المرور (SHA-256)" في ورقة الأفراد.');
+  const rowIndexToUpdate = getRowIndexByUniqueId(INDIVIDUALS_SHEET, userId, 'رقم الهوية');
+  if (rowIndexToUpdate === -1) throw new Error('لم يتم العثور على الفرد.');
+  const passwordHash = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, password).map(byte => (byte + 256) % 256).map(b => b.toString(16).padStart(2, '0')).join('');
+  individualsSheet.getRange(rowIndexToUpdate, passwordColIndex + 1).setValue(passwordHash);
+  // read back only the updated row for name
+  const memberRow = individualsSheet.getRange(rowIndexToUpdate, 1, 1, individualsSheet.getLastColumn()).getValues()[0];
+  const member = headers.reduce((o, h, i) => { o[h] = memberRow[i]; return o; }, {});
+  return { success: true, message: 'تم حفظ كلمة المرور بنجاح.', userName: member['الاسم الكامل'] };
 }
 
 function handleGetUserAidHistory(userId) {
@@ -1557,35 +1569,108 @@ function handleBulkProcessAid(payload) {
 
 
 // --- UTILITY FUNCTIONS ---
-function sheetToJSON(sheetName) {
+/**
+ * Convert a sheet to JSON with optional pagination and reduced bandwidth.
+ * Options: { page, pageSize }
+ * If pagination is provided, only the requested rows are fetched.
+ */
+function sheetToJSON(sheetName, options) {
   try {
-    Logger.log('sheetToJSON called for sheet: ' + sheetName);
-    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(sheetName);
-    if (!sheet) {
-      Logger.log('Sheet not found: ' + sheetName);
-      return [];
-    }
-    const values = sheet.getDataRange().getValues();
-    Logger.log('Sheet data rows: ' + values.length);
-    if (values.length < 2) {
-      Logger.log('Not enough data rows in sheet');
-      return [];
-    }
-    const headers = values.shift().map(header => header.trim());
-    Logger.log('Headers: ' + JSON.stringify(headers));
-    const result = values.map(row =>
-      headers.reduce((obj, header, i) => {
-        obj[header] = row[i];
+    options = options || {};
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = ss.getSheetByName(sheetName);
+    if (!sheet) return [];
+
+    const lastRow = sheet.getLastRow();
+    const lastCol = sheet.getLastColumn();
+    if (lastRow < 2) return [];
+
+    // always fetch headers
+    const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(h => (h || '').toString().trim());
+
+    // pagination requested -> fetch a window only
+    if (options.page || options.pageSize) {
+      const page = parseInt(options.page, 10) || 1;
+      const pageSize = parseInt(options.pageSize, 10) || 50;
+      const startIndex = (page - 1) * pageSize; // zero-based within data rows (excluding header)
+      const startRow = 2 + startIndex; // sheet rows are 1-based and header is row 1
+      if (startRow > lastRow) return [];
+      const rowsToFetch = Math.min(pageSize, lastRow - startRow + 1);
+      const values = sheet.getRange(startRow, 1, rowsToFetch, lastCol).getValues();
+      return values.map(row => {
+        const obj = {};
+        headers.forEach((h, i) => obj[h] = row[i]);
         return obj;
-      }, {})
-    );
-    Logger.log('Returning ' + result.length + ' records');
-    return result;
+      });
+    }
+
+    // no pagination -> fallback to full read (use sparingly)
+    const values = sheet.getDataRange().getValues();
+    if (values.length < 2) return [];
+    const allHeaders = values.shift().map(h => (h || '').toString().trim());
+    return values.map(row => allHeaders.reduce((o, h, i) => { o[h] = row[i]; return o; }, {}));
   } catch (error) {
     Logger.log('Error in sheetToJSON: ' + error.toString());
     return [];
   }
-}function authenticateToken(token, requiredRole = null) {
+}
+
+/**
+ * Build or read a cached map of uniqueId -> rowNumber for a sheet.
+ * Uses CacheService to avoid scanning the whole sheet repeatedly.
+ */
+function getRowMapForSheet(sheetName, idColumnName) {
+  idColumnName = idColumnName || 'رقم الهوية';
+  const cache = CacheService.getScriptCache();
+  const cacheKey = 'rowmap_' + sheetName + '_' + idColumnName;
+  const cached = cache.get(cacheKey);
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet) return {};
+  const lastRow = sheet.getLastRow();
+  try {
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed && parsed.rowCount === lastRow && parsed.map) {
+        return parsed.map;
+      }
+    }
+  } catch (e) {
+    // fall through to rebuild
+  }
+
+  // Build map by reading headers then only the id column values (lightweight)
+  const lastCol = sheet.getLastColumn();
+  const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(h => (h || '').toString().trim());
+  const idColIndex = headers.indexOf(idColumnName);
+  if (idColIndex === -1) return {};
+  const numDataRows = Math.max(0, lastRow - 1);
+  const idValues = numDataRows > 0 ? sheet.getRange(2, idColIndex + 1, numDataRows, 1).getValues() : [];
+  const map = {};
+  for (let i = 0; i < idValues.length; i++) {
+    const v = idValues[i][0];
+    if (v !== '' && v !== null && typeof v !== 'undefined') {
+      map[String(v).trim()] = i + 2; // actual sheet row number
+    }
+  }
+  try {
+    cache.put(cacheKey, JSON.stringify({ rowCount: lastRow, map: map }), 21600); // cache 6 hours
+  } catch (e) {
+    // ignore cache put failures
+  }
+  return map;
+}
+
+/**
+ * Get the row number for a given unique id in a sheet.
+ */
+function getRowIndexByUniqueId(sheetName, idValue, idColumnName) {
+  if (!idValue) return -1;
+  const map = getRowMapForSheet(sheetName, idColumnName || 'رقم الهوية');
+  return map[String(idValue).trim()] || -1;
+}
+
+function authenticateToken(token, requiredRole = null) {
   if (!token) throw new Error('Token is missing.');
   const cache = CacheService.getScriptCache();
   const storedData = cache.get(token);
@@ -1725,9 +1810,14 @@ function handleSubmitSpecialCaseRequest(payload) {
  */
 function handleVerifyFatherId(fatherId) {
   if (!fatherId) throw new Error('رقم هوية الأب مفقود.');
-  const members = sheetToJSON(INDIVIDUALS_SHEET);
-  const member = members.find(m => String(m['رقم الهوية']).trim() === String(fatherId).trim());
-  return { success: true, exists: !!member, fatherName: member ? member['الاسم الكامل'] : null };
+  const rowIndex = getRowIndexByUniqueId(INDIVIDUALS_SHEET, fatherId, 'رقم الهوية');
+  if (rowIndex === -1) return { success: true, exists: false, fatherName: null };
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(INDIVIDUALS_SHEET);
+  const lastCol = sheet.getLastColumn();
+  const rowValues = sheet.getRange(rowIndex, 1, 1, lastCol).getValues()[0];
+  const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(h => (h||'').toString().trim());
+  const member = headers.reduce((o, h, i) => { o[h] = rowValues[i]; return o; }, {});
+  return { success: true, exists: true, fatherName: member['الاسم الكامل'] || null };
 }
 
 /**

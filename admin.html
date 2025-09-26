@@ -788,12 +788,13 @@
         async function loadAdminNotifications() {
             try {
                     const result = await App.getAdminNotifications(sessionStorage.getItem('adminToken'));
-                        if (result && result.success) {
-                            displayAdminNotifications(result.notifications || []);
-                            updateAdminNotificationBadge(result.notifications || []);
-                            // also render into modal list
-                            renderAdminModalList(result.notifications || [], modalList);
-                        }
+                    if (result && result.success) {
+                        displayAdminNotifications(result.notifications || []);
+                        updateAdminNotificationBadge(result.notifications || []);
+                        // also render into modal list (fetch the element here to avoid scope issues)
+                        const modalListEl = document.getElementById('adminNotificationsModalList');
+                        renderAdminModalList(result.notifications || [], modalListEl);
+                    }
             } catch (error) {
                 console.error('خطأ في تحميل إشعارات الأدمن:', error);
             }
