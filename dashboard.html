@@ -226,50 +226,55 @@
             font-weight: bold;
         }
         
-        .notifications-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            width: 350px;
-            max-height: 400px;
-            overflow-y: auto;
-            z-index: 1000;
-            display: none;
-        }
-        
         .notification-item {
             padding: 15px;
             border-bottom: 1px solid #f0f0f0;
-            transition: background-color 0.3s;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
         }
         
         .notification-item:hover {
             background-color: #f8f9fa;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         
         .notification-item.unread {
             background-color: #e3f2fd;
             border-left: 4px solid #2196f3;
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2);
         }
         
         .notification-title {
             font-weight: 600;
             color: #2d3a4b;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            font-size: 1rem;
         }
         
         .notification-message {
             color: #666;
             font-size: 0.9rem;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            line-height: 1.5;
         }
         
         .notification-time {
             color: #999;
             font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .modal-body {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        #notificationsList {
+            max-height: 400px;
+            overflow-y: auto;
         }
     </style>
 </head>
@@ -282,27 +287,10 @@
         <div class="d-flex align-items-center gap-2">
             <!-- أيقونة الإشعارات -->
             <div class="notification-icon position-relative me-2" id="notificationIcon">
-                <button class="btn btn-outline-info btn-modern">
+                <button class="btn btn-outline-info btn-modern" data-bs-toggle="modal" data-bs-target="#notificationsModal">
                     <i class="bi bi-bell"></i>
                 </button>
                 <span class="notification-badge d-none" id="notificationBadge">0</span>
-                
-                <!-- قائمة الإشعارات المنسدلة -->
-                <div class="notifications-dropdown" id="notificationsDropdown">
-                    <div class="p-3 border-bottom">
-                        <h6 class="mb-0">
-                            <i class="bi bi-bell-fill me-2"></i>الإشعارات
-                        </h6>
-                    </div>
-                    <div id="notificationsList">
-                        <!-- سيتم ملؤها بالجافاسكريبت -->
-                    </div>
-                    <div class="p-2 text-center border-top">
-                        <button class="btn btn-sm btn-outline-primary" id="markAllReadBtn">
-                            <i class="bi bi-check-all me-1"></i>تمييز الكل كمقروء
-                        </button>
-                    </div>
-                </div>
             </div>
             
             <button id="refreshUserDataBtn" class="btn btn-outline-primary btn-modern"><i class="bi bi-arrow-repeat"></i> تحديث البيانات</button>
@@ -560,6 +548,40 @@
         </div>
     </div>
 
+    <!-- نافذة الإشعارات -->
+    <div class="modal fade" id="notificationsModal" tabindex="-1" aria-labelledby="notificationsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="notificationsModalLabel">
+                        <i class="bi bi-bell-fill me-2"></i>الإشعارات
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="badge bg-info" id="notificationsCount">0 إشعار</span>
+                        <button class="btn btn-sm btn-outline-primary" id="markAllReadBtn">
+                            <i class="bi bi-check-all me-1"></i>تمييز الكل كمقروء
+                        </button>
+                    </div>
+                    <div id="notificationsList">
+                        <!-- سيتم ملؤها بالجافاسكريبت -->
+                        <div class="text-center text-muted p-4">
+                            <i class="bi bi-bell-slash fs-1 mb-3"></i>
+                            <p>لا توجد إشعارات</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>إغلاق
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="script.js"></script>
@@ -674,14 +696,12 @@
             loadUserNotifications(userId);
             
             // ربط أحداث الإشعارات
-            document.getElementById('notificationIcon').addEventListener('click', toggleNotifications);
             document.getElementById('markAllReadBtn').addEventListener('click', markAllNotificationsAsRead);
             
-            // إخفاء القائمة عند النقر خارجها
-            document.addEventListener('click', function(e) {
-                if (!document.getElementById('notificationIcon').contains(e.target)) {
-                    document.getElementById('notificationsDropdown').style.display = 'none';
-                }
+            // تحديث الإشعارات عند فتح النافذة المنبثقة
+            const notificationsModal = document.getElementById('notificationsModal');
+            notificationsModal.addEventListener('shown.bs.modal', function() {
+                loadUserNotifications(userId);
             });
             
             // تحديث الإشعارات كل 30 ثانية
@@ -690,14 +710,12 @@
         
         async function loadUserNotifications(userId) {
             try {
-                const result = await App.apiCall({
-                    action: 'getUserNotifications',
-                    userId: userId
-                });
+                const result = await App.getUserNotifications(userId);
                 
                 if (result && result.success) {
                     displayNotifications(result.notifications);
                     updateNotificationBadge(result.notifications);
+                    updateNotificationCount(result.notifications);
                 }
             } catch (error) {
                 console.error('خطأ في تحميل الإشعارات:', error);
@@ -709,8 +727,9 @@
             
             if (notifications.length === 0) {
                 container.innerHTML = `
-                    <div class="notification-item text-center text-muted">
-                        <i class="bi bi-inbox me-2"></i>لا توجد إشعارات جديدة
+                    <div class="text-center text-muted p-4">
+                        <i class="bi bi-bell-slash fs-1 mb-3"></i>
+                        <p>لا توجد إشعارات</p>
                     </div>
                 `;
                 return;

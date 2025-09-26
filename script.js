@@ -1152,6 +1152,46 @@ document.addEventListener('DOMContentLoaded', () => {
             } finally { 
                 if (isButtonTriggered) this.toggleButtonSpinner(false, activeSubmitButton); 
             }
+        },
+
+        // وظائف الإشعارات
+        async getUserNotifications(userId) {
+            try {
+                const result = await this.apiCall({
+                    action: 'getUserNotifications',
+                    userId: userId
+                });
+                return result;
+            } catch (error) {
+                console.error('خطأ في جلب الإشعارات:', error);
+                return null;
+            }
+        },
+
+        async markNotificationAsRead(notificationId) {
+            try {
+                const result = await this.apiCall({
+                    action: 'markNotificationAsRead',
+                    notificationId: notificationId
+                });
+                return result;
+            } catch (error) {
+                console.error('خطأ في تمييز الإشعار كمقروء:', error);
+                return null;
+            }
+        },
+
+        async markAllNotificationsAsRead(userId) {
+            try {
+                const result = await this.apiCall({
+                    action: 'markAllNotificationsAsRead',
+                    userId: userId
+                });
+                return result;
+            } catch (error) {
+                console.error('خطأ في تمييز جميع الإشعارات كمقروءة:', error);
+                return null;
+            }
         }
     };
 
