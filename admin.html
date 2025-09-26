@@ -103,6 +103,23 @@
             font-size: 0.75rem;
             padding: 4px 8px;
         }
+        /* Admin dashboard card badges */
+        .request-badge {
+            position: absolute;
+            top: 8px;
+            right: 12px; /* RTL layout: badge on the right */
+            min-width: 28px;
+            height: 28px;
+            padding: 0 .45rem;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            border-radius: 16px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            z-index: 5;
+        }
+        .action-card { position: relative; overflow: visible; }
     </style>
 </head>
 <body>
@@ -408,6 +425,7 @@
                                             </div>
                                         </div>
                                     </a>
+                                    <span class="badge bg-danger text-white request-badge" data-target="manage-members">0</span>
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
@@ -442,6 +460,7 @@
                                             </div>
                                         </div>
                                     </a>
+                                    <span class="badge bg-danger text-white request-badge" data-target="manage-aid">0</span>
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
@@ -467,6 +486,7 @@
                                             </div>
                                         </div>
                                     </a>
+                                    <span class="badge bg-danger text-white request-badge" data-target="aid-logs">0</span>
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
@@ -492,6 +512,7 @@
                                             </div>
                                         </div>
                                     </a>
+                                    <span class="badge bg-danger text-white request-badge" data-target="reports">0</span>
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
@@ -517,6 +538,7 @@
                                             </div>
                                         </div>
                                     </a>
+                                    <span class="badge bg-danger text-white request-badge" data-target="password-resets">0</span>
                                 </div>
 
                                 <!-- كارد طلبات تعديل البيانات -->
@@ -543,6 +565,7 @@
                                             </div>
                                         </div>
                                     </a>
+                                    <span class="badge bg-danger text-white request-badge" data-target="edit-requests">0</span>
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
@@ -568,6 +591,7 @@
                                             </div>
                                         </div>
                                     </a>
+                                    <span class="badge bg-danger text-white request-badge" data-target="fair-distribution">0</span>
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
@@ -593,6 +617,7 @@
                                             </div>
                                         </div>
                                     </a>
+                                    <span class="badge bg-danger text-white request-badge" data-target="life-requests">0</span>
                                 </div>
 
                                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
@@ -618,6 +643,7 @@
                                             </div>
                                         </div>
                                     </a>
+                                    <span class="badge bg-danger text-white request-badge" data-target="martyrs-admin">0</span>
                                 </div>
                                 <!-- بطاقة إدارة الحالات الخاصة -->
                                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
@@ -643,6 +669,7 @@
                                             </div>
                                         </div>
                                     </a>
+                                    <span class="badge bg-danger text-white request-badge" data-target="manage-special-cases">0</span>
                                 </div>
                                 <!-- بطاقة إدارة الوفيات -->
                                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
@@ -668,6 +695,7 @@
                                             </div>
                                         </div>
                                     </a>
+                                    <span class="badge bg-danger text-white request-badge" data-target="deaths-admin">0</span>
                                 </div>
                             </div>
                         </div>
