@@ -69,6 +69,7 @@ function doPost(e) {
       case 'createAdmin': response = handleCreateAdmin(payload); break;
       case 'updateAdminStatus': response = handleUpdateAdminStatus(payload); break;
       case 'updateMember': response = handleUpdateMember(payload); break;
+      case 'updateMemberStatus': response = handleUpdateMemberStatus(payload); break;
       case 'generateReport': response = handleGenerateReport(payload); break;
       case 'requestPasswordReset': response = handlePasswordResetRequest(payload.userId); break;
       case 'getResetRequests': response = handleGetResetRequests(payload.token); break;
@@ -83,6 +84,7 @@ function doPost(e) {
     case 'getUserNotifications': response = handleGetUserNotifications(payload.userId); break;
     case 'getAdminNotifications': response = handleGetAdminNotifications(payload.token); break;
     case 'markNotificationAsRead': response = handleMarkNotificationAsRead(payload); break;
+    case 'markAdminNotificationAsRead': response = handleMarkNotificationAsRead(payload); break; // Alias for admin
     case 'markAllNotificationsAsRead': response = handleMarkAllNotificationsAsRead(payload.userId); break;
     case 'markAllAdminNotificationsAsRead': response = handleMarkAllAdminNotificationsAsRead(payload.token); break;
       default:
@@ -1239,7 +1241,9 @@ function handleAddAid(payload) {
   });
   
   return { success: true, message: 'تمت إضافة المساعدة بنجاح!' };
-}function handleBulkAddAidFromXLSX(payload) {
+}
+
+function handleBulkAddAidFromXLSX(payload) {
   const admin = authenticateToken(payload.token);
   const fileContent = payload.fileContent;
   if (!fileContent) throw new Error('محتوى الملف مفقود.');
@@ -1379,6 +1383,51 @@ function handleUpdateMember(payload) {
   return { success: true, message: 'تم تحديث بيانات الفرد بنجاح!' };
 }
 
+/**
+ * Handles updating a member's status. (Admin only)
+ * @param {object} payload The request payload containing token, memberId, and status.
+ * @returns {object} A response object indicating success or failure.
+ */
+function handleUpdateMemberStatus(payload) {
+  try {
+    const { token, memberId, status } = payload;
+    const admin = authenticateToken(token);
+
+    if (!memberId || !status) {
+      throw new Error('معرف العضو والحالة الجديدة مطلوبان.');
+    }
+
+    const individualsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(INDIVIDUALS_SHEET);
+    if (!individualsSheet) {
+      throw new Error('لم يتم العثور على شيت الأفراد.');
+    }
+
+    const headers = individualsSheet.getRange(1, 1, 1, individualsSheet.getLastColumn()).getValues()[0].map(h => (h || '').toString().trim());
+    const idColIndex = headers.indexOf('رقم الهوية');
+    const statusColIndex = headers.indexOf('الحالة');
+
+    if (idColIndex === -1 || statusColIndex === -1) {
+      throw new Error('لم يتم العثور على أعمدة "رقم الهوية" أو "الحالة".');
+    }
+
+    const rowIndexToUpdate = getRowIndexByUniqueId(INDIVIDUALS_SHEET, memberId, 'رقم الهوية');
+    if (rowIndexToUpdate === -1) {
+      throw new Error('لم يتم العثور على العضو.');
+    }
+
+    // Update the status in the specific cell
+    individualsSheet.getRange(rowIndexToUpdate, statusColIndex + 1).setValue(status);
+
+    // Log the action
+    logAdminAction(admin.username, 'تحديث حالة عضو', `تغيير حالة العضو ${memberId} إلى ${status}`);
+
+    return { success: true, message: 'تم تحديث حالة العضو بنجاح.' };
+  } catch (error) {
+    Logger.log(`Error in handleUpdateMemberStatus: ${error.message}`);
+    return { success: false, message: `فشل في تحديث حالة العضو: ${error.message}` };
+  }
+}
+
 function handleGenerateReport(payload) {
   authenticateToken(payload.token);
   const { reportType, filters } = payload;
@@ -1437,7 +1486,9 @@ function handlePasswordResetRequest(userId) {
   );
   
   return { success: true, message: 'تم إرسال طلب إعادة تعيين كلمة المرور. سيقوم المسؤول بالتعامل معه قريباً.' };
-}function handleGetResetRequests(token) {
+}
+
+function handleGetResetRequests(token) {
   authenticateToken(token);
   const requestsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(PASSWORD_RESET_REQUESTS_SHEET);
   if (!requestsSheet) return { success: true, data: [] };
@@ -1500,11 +1551,13 @@ function handleClearMemberPassword(payload) {
                         'مهم'
                     );
                     
-                    break;
-                }
-            }
+          break;
         }
-    }    return { success: true, message: 'تم محو كلمة المرور بنجاح. يمكن للفرد الآن تعيين كلمة مرور جديدة.' };
+      }
+    }
+  }
+
+  return { success: true, message: 'تم محو كلمة المرور بنجاح. يمكن للفرد الآن تعيين كلمة مرور جديدة.' };
 }
 
 function handleUpdateAidStatus(payload) {
@@ -1588,59 +1641,56 @@ function sheetToJSON(sheetName, options) {
     // always fetch headers
     const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(h => (h || '').toString().trim());
 
-    // pagination requested -> fetch a window only
-    if (options.page || options.pageSize) {
-      const page = parseInt(options.page, 10) || 1;
-      const pageSize = parseInt(options.pageSize, 10) || 50;
-      const startIndex = (page - 1) * pageSize; // zero-based within data rows (excluding header)
-      const startRow = 2 + startIndex; // sheet rows are 1-based and header is row 1
-      if (startRow > lastRow) return [];
-      const rowsToFetch = Math.min(pageSize, lastRow - startRow + 1);
-      const values = sheet.getRange(startRow, 1, rowsToFetch, lastCol).getValues();
-      return values.map(row => {
-        const obj = {};
-        headers.forEach((h, i) => obj[h] = row[i]);
-        return obj;
-      });
+    let values;
+    if (options.page && options.pageSize) {
+        const startRow = 2 + (options.page - 1) * options.pageSize;
+        const numRows = Math.min(options.pageSize, lastRow - startRow + 1);
+        if (numRows <= 0) return [];
+        values = sheet.getRange(startRow, 1, numRows, lastCol).getValues();
+    } else {
+        if (lastRow < 2) return [];
+        values = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
     }
 
-    // no pagination -> fallback to full read (use sparingly)
-    const values = sheet.getDataRange().getValues();
-    if (values.length < 2) return [];
-    const allHeaders = values.shift().map(h => (h || '').toString().trim());
-    return values.map(row => allHeaders.reduce((o, h, i) => { o[h] = row[i]; return o; }, {}));
-  } catch (error) {
-    Logger.log('Error in sheetToJSON: ' + error.toString());
-    return [];
+    return values.map(row => {
+        const obj = {};
+        headers.forEach((header, i) => {
+            obj[header] = row[i];
+        });
+        return obj;
+    });
+  } catch (e) {
+    Logger.log(`Error in sheetToJSON for sheet ${sheetName}: ${e.toString()}`);
+    return []; // Return empty array on error
   }
 }
 
 /**
- * Build or read a cached map of uniqueId -> rowNumber for a sheet.
- * Uses CacheService to avoid scanning the whole sheet repeatedly.
+ * Caches a map of unique IDs to their row numbers for a given sheet.
+ * Speeds up lookups by avoiding iterating over rows.
  */
 function getRowMapForSheet(sheetName, idColumnName) {
-  idColumnName = idColumnName || 'رقم الهوية';
   const cache = CacheService.getScriptCache();
-  const cacheKey = 'rowmap_' + sheetName + '_' + idColumnName;
+  const cacheKey = `${SPREADSHEET_ID}_${sheetName}_rowMap_${idColumnName}`;
   const cached = cache.get(cacheKey);
+  
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   const sheet = ss.getSheetByName(sheetName);
   if (!sheet) return {};
   const lastRow = sheet.getLastRow();
-  try {
-    if (cached) {
-      const parsed = JSON.parse(cached);
-      if (parsed && parsed.rowCount === lastRow && parsed.map) {
-        return parsed.map;
-      }
+
+  if (cached) {
+    const data = JSON.parse(cached);
+    // If the number of rows hasn't changed, we can trust the cache
+    if (data.rowCount === lastRow) {
+      return data.map;
     }
-  } catch (e) {
-    // fall through to rebuild
   }
 
-  // Build map by reading headers then only the id column values (lightweight)
+  // If cache is invalid or missing, rebuild it
   const lastCol = sheet.getLastColumn();
+  if (lastRow < 2) return {};
+  
   const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(h => (h || '').toString().trim());
   const idColIndex = headers.indexOf(idColumnName);
   if (idColIndex === -1) return {};
@@ -1680,6 +1730,14 @@ function authenticateToken(token, requiredRole = null) {
     throw new Error('ليس لديك الصلاحية الكافية للقيام بهذا الإجراء.');
   }
   return admin;
+}
+
+function getAdminInfoFromToken(token) {
+  if (!token) return null;
+  const cache = CacheService.getScriptCache();
+  const storedData = cache.get(token);
+  if (!storedData) return null;
+  return JSON.parse(storedData);
 }
 
 function createJsonResponse(data) {
@@ -2687,108 +2745,3 @@ function handleSubmitDeathRegistration(payload) {
   return { success: true, message };
 }
 
-/**
- * =================================================================
- * MEMBERS MANAGEMENT FUNCTIONS
- * =================================================================
- */
-
-/**
- * إضافة عضو جديد
- */
-function handleAddMember(payload) {
-  const { token, ...memberData } = payload;
-  authenticateToken(token);
-  
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(INDIVIDUALS_SHEET);
-  if (!sheet) throw new Error('لم يتم العثور على شيت الأفراد.');
-  
-  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-  
-  // التحقق من عدم وجود رقم هوية مكرر
-  const idCol = headers.indexOf('رقم الهوية');
-  if (idCol === -1) throw new Error('لم يتم العثور على عمود "رقم الهوية".');
-  
-  const existingIds = sheet.getRange(2, idCol + 1, sheet.getLastRow() - 1, 1).getValues().flat();
-  if (existingIds.includes(memberData['رقم الهوية'])) {
-    throw new Error('رقم الهوية موجود بالفعل.');
-  }
-  
-  // إضافة الصف الجديد
-  const newRow = headers.map(header => memberData[header] || '');
-  sheet.appendRow(newRow);
-  
-  // تسجيل العملية
-  const admin = getAdminByToken(token);
-  logAdminAction(admin.username, 'إضافة عضو جديد', `تم إضافة العضو: ${memberData['الاسم الكامل']}`);
-  
-  return { success: true, message: 'تم إضافة العضو بنجاح.' };
-}
-
-/**
- * حذف عضو
- */
-function handleDeleteMember(payload) {
-  const { token, memberId } = payload;
-  authenticateToken(token);
-  
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(INDIVIDUALS_SHEET);
-  if (!sheet) throw new Error('لم يتم العثور على شيت الأفراد.');
-  
-  const data = sheet.getDataRange().getValues();
-  const headers = data[0];
-  const idCol = headers.indexOf('رقم الهوية');
-  
-  if (idCol === -1) throw new Error('لم يتم العثور على عمود "رقم الهوية".');
-  
-  // البحث عن العضو
-  for (let i = 1; i < data.length; i++) {
-    if (String(data[i][idCol]).trim() === String(memberId).trim()) {
-      const memberName = data[i][headers.indexOf('الاسم الكامل')] || 'غير محدد';
-      sheet.deleteRow(i + 1);
-      
-      // تسجيل العملية
-      const admin = getAdminByToken(token);
-      logAdminAction(admin.username, 'حذف عضو', `تم حذف العضو: ${memberName}`);
-      
-      return { success: true, message: 'تم حذف العضو بنجاح.' };
-    }
-  }
-  
-  throw new Error('لم يتم العثور على العضو المطلوب.');
-}
-
-/**
- * تحديث حالة العضو
- */
-function handleUpdateMemberStatus(payload) {
-  const { token, memberId, status } = payload;
-  authenticateToken(token);
-  
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(INDIVIDUALS_SHEET);
-  if (!sheet) throw new Error('لم يتم العثور على شيت الأفراد.');
-  
-  const data = sheet.getDataRange().getValues();
-  const headers = data[0];
-  const idCol = headers.indexOf('رقم الهوية');
-  const statusCol = headers.indexOf('الحالة');
-  
-  if (idCol === -1) throw new Error('لم يتم العثور على عمود "رقم الهوية".');
-  if (statusCol === -1) throw new Error('لم يتم العثور على عمود "الحالة".');
-  
-  // البحث عن العضو وتحديث حالته
-  for (let i = 1; i < data.length; i++) {
-    if (String(data[i][idCol]).trim() === String(memberId).trim()) {
-      const memberName = data[i][headers.indexOf('الاسم الكامل')] || 'غير محدد';
-      sheet.getRange(i + 1, statusCol + 1).setValue(status);
-      
-      // تسجيل العملية
-      const admin = getAdminByToken(token);
-      logAdminAction(admin.username, 'تحديث حالة عضو', `تم تحديث حالة العضو ${memberName} إلى: ${status}`);
-      
-      return { success: true, message: 'تم تحديث حالة العضو بنجاح.' };
-    }
-  }
-  
-  throw new Error('لم يتم العثور على العضو المطلوب.');
-}

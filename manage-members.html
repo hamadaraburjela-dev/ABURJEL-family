@@ -1889,50 +1889,84 @@
         }
 
         // تعديل بيانات العضو
-        function editMember(index) {
-            const member = filteredMembers[index];
-            if (!member) return;
-            
-            // ملء النموذج بالبيانات الحالية
-            document.getElementById('editMemberId').value = index;
-            document.getElementById('editFullName').value = member['الاسم الكامل'] || '';
-            document.getElementById('editIdNumber').value = member['رقم الهوية'] || '';
-            document.getElementById('editPhoneNumber').value = member['رقم الجوال'] || '';
-            document.getElementById('editResidence').value = member['مكان الإقامة'] || '';
-            document.getElementById('editBranch').value = member['الفرع'] || 'ال احمد';
-            // تحديد الحالة مع دعم العربية والإنجليزية
-            const currentStatus = member['الحالة'] || member.status || 'نشط';
-            if (currentStatus === 'Active') {
-                document.getElementById('editStatus').value = 'نشط';
-            } else if (currentStatus === 'Inactive') {
-                document.getElementById('editStatus').value = 'غير نشط';
-            } else {
-                document.getElementById('editStatus').value = currentStatus;
-            }
-            document.getElementById('editSpouseId').value = member['رقم هوية الزوجة'] || '';
-            document.getElementById('editSpouseFullName').value = member['اسم الزوجة الكامل'] || '';
-            
-            new bootstrap.Modal(document.getElementById('editMemberModal')).show();
-        }
+        async function loadMembersData() {
+            // عناصر الواجهة (قد لا توجد في بعض النسخ من الصفحة)
+            const loadingElement = document.getElementById('loadingSpinner');
+            const tableBody = document.getElementById('membersTableBody');
+            const noDataElement = document.getElementById('noData');
 
-        // تغيير حالة العضو
-        function changeStatus(index) {
-            const member = filteredMembers[index];
-            if (!member) return;
-            
-            document.getElementById('currentMemberId').value = index;
-            
-            // تحديد الحالة الحالية مع دعم العربية والإنجليزية
-            const currentStatus = member['الحالة'] || member.status || 'نشط';
-            if (currentStatus === 'Active') {
-                document.getElementById('newStatusSelect').value = 'نشط';
-            } else if (currentStatus === 'Inactive') {
-                document.getElementById('newStatusSelect').value = 'غير نشط';
-            } else {
-                document.getElementById('newStatusSelect').value = currentStatus;
+            if (tableBody) {
+                tableBody.style.opacity = '0';
+                tableBody.style.transition = 'opacity 0.3s ease';
             }
-            
-            new bootstrap.Modal(document.getElementById('statusUpdateModal')).show();
+            if (loadingElement) {
+                loadingElement.style.display = 'block';
+                loadingElement.style.opacity = '0';
+                setTimeout(() => { loadingElement.style.opacity = '1'; }, 100);
+            }
+            if (noDataElement) noDataElement.style.display = 'none';
+
+            try {
+                const token = sessionStorage.getItem('adminToken');
+                console.log('Attempting to load members from server, token:', token ? 'present' : 'missing');
+
+                let serverResult = null;
+
+                // Prefer App.apiCall (newer) then App.postToServer (legacy), then try direct fetch to WEB_APP_URL
+                if (typeof App !== 'undefined' && App) {
+                    if (typeof App.apiCall === 'function') {
+                        serverResult = await App.apiCall({ action: 'getAllMembers', token, searchTerm: '', page: 1, pageSize: 1000 });
+                    } else if (typeof App.postToServer === 'function') {
+                        serverResult = await App.postToServer({ action: 'getAllMembers', token, searchTerm: '', page: 1, pageSize: 1000 });
+                    } else if (App.WEB_APP_URL) {
+                        // direct POST to web app URL
+                        const resp = await fetch(App.WEB_APP_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'getAllMembers', token, searchTerm: '', page: 1, pageSize: 1000 }) });
+                        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                        serverResult = await resp.json();
+                    }
+                }
+
+                // If serverResult is null or not successful, treat as failure and use demo data
+                if (serverResult && serverResult.success) {
+                    // compatible shapes: { members } or { data }
+                    membersData = serverResult.members || serverResult.data || [];
+                    filteredMembers = Array.isArray(membersData) ? [...membersData] : [];
+                    currentPage = 1;
+
+                    // عرض البيانات
+                    renderMembers();
+                    updateStatistics();
+
+                    // fade in table
+                    setTimeout(() => {
+                        if (loadingElement) loadingElement.style.opacity = '0';
+                        if (tableBody) tableBody.style.opacity = '1';
+                        if (loadingElement) setTimeout(() => { loadingElement.style.display = 'none'; }, 300);
+                    }, 200);
+                    return;
+                }
+
+                throw new Error((serverResult && serverResult.message) ? serverResult.message : 'No data from server');
+
+            } catch (error) {
+                console.error('Error loading members from server:', error && error.message ? error.message : error);
+                // fallback to demo data
+                membersData = generateDemoMembersData();
+                filteredMembers = [...membersData];
+                currentPage = 1;
+                renderMembers();
+                updateStatistics();
+
+                if (typeof Toastify !== 'undefined') {
+                    Toastify({ text: 'فشل في تحميل البيانات من الخادم — عرض بيانات تجريبية', duration: 4000, gravity: 'top', position: 'center' }).showToast();
+                }
+            } finally {
+                if (loadingElement) {
+                    loadingElement.style.opacity = '0';
+                    setTimeout(() => { loadingElement.style.display = 'none'; }, 300);
+                }
+                if (tableBody) tableBody.style.opacity = '1';
+            }
         }
 
         // طباعة تقرير العضو - فتح صفحة الطباعة مباشرة
@@ -2283,7 +2317,7 @@
                 const token = sessionStorage.getItem('adminToken');
                 
                 // إرسال التحديث للخادم
-                const response = await App.postToAPI({
+                const response = await App.apiCall({
                     action: 'updateMemberStatus',
                     token: token,
                     memberId: member['رقم الهوية'],
@@ -2291,9 +2325,21 @@
                 });
                 
                 if (response && response.success) {
-                    // إعادة تحميل البيانات من الخادم بعد التحديث
-                    await loadMembersData();
-                    
+                    // تحديث البيانات محلياً بدلاً من إعادة التحميل الكامل
+                    const memberId = member['رقم الهوية'];
+                    const memberIndexInData = membersData.findIndex(m => m['رقم الهوية'] === memberId);
+                    const memberIndexInFiltered = filteredMembers.findIndex(m => m['رقم الهوية'] === memberId);
+
+                    if (memberIndexInData !== -1) {
+                        membersData[memberIndexInData]['الحالة'] = newStatus;
+                    }
+                    if (memberIndexInFiltered !== -1) {
+                        filteredMembers[memberIndexInFiltered]['الحالة'] = newStatus;
+                    }
+
+                    renderMembers();
+                    updateStatistics();
+
                     // إشعار مؤقت مع تنبيه حول الوصول
                     if (typeof Toastify !== 'undefined') {
                         const statusText = newStatus === 'نشط' ? 'نشط' : 'غير نشط';
@@ -2318,30 +2364,13 @@
                 }
             } catch (error) {
                 console.error('Error updating member status:', error);
-                
-                // في حالة فشل التحديث على الخادم، نحدث محلياً
-                const memberId = member['رقم الهوية'];
-                const memberIndexInData = membersData.findIndex(m => m['رقم الهوية'] === memberId);
-                const memberIndexInFiltered = filteredMembers.findIndex(m => m['رقم الهوية'] === memberId);
-                
-                if (memberIndexInData !== -1) {
-                    membersData[memberIndexInData]['الحالة'] = newStatus;
-                }
-                
-                if (memberIndexInFiltered !== -1) {
-                    filteredMembers[memberIndexInFiltered]['الحالة'] = newStatus;
-                }
-                
-                renderMembers();
-                updateStatistics();
-                
                 if (typeof Toastify !== 'undefined') {
                     Toastify({
-                        text: `تم تحديث الحالة محلياً (خطأ في الخادم: ${error.message})`,
+                        text: `فشل تحديث الحالة: ${error.message}`,
                         duration: 5000,
                         gravity: "top",
                         position: "center",
-                        backgroundColor: "linear-gradient(to right, #ff9800, #f57c00)",
+                        backgroundColor: "linear-gradient(to right, #ff6b6b, #ee5a52)",
                     }).showToast();
                 }
             }

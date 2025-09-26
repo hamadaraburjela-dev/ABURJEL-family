@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2) /app-config.json (local config file you can change without editing this file)
     // 3) fallback to the original Apps Script URL for backward compatibility
     WEB_APP_URL: null,
-    DEFAULT_WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbxgGXd3RPRXp3xZaiGcCpiUE5w7NLtXO5ElIjWq8MV7CPoisRV-x6piDtSnOJITBuXC9g/exec',
+    DEFAULT_WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbzeDBUfRypq-dSTcLtuOFB0Bt5gkqaICHPeUQ0rImFhFAazCqURdDLbq_aNvXsjE6kfew/exec',
         
         async testNewUrl() {
             const input = document.getElementById('newScriptUrl');
@@ -834,6 +834,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             editMemberModalElement?.addEventListener('show.bs.modal', (event) => {
                 const button = event.relatedTarget;
+                if (!button) return; // Add guard clause
                 const memberData = JSON.parse(button.dataset.member);
                 document.getElementById('editMemberId').value = memberData['رقم الهوية'];
                 document.getElementById('editFullName').value = memberData['الاسم الكامل'];
