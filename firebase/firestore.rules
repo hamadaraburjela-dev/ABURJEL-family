@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users collection - authenticated users can read/write their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && request.auth.token.email in getAdminEmails();
+    }
+
+    // Members collection - admins can manage, users can read
+    match /members/{memberId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.email in getAdminEmails();
+    }
+
+    // Aid records - admins can manage, users can read their own
+    match /aid/{aidId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.email in getAdminEmails();
+    }
+
+    // Admin users collection
+    match /admins/{adminId} {
+      allow read, write: if request.auth != null && request.auth.token.email in getAdminEmails();
+    }
+
+    // Notifications
+    match /notifications/{notificationId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Special cases
+    match /specialCases/{caseId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.email in getAdminEmails();
+    }
+
+    // Helper function to get admin emails
+    function getAdminEmails() {
+      return ['admin@aburjel-family.com', 'superadmin@aburjel-family.com']; // Add actual admin emails
+    }
+  }
+}
