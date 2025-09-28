@@ -10,175 +10,244 @@
     <link rel="stylesheet" href="modern-theme.css">
     <link rel="stylesheet" href="style.css">
     <style>
-        /* page specific tweaks to match manage-members spacing */
-        .modern-input { min-height:44px; }
-        .card-header-modern .action-buttons .btn-modern { padding:8px 14px; }
-        .search-input-group .search-input { min-height:44px; }
-    </style>
-    <style>
-        /* Visual polish: gradient primary button, subtle card glow, dropzone */
+        /* التنسيقات العامة والـ Typography */
+        .modern-input { min-height:48px; border-radius: 10px; border: 1px solid #e0e0e0; padding-right: 15px; }
+        .modern-input:focus { border-color: #667eea; box-shadow: 0 0 0 0.25rem rgba(102,126,234,0.25); }
+        .fw-700 { font-weight: 700 !important; }
+        .fw-600 { font-weight: 600 !important; }
+        .form-label { font-weight: 600; color: #374151; margin-bottom: 8px; }
+
+        /* الأزرار الرئيسية */
+        .btn-modern { padding: 10px 18px; border-radius: 8px; font-weight: 600; }
         .btn-gradient {
-            background: linear-gradient(135deg,#667eea,#764ba2);
+            background: linear-gradient(45deg,#667eea,#764ba2);
             color: #fff;
             border: none;
-            box-shadow: 0 8px 30px rgba(102,126,234,0.18);
+            box-shadow: 0 8px 25px rgba(102,126,234,0.35);
+            transition: all .2s ease-in-out;
         }
-        .btn-gradient:hover { transform: translateY(-3px); box-shadow: 0 18px 40px rgba(102,126,234,0.22); }
+        .btn-gradient:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(102,126,234,0.45); color: #fff; }
 
-        .data-table-card { position: relative; overflow: visible; }
-        .card-accent {
-            position: absolute; right: -30px; top: -30px; width: 160px; height: 160px; border-radius: 20px;
-            background: radial-gradient(circle at 30% 30%, rgba(118,75,162,0.12), transparent 40%), radial-gradient(circle at 70% 70%, rgba(102,126,234,0.08), transparent 40%);
-            transform: rotate(10deg); z-index: 0;
+        /* البطاقة الرئيسية (الـ Card) */
+        .data-table-card {
+            border-radius: 18px;
+            box-shadow: 0 15px 45px rgba(14,30,37,0.06);
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid #f0f0f0;
         }
+        .card-header-modern { background-color: #f9fafb; padding: 20px 30px; border-bottom: 1px solid #eee; }
+        .card-title-icon { color: #667eea; margin-inline-end: 10px; font-size: 1.4rem; }
 
-        .modern-form .form-label i { color: #667eea; margin-inline-end:6px; }
-        .helper-text { font-size: 0.85rem; color: #6b7280; }
+        /* منطقة البحث والاختيار */
+        .search-input-group { position: relative; }
+        .search-input-group .search-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #9ca3af; z-index: 10; }
+        .search-input-group .search-input { padding-right: 45px; }
+        .search-input-group .search-clear { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #9ca3af; transition: color .15s; }
+        .search-input-group .search-clear:hover { color: #dc3545; }
+        
+        #aidMemberSelect { border: 1px solid #e0e0e0; border-radius: 10px; background-color: #fcfcfc; }
 
+        /* تحسينات الـ Tabs */
+        .nav-tabs .nav-link {
+            font-weight: 600;
+            color: #6b7280;
+            border: none;
+            border-bottom: 3px solid transparent;
+            padding: 12px 20px;
+            transition: all 0.2s;
+        }
+        .nav-tabs .nav-link.active {
+            color: #764ba2;
+            background-color: transparent;
+            border-color: #764ba2;
+        }
+        .nav-tabs { border-bottom: 1px solid #e5e7eb; margin-bottom: 25px; }
+
+        /* تصميم الـ Dropzone المحسن */
         .dropzone {
-            border: 2px dashed rgba(102,126,234,0.25);
+            border: 2px dashed rgba(118,75,162,0.4); /* لون مختلف للـ Dropzone */
             border-radius: 12px;
-            padding: 22px;
+            padding: 35px 20px;
             text-align: center;
-            transition: background .18s, border-color .18s;
-            background: linear-gradient(180deg, rgba(102,126,234,0.02), rgba(118,75,162,0.01));
+            transition: background .2s, border-color .2s;
+            background: rgba(118,75,162,0.03); /* خلفية خفيفة */
+            cursor: pointer;
         }
-        .dropzone.dragover { background: rgba(102,126,234,0.04); border-color: rgba(102,126,234,0.6); }
-        .file-list { margin-top:10px; }
-        .file-item { background:#fff; padding:8px 12px; border-radius:8px; box-shadow: 0 6px 18px rgba(14,30,37,0.04); display:inline-block; margin-right:8px; }
+        .dropzone.dragover { background: rgba(118,75,162,0.08); border-color: rgba(118,75,162,0.8); }
+        .file-item {
+            background:#f1f5ff; /* خلفية مميزة للملف المرفوع */
+            color: #3b4257;
+            padding:10px 15px;
+            border-radius:8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+            display:inline-flex;
+            align-items: center;
+            margin-inline-end: 10px;
+            margin-bottom: 8px;
+            border: 1px solid #d1e3ff;
+        }
     </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <!-- Header -->
-        <header class="header position-relative overflow-hidden">
-            <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%); backdrop-filter: blur(10px);"></div>
-            <div class="d-flex align-items-center position-relative">
+    <div class="container-fluid p-0">
+        <header class="header bg-white shadow-sm p-4 d-flex justify-content-between align-items-center" style="border-bottom: 4px solid #f0f0f0;">
+            <div class="d-flex align-items-center">
                 <div class="logo-container me-3">
-                    <img src="logo.webp" alt="شعار" class="header-logo rounded-circle shadow-sm" style="border: 3px solid rgba(0,0,0,0.08);">
+                    <img src="logo.webp" alt="شعار" class="header-logo rounded-circle" style="width: 55px; height: 55px; border: 3px solid #667eea;">
                 </div>
                 <div>
-                    <h1 class="header-title d-inline-block align-middle mb-0 text-dark fw-700">إدارة المساعدات</h1>
-                    <p class="text-muted mb-0 small d-none d-md-block">نظام إدارة المساعدات</p>
+                    <h1 class="header-title mb-0 text-dark fw-700 fs-4">إدارة المساعدات</h1>
+                    <p class="text-muted mb-0 small d-none d-md-block">لوحة تحكم شاملة لتتبع وإضافة المساعدات</p>
                 </div>
             </div>
-            <div class="d-flex align-items-center position-relative">
+            <div class="d-flex align-items-center">
                 <button class="btn btn-outline-secondary btn-modern me-2" onclick="location.href='admin.html'">
-                    <i class="bi bi-arrow-left me-1"></i>العودة للوحة التحكم
+                    <i class="bi bi-arrow-left me-1"></i>العودة
                 </button>
                 <button class="btn btn-danger btn-modern" onclick="sessionStorage.clear(); localStorage.clear(); location.href='index.html'">
-                    <i class="bi bi-box-arrow-right me-1"></i>تسجيل الخروج
+                    <i class="bi bi-box-arrow-right me-1"></i>خروج
                 </button>
             </div>
         </header>
 
-        <main class="main-content">
-            <div class="data-table-card mb-4">
+        <main class="main-content p-4 p-md-5" style="background-color: #f4f7f9;">
+            <div class="data-table-card mx-auto" style="max-width: 1100px;">
                 <div class="card-header-modern d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 fw-600"><i class="bi bi-box-seam me-2"></i>إضافة المساعدات</h5>
+                    <h5 class="mb-0 fw-600">
+                        <i class="bi bi-box-seam card-title-icon"></i>عمليات تسجيل المساعدات
+                    </h5>
                     <div class="action-buttons d-flex">
-                        <button class="btn-modern btn-outline me-2" onclick="document.getElementById('addAidForm').reset()"><i class="bi bi-arrow-clockwise me-1"></i>مسح</button>
-                        <button class="btn-modern btn-success" onclick="document.getElementById('addAidForm').scrollIntoView({behavior:'smooth'})"><i class="bi bi-plus-lg me-1"></i>مساعدة جديدة</button>
+                        <button class="btn-modern btn-outline-secondary me-2" onclick="document.getElementById('addAidForm').reset(); document.getElementById('bulkUploadForm').reset(); document.getElementById('fileList').innerHTML = '';">
+                            <i class="bi bi-arrow-clockwise me-1"></i>مسح الحقول
+                        </button>
+                        <button class="btn-modern btn-success" onclick="document.getElementById('add-aid-tab').click(); document.getElementById('addAidForm').scrollIntoView({behavior:'smooth'})">
+                            <i class="bi bi-person-plus me-1"></i>مساعدة فردية جديدة
+                        </button>
                     </div>
                 </div>
-                <div class="card-body p-4">
-                <ul class="nav nav-tabs" id="aidTabs" role="tablist">
-                    <li class="nav-item" role="presentation"><button class="nav-link active" id="add-aid-tab" data-bs-toggle="tab" data-bs-target="#add-aid" type="button" role="tab">إضافة مساعدة فردية</button></li>
-                    <li class="nav-item" role="presentation"><button class="nav-link" id="bulk-aid-tab" data-bs-toggle="tab" data-bs-target="#bulk-aid" type="button" role="tab">إضافة مساعدات بالجملة</button></li>
-                </ul>
-                <div class="tab-content mt-3">
-                    <div class="tab-pane fade show active" id="add-aid" role="tabpanel">
-                        <form id="addAidForm" class="modern-form">
-                            <div class="mb-3">
-                                <label for="aidMemberSearch" class="form-label">بحث تلقائي عن المستفيد (بالاسم أو الهوية)</label>
-                                <div class="search-input-group">
-                                    <i class="bi bi-search search-icon"></i>
-                                    <input type="text" class="search-input modern-input" id="aidMemberSearch" placeholder="اكتب هنا للبحث في القائمة..." autocomplete="off">
-                                    <button class="search-clear btn-modern" type="button" id="clearSearchBtn">
-                                        <i class="bi bi-x-lg"></i>
+
+                <div class="card-body p-4 p-md-5">
+                    <ul class="nav nav-tabs" id="aidTabs" role="tablist">
+                        <li class="nav-item" role="presentation"><button class="nav-link active" id="add-aid-tab" data-bs-toggle="tab" data-bs-target="#add-aid" type="button" role="tab" aria-controls="add-aid" aria-selected="true"><i class="bi bi-person-fill me-1"></i>إضافة مساعدة فردية</button></li>
+                        <li class="nav-item" role="presentation"><button class="nav-link" id="bulk-aid-tab" data-bs-toggle="tab" data-bs-target="#bulk-aid" type="button" role="tab" aria-controls="bulk-aid" aria-selected="false"><i class="bi bi-upload me-1"></i>إضافة مساعدات بالجملة</button></li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="add-aid" role="tabpanel">
+                            <form id="addAidForm" class="modern-form row g-4">
+                                <div class="col-lg-5">
+                                    <label for="aidMemberSearch" class="form-label"><i class="bi bi-search me-1 text-primary"></i>بحث المستفيد (بالاسم أو الهوية)</label>
+                                    <div class="search-input-group mb-3">
+                                        <i class="bi bi-search search-icon"></i>
+                                        <input type="text" class="search-input modern-input" id="aidMemberSearch" placeholder="اكتب للبحث في قائمة الأعضاء..." autocomplete="off">
+                                        <button class="search-clear btn-modern" type="button" id="clearSearchBtn"><i class="bi bi-x-lg"></i></button>
+                                    </div>
+                                    
+                                    <label for="aidMemberSelect" class="form-label mt-2"><i class="bi bi-list-check me-1 text-primary"></i>اختر المستفيد من القائمة</label>
+                                    <select class="form-select modern-input" id="aidMemberSelect" size="8" required>
+                                        <option value="" disabled selected>-- نتائج البحث تظهر هنا --</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-lg-7">
+                                    <h6 class="mb-4 text-primary pb-2" style="border-bottom: 1px solid #eee;">تفاصيل المساعدة</h6>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-4">
+                                            <label for="aidCategory" class="form-label"><i class="bi bi-tag-fill me-1"></i>الفئة الرئيسية</label>
+                                            <select class="form-select modern-input" id="aidCategory" required>
+                                                <option value="" disabled selected>-- اختر الفئة أولاً --</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-4">
+                                            <label for="aidType" class="form-label"><i class="bi bi-tags-fill me-1"></i>النوع الفرعي للمساعدة</label>
+                                            <select class="form-select modern-input" id="aidType" required disabled>
+                                                <option value="" disabled selected>-- اختر النوع الفرعي --</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-4">
+                                            <label for="aidStatus" class="form-label"><i class="bi bi-check-circle-fill me-1"></i>حالة المساعدة</label>
+                                            <select class="form-select modern-input" id="aidStatus" required>
+                                                <option value="Completed">منجزة</option>
+                                                <option value="Future">مستقبلية</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-4">
+                                            <label for="aidDate" class="form-label"><i class="bi bi-calendar-date-fill me-1"></i>تاريخ الاستلام</label>
+                                            <input type="date" class="form-control modern-input" id="aidDate" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-12 mb-4">
+                                        <label for="aidSource" class="form-label"><i class="bi bi-house-door-fill me-1"></i>مصدر المساعدة</label>
+                                        <input type="text" class="form-control modern-input" id="aidSource" value="قسائم/دهش/عضوية" required>
+                                    </div>
+                                    
+                                    <div class="col-12 mb-4">
+                                        <label for="aidNotes" class="form-label"><i class="bi bi-journal-text me-1"></i>ملاحظات (اختياري)</label>
+                                        <textarea class="form-control modern-input" id="aidNotes" rows="2" placeholder="أضف أي ملاحظات ذات صلة هنا..."></textarea>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <button type="submit" class="btn-modern btn-primary w-100 py-2">
+                                            <span class="spinner-border spinner-border-sm d-none me-2"></span>
+                                            <span class="button-text"><i class="bi bi-plus-circle-fill me-1"></i>تأكيد وإضافة المساعدة</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="tab-pane fade" id="bulk-aid" role="tabpanel">
+                            <div class="alert alert-info d-flex align-items-center gap-3 p-3 shadow-sm" role="alert" style="border-radius: 10px;">
+                                <i class="bi bi-info-circle-fill fs-4 text-info"></i>
+                                <div>لإضافة مساعدات بالجملة، يرجى تجهيز ملف **Excel (.xlsx)** بالصيغة المطلوبة. <a href="#" id="exportTemplateBtn" class="alert-link fw-bold ms-2">تحميل القالب الآن</a></div>
+                            </div>
+                            <form id="bulkUploadForm" class="modern-form row mt-4 justify-content-center">
+                                <div class="col-md-10">
+                                    <div class="mb-4">
+                                        <label class="form-label"><i class="bi bi-file-earmark-spreadsheet-fill me-1 text-purple"></i>اختر ملف Excel (.xlsx) أو اسحبه هنا</label>
+                                        <div id="dropzone" class="dropzone">
+                                            <div><i class="bi bi-cloud-arrow-up-fill fs-1" style="color: #764ba2;"></i></div>
+                                            <div class="helper-text fw-bold mt-2 text-muted">اسحب وأفلت الملف هنا أو انقر لاختياره</div>
+                                            <input type="file" id="xlsxFile" accept=".xlsx" style="display:none">
+                                        </div>
+                                        <div class="file-list mt-3" id="fileList"></div>
+                                    </div>
+                                    <button type="submit" class="btn-modern btn-gradient w-100 py-2">
+                                        <span class="spinner-border spinner-border-sm d-none me-2" id="bulkSpinner"></span>
+                                        <span class="button-text"><i class="bi bi-arrow-up-circle-fill me-1"></i>رفع الملف ومعالجة المساعدات</span>
                                     </button>
                                 </div>
-                            </div>
-                    
-                            <div class="mb-3">
-                                <label for="aidMemberSelect" class="form-label">اختر المستفيد من القائمة</label>
-                                <select class="form-select modern-input" id="aidMemberSelect" size="8" required>
-                                    </select>
-                            </div>
-                    
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="aidCategory" class="form-label">الفئة الرئيسية للمساعدة</label>
-                                    <select class="form-select modern-input" id="aidCategory" required>
-                                        <option value="" disabled selected>-- اختر الفئة أولاً --</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="aidType" class="form-label">النوع الفرعي للمساعدة</label>
-                                    <select class="form-select modern-input" id="aidType" required disabled>
-                                        <option value="" disabled selected>-- اختر النوع الفرعي --</option>
-                                    </select>
-                                </div>
-                            </div>
-                    
-                            <div class="row">
-                                <div class="col-md-6 mb-3"><label for="aidStatus" class="form-label">حالة المساعدة</label><select class="form-select modern-input" id="aidStatus" required><option value="Completed">منجزة</option><option value="Future">مستقبلية</option></select></div>
-                                <div class="col-md-6 mb-3"><label for="aidDate" class="form-label">تاريخ الاستلام</label><input type="date" class="form-control modern-input" id="aidDate" required></div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="aidSource" class="form-label">مصدر المساعدة</label>
-                                <input type="text" class="form-control modern-input" id="aidSource" value="قسائم/دهش/عضوية" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="aidNotes" class="form-label">ملاحظات (اختياري)</label>
-                                <textarea class="form-control modern-input" id="aidNotes" rows="2"></textarea>
-                            </div>
-                            <button type="submit" class="btn-modern btn-primary"><span class="spinner-border spinner-border-sm d-none me-2"></span><span class="button-text">إضافة المساعدة</span></button>
-                        </form>
-                    </div>
-                    <div class="tab-pane fade" id="bulk-aid" role="tabpanel">
-                        <div class="alert alert-info d-flex align-items-center gap-3">
-                            <i class="bi bi-info-circle-fill fs-4"></i>
-                            <div>لإضافة مساعدات بالجملة، يرجى تجهيز ملف Excel (.xlsx) بالصيغة التالية: <a href="#" id="exportTemplateBtn" class="alert-link ms-2">تحميل القالب</a></div>
+                            </form>
                         </div>
-                        <form id="bulkUploadForm" class="modern-form">
-                            <div class="mb-3">
-                                <label class="form-label">اختر ملف Excel (.xlsx) أو اسحبه هنا</label>
-                                <div id="dropzone" class="dropzone">
-                                    <div><i class="bi bi-cloud-arrow-up-fill fs-2 text-muted"></i></div>
-                                    <div class="helper-text">اسحب وأفلت الملف هنا أو انقر لاختياره</div>
-                                    <input type="file" id="xlsxFile" accept=".xlsx" style="display:none">
-                                </div>
-                                <div class="file-list" id="fileList"></div>
-                            </div>
-                            <button type="submit" class="btn-modern btn-gradient">
-                                <span class="spinner-border spinner-border-sm d-none me-2" id="bulkSpinner"></span>
-                                <span class="button-text">رفع الملف</span>
-                            </button>
-                        </form>
                     </div>
                 </div>
             </div>
-        </div>
-    </main>
-<footer class="modern-footer">
-    <div class="footer-content">
-        <div class="footer-section">
-            <div id="server-status" class="status-indicator">
-                <div class="status-indicator">
-                    <span class="status-dot"></span>
-                    <span class="status-text">جاري التحقق من حالة الخادم...</span>
+        </main>
+        
+        <footer class="modern-footer bg-white border-top py-3 mt-4">
+            <div class="footer-content container-fluid d-flex justify-content-between align-items-center">
+                <div class="footer-section">
+                    <div id="server-status" class="status-indicator">
+                        <span class="status-dot"></span>
+                        <span class="status-text small text-muted">جاري التحقق من حالة الخادم...</span>
+                    </div>
+                </div>
+                <div class="footer-section text-center">
+                    <p class="copyright-text mb-0 small text-muted">جميع الحقوق محفوظة &copy; 2025 | م. حماده أبو رجيلة</p>
+                </div>
+                <div class="footer-section">
+                    <a href="https://wa.me/972569210941" target="_blank" class="whatsapp-link btn btn-sm btn-outline-success">
+                        <i class="bi bi-whatsapp me-2"></i>تواصل
+                    </a>
                 </div>
             </div>
-        </div>
-        <div class="footer-section text-center">
-            <p class="copyright-text">جميع الحقوق محفوظة &copy; 2025 | م. حماده أبو رجيلة</p>
-        </div>
-        <div class="footer-section">
-            <a href="https://wa.me/972569210941" target="_blank" class="whatsapp-link"><i class="bi bi-whatsapp me-2"></i>تواصل عبر الواتساب</a>
-        </div>
-    </div>
-</footer>
+        </footer>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -195,7 +264,7 @@
             const spinner = document.getElementById('bulkSpinner');
 
             function showFile(file){
-                fileList.innerHTML = `<div class="file-item">${file.name} <small class="text-muted ms-2">(${Math.round(file.size/1024)} KB)</small></div>`;
+                fileList.innerHTML = `<div class="file-item"><i class="bi bi-file-earmark-excel-fill me-2 text-success"></i>${file.name} <small class="text-muted ms-2">(${Math.round(file.size/1024)} KB)</small></div>`;
             }
 
             dropzone.addEventListener('click', ()=> fileInput.click());
@@ -208,15 +277,28 @@
             bulkForm.addEventListener('submit', (e)=>{
                 e.preventDefault();
                 const f = fileInput.files[0];
-                if (!f) { Toastify({ text: 'اختر ملفًا أولاً', backgroundColor: '#f43f5e', duration:3000 }).showToast(); return; }
+                if (!f) { Toastify({ text: 'اختر ملفًا أولاً', backgroundColor: '#dc3545', duration:3000, gravity: 'bottom' }).showToast(); return; }
                 spinner.classList.remove('d-none');
+                
+                // إضافة فئة التحميل على الزر لتغيير مظهره أثناء المعالجة
+                const buttonTextSpan = bulkForm.querySelector('.button-text');
+                buttonTextSpan.textContent = 'جاري الرفع والمعالجة...';
+
                 // simulate upload
                 setTimeout(()=>{
                     spinner.classList.add('d-none');
-                    Toastify({ text: 'تم رفع الملف بنجاح', backgroundColor: '#10b981', duration:3000 }).showToast();
+                    buttonTextSpan.innerHTML = '<i class="bi bi-arrow-up-circle-fill me-1"></i>رفع الملف ومعالجة المساعدات'; // إعادة النص الأصلي
+                    
+                    Toastify({ text: 'تم رفع الملف بنجاح، يرجى مراجعة الجدول', backgroundColor: '#10b981', duration:5000, gravity: 'bottom' }).showToast();
                     fileList.innerHTML = '';
                     fileInput.value = '';
-                }, 900);
+                }, 1500); // زيادة وقت المحاكاة
+            });
+            
+            // إضافة رابط وهمي لـ exportTemplateBtn
+            document.getElementById('exportTemplateBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                Toastify({ text: 'بدء تحميل ملف القالب (صيغة XLSX)...', backgroundColor: '#3b82f6', duration: 3000, gravity: 'bottom' }).showToast();
             });
         })();
     </script>

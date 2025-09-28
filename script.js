@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2) /app-config.json (local config file you can change without editing this file)
     // 3) fallback to the original Apps Script URL for backward compatibility
     WEB_APP_URL: null,
-    DEFAULT_WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbzeDBUfRypq-dSTcLtuOFB0Bt5gkqaICHPeUQ0rImFhFAazCqURdDLbq_aNvXsjE6kfew/exec',
+    DEFAULT_WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbwmq5kjxg7MUFJqSCsm7wP4LkOOwgGTtbJbWRHS6rwQQHWAG19kBIQ7UWDlxLihy3ck/exec',
         
         async testNewUrl() {
             const input = document.getElementById('newScriptUrl');
