@@ -759,12 +759,27 @@
         function updateNotificationBadge(notifications) {
             const badge = document.getElementById('notificationBadge');
             const unreadCount = notifications.filter(n => !n.isRead).length;
-            
+
             if (unreadCount > 0) {
                 badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
                 badge.classList.remove('d-none');
             } else {
                 badge.classList.add('d-none');
+            }
+        }
+
+        function updateNotificationCount(notifications) {
+            const countElement = document.getElementById('notificationsCount');
+            const totalCount = notifications.length;
+            const unreadCount = notifications.filter(n => !n.isRead).length;
+
+            if (countElement) {
+                countElement.textContent = `${totalCount} إشعار${totalCount !== 1 ? '' : ''}`;
+                if (unreadCount > 0) {
+                    countElement.className = 'badge bg-warning';
+                } else {
+                    countElement.className = 'badge bg-info';
+                }
             }
         }
         

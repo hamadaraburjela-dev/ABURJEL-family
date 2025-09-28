@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2) /app-config.json (local config file you can change without editing this file)
     // 3) fallback to the original Apps Script URL for backward compatibility
     WEB_APP_URL: null,
-    DEFAULT_WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbwmq5kjxg7MUFJqSCsm7wP4LkOOwgGTtbJbWRHS6rwQQHWAG19kBIQ7UWDlxLihy3ck/exec',
+    DEFAULT_WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbz4BiU2hH5a1RwiFjvuEPutRrLfKAb_oVSwRz-Gxr-SitsER9bmuF8eRLq251EqSWk9AQ/exec',
         
         async testNewUrl() {
             const input = document.getElementById('newScriptUrl');
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 1) window.APP_CONFIG
                 if (window.APP_CONFIG && window.APP_CONFIG.WEB_APP_URL) {
                     this.WEB_APP_URL = window.APP_CONFIG.WEB_APP_URL;
-                    console.log('Loaded WEB_APP_URL from window.APP_CONFIG');
+                    console.log('🔧 Loaded WEB_APP_URL from window.APP_CONFIG:', this.WEB_APP_URL);
                     return;
                 }
 
@@ -110,17 +110,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     const cfg = await resp.json();
                     if (cfg && cfg.WEB_APP_URL) {
                         this.WEB_APP_URL = cfg.WEB_APP_URL;
-                        console.log('Loaded WEB_APP_URL from app-config.json');
+                        console.log('🔧 Loaded WEB_APP_URL from app-config.json:', this.WEB_APP_URL);
                         return;
                     }
                 }
             } catch (err) {
-                console.warn('Unable to load app-config.json or window.APP_CONFIG', err);
+                console.warn('⚠️ Unable to load app-config.json or window.APP_CONFIG', err);
             }
 
             // 3) fallback
             this.WEB_APP_URL = this.DEFAULT_WEB_APP_URL;
-            console.log('Using DEFAULT_WEB_APP_URL');
+            console.log('🔧 Using DEFAULT_WEB_APP_URL:', this.WEB_APP_URL);
         },
         
         initModals() {
@@ -175,22 +175,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const activeSubmitButton = (document.activeElement?.tagName === 'BUTTON' && document.activeElement.type === 'submit') ? document.activeElement : document.querySelector('button[type="submit"]:not(:disabled)');
             const isButtonTriggered = activeSubmitButton !== null;
             if (isButtonTriggered) this.toggleButtonSpinner(true, activeSubmitButton);
-            
-            console.log('🚀 إرسال طلب API:', payload.action);
-            
+
+            console.log('🚀 إرسال طلب API:', payload.action, 'إلى:', this.WEB_APP_URL || this.DEFAULT_WEB_APP_URL);
+            console.log('📋 بيانات الطلب:', payload);
+
             try {
                 const url = this.WEB_APP_URL || this.DEFAULT_WEB_APP_URL;
-                const response = await fetch(url, { 
-                    method: 'POST', 
-                    mode: 'cors', 
-                    redirect: 'follow', 
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-                    body: JSON.stringify(payload) 
+                const response = await fetch(url, {
+                    method: 'POST',
+                    mode: 'cors',
+                    redirect: 'follow',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
                 });
-                
-                console.log('📡 استجابة الخادم:', response.status, response.statusText);
-                
+
+                console.log('📡 استجابة الخادم:', response.status, response.statusText, 'للإجراء:', payload.action);
+
                 if (!response.ok) {
+                    console.error('❌ خطأ في الاستجابة:', response.status, response.statusText);
                     if (response.status === 404) {
                         throw new Error('رابط Google Apps Script غير صحيح أو لا يعمل');
                     } else if (response.status === 403) {
@@ -201,32 +203,35 @@ document.addEventListener('DOMContentLoaded', () => {
                         throw new Error(`خطأ في الشبكة: ${response.status} - ${response.statusText}`);
                     }
                 }
-                
+
                 const result = await response.json();
-                console.log('✅ نتيجة الطلب:', result);
-                
-                if (!result.success) throw new Error(result.message || 'حدث خطأ غير معروف في الخادم.');
+                console.log('✅ نتيجة الطلب للإجراء', payload.action + ':', result);
+
+                if (!result.success) {
+                    console.error('❌ الخادم أعاد خطأ:', result.message);
+                    throw new Error(result.message || 'حدث خطأ غير معروف في الخادم.');
+                }
                 if (showSuccessToast && result.message) this.showToast(result.message, true);
                 return result;
-                
-            } catch (error) { 
-                console.error('❌ فشل في API Call:', error);
-                
+
+            } catch (error) {
+                console.error('❌ فشل في API Call للإجراء', payload.action + ':', error);
+
                 // رسائل خطأ مفصلة
                 let errorMessage = error.message;
                 if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
                     errorMessage = '⚠️ فشل الاتصال بالخادم';
-                    
+
                     // إظهار نافذة مساعدة بعد ثانيتين
                     setTimeout(() => {
                         this.showScriptUrlHelp();
                     }, 2000);
                 }
-                
+
                 this.showToast(errorMessage, false);
-                return null; 
-            } finally { 
-                if (isButtonTriggered) this.toggleButtonSpinner(false, activeSubmitButton); 
+                return null;
+            } finally {
+                if (isButtonTriggered) this.toggleButtonSpinner(false, activeSubmitButton);
             }
         },
 
@@ -358,30 +363,31 @@ document.addEventListener('DOMContentLoaded', () => {
             const statusDiv = document.getElementById('server-status');
             if (!statusDiv) return;
             const statusText = statusDiv.querySelector('.status-text');
-            
-            console.log('جاري فحص حالة الخادم...', this.WEB_APP_URL);
-            
+
+            const url = this.WEB_APP_URL || this.DEFAULT_WEB_APP_URL;
+            console.log('🔍 جاري فحص حالة الخادم...', url);
+
             try {
-                const url = this.WEB_APP_URL || this.DEFAULT_WEB_APP_URL;
-                const response = await fetch(url, { 
+                const response = await fetch(url, {
                     method: 'GET',
                     mode: 'cors',
                     cache: 'no-cache'
                 });
-                
-                console.log('استجابة الخادم:', response.status, response.statusText);
-                
+
+                console.log('🔍 استجابة الخادم للفحص:', response.status, response.statusText);
+
                 if (response.ok) {
                     const data = await response.json();
                     statusDiv.classList.remove('offline');
                     statusDiv.classList.add('online');
                     statusText.textContent = `الخادم متصل (إصدار ${data.version})`;
-                    console.log('الخادم يعمل بشكل طبيعي');
+                    console.log('✅ الخادم يعمل بشكل طبيعي - البيانات:', data);
                 } else {
+                    console.warn('⚠️ الخادم أعاد استجابة غير ناجحة:', response.status, response.statusText);
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
             } catch (error) {
-                console.error('خطأ في الاتصال بالخادم:', error);
+                console.error('❌ خطأ في الاتصال بالخادم:', error);
                 statusDiv.classList.remove('online');
                 statusDiv.classList.add('offline');
                 statusText.innerHTML = `
@@ -393,7 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </button>
                     </small>
                 `;
-                
+
                 // إظهار تنبيه للمستخدم
                 if (typeof Toastify !== 'undefined') {
                     Toastify({
